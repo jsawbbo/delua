@@ -3,16 +3,28 @@ if(NOT Luax_SOURCE_DIR)
 message(FATAL_ERROR "NOT IMPLEMENTED")
 
 else(NOT Luax_SOURCE_DIR)
-# Luax is embedded in build
-if(true)
+
+    # Luax is embedded in build
+    set(Luax_FOUND true)
+
+    set(Luax_INCLUDE_DIR "${Luax_SOURCE_DIR}/src;${Luax_BINARY_DIR}/include")
+
     add_library(Luax::Lib INTERFACE IMPORTED)
-    set_property(TARGET Luax::Lib PROPERTY INTERFACE_LINK_LIBRARIES "LuaxLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}")
+    set_property(TARGET Luax::Lib
+        PROPERTY
+            INTERFACE_LINK_LIBRARIES "LuaxLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}"
+            INCLUDE_DIRECTORIES ${Luax_INCLUDE_DIR})
 
     add_library(Luax::LibStatic INTERFACE IMPORTED)
-    set_property(TARGET Luax::LibStatic PROPERTY INTERFACE_LINK_LIBRARIES "LuaxLibStatic ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}")
+    set_property(TARGET Luax::LibStatic
+        PROPERTY
+            INTERFACE_LINK_LIBRARIES "LuaxLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}"
+            INCLUDE_DIRECTORIES ${Luax_INCLUDE_DIR})
 
     add_library(Luax::CxxLib INTERFACE IMPORTED)
-    set_property(TARGET Luax::CxxLib PROPERTY INTERFACE_LINK_LIBRARIES "LuaxCxxLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}")
-endif()
+    set_property(TARGET Luax::CxxLib
+        PROPERTY
+            INTERFACE_LINK_LIBRARIES "LuaxLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}"
+            INCLUDE_DIRECTORIES ${Luax_INCLUDE_DIR})
 
 endif(NOT Luax_SOURCE_DIR)

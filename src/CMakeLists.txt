@@ -1,4 +1,4 @@
-set(LUACONF_H ${PROJECT_BINARY_DIR}/include/luaconf.h)
+set(LUACONF_H ${Luax_BINARY_DIR}/include/luaconf.h)
 set_source_files_properties(${LUACONF_H}
     PROPERTIES
         GENERATED TRUE)
