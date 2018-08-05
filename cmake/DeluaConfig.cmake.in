@@ -1,8 +1,8 @@
-if(NOT Luax_SOURCE_DIR)
-# Native build.
-message(FATAL_ERROR "NOT IMPLEMENTED")
+if(NOT Lua_PARENT_DIR)
+	# Native build.
+	message("NOT IMPLEMENTED")
 
-else(NOT Luax_SOURCE_DIR)
+else(NOT Lua_PARENT_DIR)
 
     # Luax is embedded in build
     if(NOT Luax_FOUND)
@@ -28,4 +28,4 @@ else(NOT Luax_SOURCE_DIR)
                 INTERFACE_LINK_LIBRARIES "LuaxLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}"
                 INCLUDE_DIRECTORIES ${Luax_INCLUDE_DIR})
     endif(NOT Luax_FOUND)
-endif(NOT Luax_SOURCE_DIR)
+endif(NOT Lua_PARENT_DIR)

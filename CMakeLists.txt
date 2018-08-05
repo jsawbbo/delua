@@ -19,7 +19,6 @@ message(STATUS "Lua version ${Lua_VERSION}")
 
 # === CMake Paths ============================================================
 list(APPEND CMAKE_MODULE_PATH "${Lua_SOURCE_DIR}/cmake")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CACHE INTERNAL "CMake module path." FORCE)
 
 # single library and executable output path
 if(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
@@ -69,24 +68,25 @@ endif(Threads_FOUND)
 # === Options ================================================================
 # lua
 option(LUA_32BITS "Enable 32-bit integers and 32-bit floats (default: auto-detected)." OFF)
+
 option(LUA_USE_C89 "Use of ISO-C89 features only." ${LUA_USE_C89_INIT})
 option(LUA_USE_POSIX "Use Posix features." ${LUA_USE_POSIX_INIT})
 option(LUA_USE_DLOPEN "Use dlopen (requires dl library, auto-detected)." ${LUA_USE_DLOPEN_INIT})
 option(LUA_USE_READLINE "Use readline features (requires readline library, auto-detected)." ${LUA_USE_READLINE_INIT})
 
-#FIXME there are more options in luaconf.h.in that should be added here
+#FIXME there are more options in luaconf.h.in that could be added here
 
 # delua modifications
 set(LUA_ROOT "${CMAKE_INSTALL_PREFIX}" CACHE PATH "Root installation path.")
 set(LUA_USER_H "${LUA_USER_H_INIT}" CACHE STRING "User header.")
 set(LUA_USER_GLOBAL_STATE "${LUA_USER_GLOBAL_STATE_INIT}" CACHE STRING "User entry in global_State.")
 set(LUA_NAME "${LUA_NAME_INIT}" CACHE STRING "The name used for libraries and executables (lib${LUA_NAME} etc.).")
-set(LUA_CXX "${LUA_CXX_INIT}" CACHE BOOL "Compile as C++ source.")
+set(LUA_LANGUAGE "${LUA_LANGUAGE_INIT}" CACHE STRING "Compile language (C or CXX).")
 
 # === Build ==================================================================
 include_directories(
     ${PROJECT_BINARY_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    ${Lua_SOURCE_DIR}/src)
 
 add_subdirectory(cmake)
 add_subdirectory(src)
@@ -95,5 +95,5 @@ add_subdirectory(src)
 if(Lua_PARENT_DIR)
     message(STATUS "Building as sub-project (${Luax_BINARY_DIR})...")
     list(APPEND CMAKE_MODULE_PATH "${Lua_BINARY_DIR}/cmake")
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CACHE INTERNAL "CMake module path." FORCE)
-endif()
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} PARENT_SCOPE)
+endif(Lua_PARENT_DIR)

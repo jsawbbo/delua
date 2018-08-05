@@ -1,13 +1,10 @@
 # === Config =================================================================
-set(LUA_LANGUAGE_C false)
-if("C" IN_LIST LUA_LANGUAGES)
-    set(LUA_LANGUAGE_C true)
-endif("C" IN_LIST LUA_LANGUAGES)
+if(LUA_LANGUAGE STREQUAL "CXX")
+    set(__lua_cplusplus true)
+else(LUA_LANGUAGE STREQUAL "CXX")
+    set(__lua_cplusplus false)
+endif(LUA_LANGUAGE STREQUAL "CXX")
 
-set(LUA_LANGUAGE_CXX false)
-if("CXX" IN_LIST LUA_LANGUAGES)
-    set(LUA_LANGUAGE_CXX true)
-endif("CXX" IN_LIST LUA_LANGUAGES)
 
 set(LUA_HAS_USER_H false)
 if(NOT LUA_USER_H STREQUAL "")
@@ -19,7 +16,7 @@ if(NOT LUA_USER_GLOBAL_STATE STREQUAL "")
     set(LUA_HAS_USER_GLOBAL_STATE true)
 endif(NOT LUA_USER_GLOBAL_STATE STREQUAL "")
 
-set(luaconf_h ${Lua_BINARY_DIR}/src/luaconf.h)
+set(luaconf_h ${PROJECT_BINARY_DIR}/include/luaconf.h)
 configure_file(luaconf.h.in ${luaconf_h})
 set_source_files_properties(${luaconf_h}
     PROPERTIES
@@ -98,11 +95,11 @@ set(LUAC_SRCS
 
 include_directories(${Lua_BINARY_DIR}/src)
 
-if(LUA_CXX)
+if(LUA_LANGUAGE STREQUAL "CXX")
     set_source_files_properties(${LUALIB_SRCS} ${LUALIB_HDRS} ${LUA_SRCS} ${LUAC_SRCS}
         PROPERTIES
             LANGUAGE CXX)
-endif(LUA_CXX)
+endif(LUA_LANGUAGE STREQUAL "CXX")
 
 add_library(LuaLib SHARED ${LUALIB_SRCS} ${LUBLIB_HDRS})
 target_link_libraries(LuaLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY})
@@ -142,6 +139,8 @@ install(FILES
 
 # FIXME multilib support
 install(TARGETS LuaLib LuaLibStatic LuaInterpreter LuaCompiler
+    EXPORT DeluaTargets
     LIBRARY DESTINATION lib COMPONENT "runtime"
     RUNTIME DESTINATION bin COMPONENT "runtime"
-    ARCHIVE DESTINATION lib COMPONENT "development")
+    ARCHIVE DESTINATION lib COMPONENT "development"
+    INCLUDES DESTINATION include/lua/${Lua_RELEASE} COMPONENT "development")

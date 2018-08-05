@@ -825,21 +825,29 @@ static inline int __lua_exec_in_buildpath() {
 #define LUA_USER_GLOBAL_STATE @LUA_USER_GLOBAL_STATE@
 
 /*
-** Lua was compiled with a C++ compiler
+** Language used to compile Lua.
 */
-#cmakedefine LUA_CXX
+#define LUA_LANGUAGE "@LUA_LANGUAGE@"
+#cmakedefine __lua_cplusplus
 
-#if defined(LUA_CXX)
+/*
+** C++ features:
+*/
+#if defined(__lua_cplusplus)
+
+#if defined(LUA_BUILD_AS_DLL)
+#define LUA_API_EXPORT __declspec(dllexport)
+#define LUA_API_IMPORT __declspec(dllimport)
+#else
+#define LUA_API_EXPORT
+#define LUA_API_IMPORT
+#endif
 
 #undef LUA_API
-#if defined(LUA_BUILD_AS_DLL)
 #if defined(LUA_CORE) || defined(LUA_LIB)
-#define LUA_API __declspec(dllexport) /* FIXME */
+#define LUA_API extern "C" LUA_API_EXPORT
 #else
-#define LUA_API __declspec(dllimport) /* FIXME */
-#endif
-#else
-#define LUA_API		extern "C"
+#define LUA_API extern "C" LUA_API_IMPORT
 #endif
 
 #include <stdexcept>
