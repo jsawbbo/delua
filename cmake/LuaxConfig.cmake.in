@@ -1,0 +1,18 @@
+if(NOT Luax_SOURCE_DIR)
+# Native build.
+message(FATAL_ERROR "NOT IMPLEMENTED")
+
+else(NOT Luax_SOURCE_DIR)
+# Luax is embedded in build
+if(true)
+    add_library(Luax::Lib INTERFACE IMPORTED)
+    set_property(TARGET Luax::Lib PROPERTY INTERFACE_LINK_LIBRARIES "LuaxLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}")
+
+    add_library(Luax::LibStatic INTERFACE IMPORTED)
+    set_property(TARGET Luax::LibStatic PROPERTY INTERFACE_LINK_LIBRARIES "LuaxLibStatic ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}")
+
+    add_library(Luax::CxxLib INTERFACE IMPORTED)
+    set_property(TARGET Luax::CxxLib PROPERTY INTERFACE_LINK_LIBRARIES "LuaxCxxLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}")
+endif()
+
+endif(NOT Luax_SOURCE_DIR)

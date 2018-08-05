@@ -46,61 +46,61 @@ set(LUAC_CLI_SRCS ldump.c lopcodes.c luac.c)
 
 ### libraries
 # shared
-add_library(LuaLib SHARED ${LUA_SRCS} ${LUA_HDRS})
-target_link_libraries(LuaLib
+add_library(LuaxLib SHARED ${LUA_SRCS} ${LUA_HDRS})
+target_link_libraries(LuaxLib
     ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY})
-set_target_properties(LuaLib
+set_target_properties(LuaxLib
     PROPERTIES
-        OUTPUT_NAME lua
+        OUTPUT_NAME lua${LUAX_SUFFIX}
         VERSION ${Lua_VERSION}
         SOVERSION ${Lua_VERSION_MAJOR})
 
-add_library(LuaCxxLib SHARED ${LUACXX_SRCS})
-target_link_libraries(LuaCxxLib
+add_library(LuaxCxxLib SHARED ${LUACXX_SRCS})
+target_link_libraries(LuaxCxxLib
     ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY})
-set_target_properties(LuaCxxLib
+set_target_properties(LuaxCxxLib
     PROPERTIES
-        OUTPUT_NAME luaxx
+        OUTPUT_NAME lua${LUAX_SUFFIX}xx
         VERSION ${Lua_VERSION}
         SOVERSION ${Lua_VERSION_MAJOR})
 
 # static
-add_library(LuaLibStatic STATIC ${LUA_SRCS} ${LUA_HDRS})
-target_link_libraries(LuaLibStatic
+add_library(LuaxLibStatic STATIC ${LUA_SRCS} ${LUA_HDRS})
+target_link_libraries(LuaxLibStatic
     ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY})
-set_target_properties(LuaLibStatic
+set_target_properties(LuaxLibStatic
     PROPERTIES
-        OUTPUT_NAME lua)
+        OUTPUT_NAME lua${LUAX_SUFFIX})
 
 ### executables
 # compiler
-add_executable(LuaCompiler ${LUAC_CLI_SRCS})
-target_link_libraries(LuaCompiler
-    LuaLib
+add_executable(LuaxCompiler ${LUAC_CLI_SRCS})
+target_link_libraries(LuaxCompiler
+    LuaxLib
     ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY})
-set_target_properties(LuaCompiler
+set_target_properties(LuaxCompiler
     PROPERTIES
-        OUTPUT_NAME luac)
+        OUTPUT_NAME lua${LUAX_SUFFIX}c)
 
 # interpreter
-add_executable(LuaInterpreter ${LUA_CLI_SRCS})
-target_link_libraries(LuaInterpreter
+add_executable(LuaxInterpreter ${LUA_CLI_SRCS})
+target_link_libraries(LuaxInterpreter
     ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}
     ${LUA_READLINE_LIBRARY}
-    LuaLib)
-set_target_properties(LuaInterpreter
+    LuaxLib)
+set_target_properties(LuaxInterpreter
     PROPERTIES
-        OUTPUT_NAME lua)
+        OUTPUT_NAME lua${LUAX_SUFFIX})
 
 # === Installation ===========================================================
 
 set(LUA_MULTILIB lib) #FIXME
 
-install(TARGETS LuaLib LuaLibStatic
+install(TARGETS LuaxLib LuaxLibStatic
     LIBRARY DESTINATION ${LUA_MULTILIB} COMPONENT "runtime"
     ARCHIVE DESTINATION ${LUA_MULTILIB} COMPONENT "development")
 
 install(FILES
         ${LUA_HDRS_INSTALL}
     COMPONENT "development"
-    DESTINATION include/lua/${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR})
+    DESTINATION include/lua${LUAX_SUFFIX}/${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR})

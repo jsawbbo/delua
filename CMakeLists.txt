@@ -6,7 +6,9 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE "LuaInitFlags.cmake")
 set(Lua_ENABLE_CPACK OFF)
 set(Lua_ENABLE_CTEST ON)
 
-project(Lua CXX C)
+project(Luax CXX C)
+
+get_directory_property(Luax_PARENT_DIR PARENT_DIRECTORY)
 
 # === Version ================================================================
 set(Lua_VERSION_MAJOR 5)
@@ -16,7 +18,7 @@ set(Lua_VERSION_PATCH 5)
 set(Lua_VERSION "${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}.${Lua_VERSION_PATCH}")
 set(Lua_RELEASE "${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}")
 
-message("Configured Lua ${Lua_VERSION}")
+message(STATUS "Lua version ${Lua_VERSION}")
 
 # === CMake Paths ============================================================
 list(APPEND CMAKE_MODULE_PATH "${Lua_SOURCE_DIR}/cmake")
@@ -90,6 +92,8 @@ set(LUAX_THREAD_WIN32 ${CMAKE_USE_WIN32_THREADS_INIT})
 set(LUAX_THREAD_PTHREADS ${CMAKE_USE_PTHREADS_INIT})
 set(LUAX_THREAD_PTHREADS_HP ${CMAKE_HP_PTHREADS_INIT})
 
+set(LUAX_SUFFIX "" CACHE STRING "Suffix appended to the name lua for libraries and executables.")
+
 # === Build ==================================================================
 include_directories(
     ${PROJECT_BINARY_DIR}/include
@@ -98,3 +102,8 @@ include_directories(
 add_subdirectory(cmake)
 add_subdirectory(src)
 
+# === Embedded ===============================================================
+if(Luax_PARENT_DIR)
+    message(STATUS "Building as sub-project...")
+    list(APPEND CMAKE_MODULE_PATH "${Lua_BINARY_DIR}/cmake")
+endif()
