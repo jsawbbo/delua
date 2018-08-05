@@ -783,28 +783,28 @@
 
 #if defined(_WIN32)
 #define LUA_PATH_DEFAULT_DEBUG \
-        "@Lua_SOURCE_DIR@" "\\src\\lua\\modules\\?.lua" \
+        "@PROJECT_SOURCE_DIR@" "\\share\\lua\\?.lua" \
         LUA_PATH_SEP \
-        "@Lua_SOURCE_DIR@" "\\src\\lua\\modules\\?\\init.lua" \
+        "@PROJECT_SOURCE_DIR@" "\\share\\lua\\?\\init.lua" \
         LUA_PATH_SEP \
         LUA_PATH_DEFAULT_STANDARD
 #define LUA_CPATH_DEFAULT_DEBUG \
         "@EXECUTABLE_OUTPUT_PATH@" "\\bin\\?.dll" \
         LUA_PATH_SEP \
-        "@Lua_SOURCE_DIR@" "\\bin\\?\\loadall.dll" \
+        "@EXECUTABLE_OUTPUT_PATH@" "\\bin\\?\\loadall.dll" \
         LUA_PATH_SEP \
         LUA_PATH_DEFAULT_STANDARD
 #else
 #define LUA_PATH_DEFAULT_DEBUG \
-        "@Lua_SOURCE_DIR@" "/src/lua/modules/?.lua" \
+        "@PROJECT_SOURCE_DIR@" "/share/lua/?.lua" \
         LUA_PATH_SEP \
-        "@Lua_SOURCE_DIR@" "/src/lua/modules/?/init.lua" \
+        "@PROJECT_SOURCE_DIR@" "/share/lua/?/init.lua" \
         LUA_PATH_SEP \
         LUA_PATH_DEFAULT_STANDARD
 #define LUA_CPATH_DEFAULT_DEBUG \
         "@EXECUTABLE_OUTPUT_PATH@" "/bin/?.so" \
         LUA_PATH_SEP \
-        "@Lua_SOURCE_DIR@" "/bin/?/loadall.so" \
+        "@EXECUTABLE_OUTPUT_PATH@" "/bin/?/loadall.so" \
         LUA_PATH_SEP \
         LUA_PATH_DEFAULT_STANDARD
 #endif
