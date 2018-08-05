@@ -1,5 +1,5 @@
 /*
-** $Id: luaconf.h,v 1.259.1.1 2017/04/19 17:29:57 roberto Exp $
+** $Id: luaconf.h.in $
 ** Configuration file for Lua
 ** See Copyright Notice in lua.h
 */
@@ -33,7 +33,7 @@
 ** ensure that all software connected to Lua will be compiled with the
 ** same configuration.
 */
-/* #define LUA_32BITS */
+#cmakedefine LUA_32BITS
 
 
 /*
@@ -41,36 +41,29 @@
 ** Define it if you want Lua to avoid the use of a few C99 features
 ** or Windows-specific features on Windows.
 */
-/* #define LUA_USE_C89 */
-
+#cmakedefine LUA_USE_C89
 
 /*
 ** By default, Lua on Windows use (some) specific Windows features
 */
-#if !defined(LUA_USE_C89) && defined(_WIN32) && !defined(_WIN32_WCE)
-#define LUA_USE_WINDOWS  /* enable goodies for regular Windows */
-#endif
+#cmakedefine LUA_USE_WINDOWS
+/*
+** Enable DLL support (on Windows).
+*/
+#cmakedefine LUA_DL_DLL
 
-
-#if defined(LUA_USE_WINDOWS)
-#define LUA_DL_DLL	/* enable support for DLL */
-#define LUA_USE_C89	/* broadly, Windows is C89 */
-#endif
-
-
-#if defined(LUA_USE_LINUX)
-#define LUA_USE_POSIX
-#define LUA_USE_DLOPEN		/* needs an extra library: -ldl */
-#define LUA_USE_READLINE	/* needs some extra libraries */
-#endif
-
-
-#if defined(LUA_USE_MACOSX)
-#define LUA_USE_POSIX
-#define LUA_USE_DLOPEN		/* MacOS does not need -ldl */
-#define LUA_USE_READLINE	/* needs an extra library: -lreadline */
-#endif
-
+/*
+@@ LUA_USE_POSIX Use posix features.
+*/
+#cmakedefine LUA_USE_POSIX
+/*
+@@ LUA_USE_DLOPEN Use dlopen (from dl-library).
+*/
+#cmakedefine LUA_USE_DLOPEN
+/*
+@@ LUA_USE_READLINE Use readline features.
+*/
+#cmakedefine LUA_USE_READLINE
 
 /*
 @@ LUA_C89_NUMBERS ensures that Lua uses the largest types available for
@@ -200,7 +193,7 @@
 
 #else			/* }{ */
 
-#define LUA_ROOT	"/usr/local/"
+#define LUA_ROOT	"@LUA_ROOT@"
 #define LUA_LDIR	LUA_ROOT "share/lua/" LUA_VDIR "/"
 #define LUA_CDIR	LUA_ROOT "lib/lua/" LUA_VDIR "/"
 #define LUA_PATH_DEFAULT  \
@@ -782,9 +775,90 @@
 ** without modifying the main part of the file.
 */
 
+/*
+** Default paths for debugging.
+*/
+#if !defined(_WIN32) && defined(DEBUG)
 
+#undef LUA_PATH_DEFAULT
+#undef LUA_CPATH_DEFAULT
 
+#define LUA_PATH_DEFAULT_NDEBUG  \
+		LUA_LDIR"?.lua;"  LUA_LDIR"?/init.lua;" \
+		LUA_CDIR"?.lua;"  LUA_CDIR"?/init.lua;" \
+		"./?.lua;" "./?/init.lua"
+#define LUA_CPATH_DEFAULT_NDEBUG \
+		LUA_CDIR"?.so;" LUA_CDIR"loadall.so;" "./?.so"
 
+#define LUA_PATH_DEFAULT_DEBUG \
+        "@SCRIPT_OUTPUT_PATH@" "/lua/?.lua" \
+        LUA_PATH_SEP \
+        "@SCRIPT_OUTPUT_PATH@" "/lua/?/init.lua" \
+        LUA_PATH_SEP \
+        LUA_PATH_DEFAULT_NDEBUG
+#define LUA_CPATH_DEFAULT_DEBUG \
+        "@EXECUTABLE_OUTPUT_PATH@" "/bin/?.so" \
+        LUA_PATH_SEP \
+        "@EXECUTABLE_OUTPUT_PATH@" "/bin/?/loadall.so" \
+        LUA_PATH_SEP \
+        LUA_PATH_DEFAULT_NDEBUG
+
+#include <unistd.h>
+#include <string.h>
+static inline int __lua_exec_in_buildpath() {
+    char cwd[4096];
+    getcwd(cwd, 4096);
+    return 0 == strncmp(cwd, "@EXECUTABLE_OUTPUT_PATH@", 4096);
+}
+
+#define LUA_PATH_DEFAULT ({ __lua_exec_in_buildpath() ? LUA_PATH_DEFAULT_DEBUG : LUA_PATH_DEFAULT_NDEBUG; })
+#define LUA_CPATH_DEFAULT ({ __lua_exec_in_buildpath() ? LUA_CPATH_DEFAULT_DEBUG : LUA_CPATH_DEFAULT_NDEBUG; })
+
+#endif /* !defined(_WIN32) && defined(DEBUG) */
+
+#cmakedefine LUA_HAS_USER_H
+#if defined(LUA_HAS_USER_H)
+#define LUA_USER_H @LUA_USER_H@
+#endif
+
+#cmakedefine LUA_HAS_USER_GLOBAL_STATE
+#define LUA_USER_GLOBAL_STATE @LUA_USER_GLOBAL_STATE@
+
+/*
+** Lua was compiled with a C++ compiler
+*/
+#cmakedefine LUA_CXX
+
+#if defined(LUA_CXX)
+
+#undef LUA_API
+#if defined(LUA_BUILD_AS_DLL)
+#if defined(LUA_CORE) || defined(LUA_LIB)
+#define LUA_API __declspec(dllexport) /* FIXME */
+#else
+#define LUA_API __declspec(dllimport) /* FIXME */
+#endif
+#else
+#define LUA_API		extern "C"
+#endif
+
+#include <stdexcept>
+
+#if !defined(LUAI_THROW)
+#define LUAI_THROW(L,c) \
+    throw std::exception()
+#endif
+
+#define LUAI_TRY(L,c,a) \
+    try { a } \
+    catch(...) { \
+        if ((c)->status == 0) \
+            throw; \
+    }
+
+#define luai_jmpbuf \
+    int  /* dummy variable */
 
 #endif
 
+#endif

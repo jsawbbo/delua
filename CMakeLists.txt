@@ -3,12 +3,9 @@ cmake_minimum_required(VERSION 3.10)
 # === Project ================================================================
 set(CMAKE_USER_MAKE_RULES_OVERRIDE "LuaInitFlags.cmake")
 
-set(Lua_ENABLE_CPACK OFF)
-set(Lua_ENABLE_CTEST ON)
+project(Lua CXX C)
 
-project(Luax CXX C)
-
-get_directory_property(Luax_PARENT_DIR PARENT_DIRECTORY)
+get_directory_property(Lua_PARENT_DIR PARENT_DIRECTORY)
 
 # === Version ================================================================
 set(Lua_VERSION_MAJOR 5)
@@ -22,13 +19,17 @@ message(STATUS "Lua version ${Lua_VERSION}")
 
 # === CMake Paths ============================================================
 list(APPEND CMAKE_MODULE_PATH "${Lua_SOURCE_DIR}/cmake")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CACHE INTERNAL "CMake module path." FORCE)
 
+# single library and executable output path
 if(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
     set(EXECUTABLE_OUTPUT_PATH ${Lua_BINARY_DIR}/bin)
 endif(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
 if(NOT DEFINED LIBRARY_OUTPUT_PATH)
     set(LIBRARY_OUTPUT_PATH ${Lua_BINARY_DIR}/bin)
 endif(NOT DEFINED LIBRARY_OUTPUT_PATH)
+
+# script output path
 if(NOT DEFINED SCRIPT_OUTPUT_PATH)
     set(SCRIPT_OUTPUT_PATH ${Lua_BINARY_DIR}/share)
 endif(NOT DEFINED SCRIPT_OUTPUT_PATH)
@@ -68,31 +69,19 @@ endif(Threads_FOUND)
 # === Options ================================================================
 # lua
 option(LUA_32BITS "Enable 32-bit integers and 32-bit floats (default: auto-detected)." OFF)
-option(LUA_USE_C89 "Use of ISO-C89 features only." OFF)
+option(LUA_USE_C89 "Use of ISO-C89 features only." ${LUA_USE_C89_INIT})
 option(LUA_USE_POSIX "Use Posix features." ${LUA_USE_POSIX_INIT})
 option(LUA_USE_DLOPEN "Use dlopen (requires dl library, auto-detected)." ${LUA_USE_DLOPEN_INIT})
 option(LUA_USE_READLINE "Use readline features (requires readline library, auto-detected)." ${LUA_USE_READLINE_INIT})
 
-set(LUA_ROOT "${CMAKE_INSTALL_PREFIX}" CACHE PATH "Root installation path.")
-
 #FIXME there are more options in luaconf.h.in that should be added here
 
-# extensions
-option(LUAX_EXCEPTION_ENABLE "Enable C++ exceptions." ON)
-set(LUAX_EXCEPTION_THROW "lua::except(L,(c)->status)" CACHE STRING "Exception to throw.")
-
-if(Threads_FOUND)
-    option(LUAX_THREAD_LOCKING "Enable thread-locking of the global (internal) state." ON)
-else(Threads_FOUND)
-    set(LUAX_THREAD_LOCKING false CACHE INTERNAL "Enable thread-locking of the global (internal) state." FORCE)
-endif(Threads_FOUND)
-
-set(LUAX_THREAD_SPROC ${CMAKE_USE_SPROC_INIT})
-set(LUAX_THREAD_WIN32 ${CMAKE_USE_WIN32_THREADS_INIT})
-set(LUAX_THREAD_PTHREADS ${CMAKE_USE_PTHREADS_INIT})
-set(LUAX_THREAD_PTHREADS_HP ${CMAKE_HP_PTHREADS_INIT})
-
-set(LUAX_SUFFIX "" CACHE STRING "Suffix appended to the name lua for libraries and executables.")
+# delua modifications
+set(LUA_ROOT "${CMAKE_INSTALL_PREFIX}" CACHE PATH "Root installation path.")
+set(LUA_USER_H "${LUA_USER_H_INIT}" CACHE STRING "User header.")
+set(LUA_USER_GLOBAL_STATE "${LUA_USER_GLOBAL_STATE_INIT}" CACHE STRING "User entry in global_State.")
+set(LUA_NAME "${LUA_NAME_INIT}" CACHE STRING "The name used for libraries and executables (lib${LUA_NAME} etc.).")
+set(LUA_CXX "${LUA_CXX_INIT}" CACHE BOOL "Compile as C++ source.")
 
 # === Build ==================================================================
 include_directories(
@@ -103,9 +92,8 @@ add_subdirectory(cmake)
 add_subdirectory(src)
 
 # === Embedded ===============================================================
-if(Luax_PARENT_DIR)
+if(Lua_PARENT_DIR)
     message(STATUS "Building as sub-project (${Luax_BINARY_DIR})...")
-    list(APPEND CMAKE_MODULE_PATH "${Luax_BINARY_DIR}/cmake")
-
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} PARENT_SCOPE)
+    list(APPEND CMAKE_MODULE_PATH "${Lua_BINARY_DIR}/cmake")
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CACHE INTERNAL "CMake module path." FORCE)
 endif()

@@ -1,0 +1,147 @@
+# === Config =================================================================
+set(LUA_LANGUAGE_C false)
+if("C" IN_LIST LUA_LANGUAGES)
+    set(LUA_LANGUAGE_C true)
+endif("C" IN_LIST LUA_LANGUAGES)
+
+set(LUA_LANGUAGE_CXX false)
+if("CXX" IN_LIST LUA_LANGUAGES)
+    set(LUA_LANGUAGE_CXX true)
+endif("CXX" IN_LIST LUA_LANGUAGES)
+
+set(LUA_HAS_USER_H false)
+if(NOT LUA_USER_H STREQUAL "")
+    set(LUA_HAS_USER_H true)
+endif(NOT LUA_USER_H STREQUAL "")
+
+set(LUA_HAS_USER_GLOBAL_STATE false)
+if(NOT LUA_USER_GLOBAL_STATE STREQUAL "")
+    set(LUA_HAS_USER_GLOBAL_STATE true)
+endif(NOT LUA_USER_GLOBAL_STATE STREQUAL "")
+
+set(luaconf_h ${Lua_BINARY_DIR}/src/luaconf.h)
+configure_file(luaconf.h.in ${luaconf_h})
+set_source_files_properties(${luaconf_h}
+    PROPERTIES
+        GENERATED TRUE)
+
+set(LUA_HDRS_INSTALL
+    ${luaconf_h}
+    lua.h lualib.h lauxlib.h
+    lua.hpp)
+
+# === Build ==================================================================
+set(LUALIB_HDRS
+    ${LUA_HDRS_INSTALL}
+    lapi.h
+    lcode.h
+    lctype.h
+    ldebug.h
+    ldo.h
+    lfunc.h
+    lgc.h
+    llex.h
+    llimits.h
+    lmem.h
+    lobject.h
+    lopcodes.h
+    lparser.h
+    lprefix.h
+    lstate.h
+    lstring.h
+    ltable.h
+    ltm.h
+    lundump.h
+    lvm.h
+    lzio.h)
+
+set(LUALIB_SRCS
+    lapi.c
+    lauxlib.c
+    lbaselib.c
+    lbitlib.c
+    lcode.c
+    lcorolib.c
+    lctype.c
+    ldblib.c
+    ldebug.c
+    ldo.c
+    ldump.c
+    lfunc.c
+    lgc.c
+    linit.c
+    liolib.c
+    llex.c
+    lmathlib.c
+    lmem.c
+    loadlib.c
+    lobject.c
+    lopcodes.c
+    loslib.c
+    lparser.c
+    lstate.c
+    lstring.c
+    lstrlib.c
+    ltable.c
+    ltablib.c
+    ltm.c
+    lundump.c
+    lutf8lib.c
+    lvm.c
+    lzio.c)
+
+set(LUA_SRCS
+    lua.c)
+
+set(LUAC_SRCS
+    ldump.c lopcodes.c luac.c)
+
+include_directories(${Lua_BINARY_DIR}/src)
+
+if(LUA_CXX)
+    set_source_files_properties(${LUALIB_SRCS} ${LUALIB_HDRS} ${LUA_SRCS} ${LUAC_SRCS}
+        PROPERTIES
+            LANGUAGE CXX)
+endif(LUA_CXX)
+
+add_library(LuaLib SHARED ${LUALIB_SRCS} ${LUBLIB_HDRS})
+target_link_libraries(LuaLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY})
+set_target_properties(LuaLib
+    PROPERTIES
+        OUTPUT_NAME ${LUA_NAME}
+        VERSION ${Lua_VERSION}
+        SOVERSION ${Lua_VERSION_MAJOR})
+
+add_library(LuaLibStatic STATIC ${LUALIB_SRCS} ${LUBLIB_HDRS})
+set_target_properties(LuaLibStatic
+    PROPERTIES
+        OUTPUT_NAME ${LUA_NAME})
+
+add_executable(LuaInterpreter ${LUA_SRCS})
+target_link_libraries(LuaInterpreter
+    ${CMAKE_DL_LIBS} ${LUA_READLINE_LIBRARY} ${LUA_MATH_LIBRARY}
+    LuaLib)
+set_target_properties(LuaInterpreter
+    PROPERTIES
+        OUTPUT_NAME ${LUA_NAME})
+
+add_executable(LuaCompiler ${LUAC_SRCS})
+target_link_libraries(LuaCompiler
+    ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}
+    LuaLib)
+set_target_properties(LuaCompiler
+    PROPERTIES
+        OUTPUT_NAME ${LUA_NAME}c)
+
+
+# === Installation ===========================================================
+install(FILES
+        ${LUA_HDRS_INSTALL}
+    DESTINATION ${LUA_ROOT}/include/lua/${Lua_RELEASE}
+    COMPONENT "development")
+
+# FIXME multilib support
+install(TARGETS LuaLib LuaLibStatic LuaInterpreter LuaCompiler
+    LIBRARY DESTINATION lib COMPONENT "runtime"
+    RUNTIME DESTINATION bin COMPONENT "runtime"
+    ARCHIVE DESTINATION lib COMPONENT "development")
