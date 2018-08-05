@@ -13,6 +13,13 @@
 
 
 /*
+** ===================================================================
+** Search for "@@" to find all configurable definitions.
+** ===================================================================
+*/
+
+
+/*
 ** {====================================================================
 ** System Configuration: macros to adapt (if needed) Lua to some
 ** particular platform, for instance compiling it with 32-bit numbers or
@@ -26,7 +33,7 @@
 ** ensure that all software connected to Lua will be compiled with the
 ** same configuration.
 */
-#cmakedefine LUA_32BITS
+/* #define LUA_32BITS */
 
 
 /*
@@ -34,7 +41,7 @@
 ** Define it if you want Lua to avoid the use of a few C99 features
 ** or Windows-specific features on Windows.
 */
-#cmakedefine LUA_USE_C89
+/* #define LUA_USE_C89 */
 
 
 /*
@@ -50,18 +57,20 @@
 #define LUA_USE_C89	/* broadly, Windows is C89 */
 #endif
 
-/*
-@@ LUA_USE_POSIX Use posix features.
-*/
-#cmakedefine LUA_USE_POSIX
-/*
-@@ LUA_USE_DLOPEN Use dlopen (from dl-library).
-*/
-#cmakedefine LUA_USE_DLOPEN
-/*
-@@ LUA_USE_READLINE Use readline features.
-*/
-#cmakedefine LUA_USE_READLINE
+
+#if defined(LUA_USE_LINUX)
+#define LUA_USE_POSIX
+#define LUA_USE_DLOPEN		/* needs an extra library: -ldl */
+#define LUA_USE_READLINE	/* needs some extra libraries */
+#endif
+
+
+#if defined(LUA_USE_MACOSX)
+#define LUA_USE_POSIX
+#define LUA_USE_DLOPEN		/* MacOS does not need -ldl */
+#define LUA_USE_READLINE	/* needs an extra library: -lreadline */
+#endif
+
 
 /*
 @@ LUA_C89_NUMBERS ensures that Lua uses the largest types available for
@@ -160,21 +169,11 @@
 #define LUA_PATH_MARK           "?"
 #define LUA_EXEC_DIR            "!"
 
-/*
-@@ LUA_DIRSEP is the directory separator (for submodules).
-** CHANGE it if your machine does not use "/" as the directory separator
-** and is not Windows. (On Windows Lua automatically uses "\".)
-*/
-#if defined(_WIN32)
-#define LUA_DIRSEP  "\\"
-#else
-#define LUA_DIRSEP  "/"
-#endif
 
 /*
-@@ LUA_PATH_DEFAULT_STANDARD is the default path that Lua uses to look for
+@@ LUA_PATH_DEFAULT is the default path that Lua uses to look for
 ** Lua libraries.
-@@ LUA_CPATH_DEFAULT_STANDARD is the default path that Lua uses to look for
+@@ LUA_CPATH_DEFAULT is the default path that Lua uses to look for
 ** C libraries.
 ** CHANGE them if your machine has a non-conventional directory
 ** hierarchy or if you want to install your libraries in
@@ -189,31 +188,40 @@
 #define LUA_LDIR	"!\\lua\\"
 #define LUA_CDIR	"!\\"
 #define LUA_SHRDIR	"!\\..\\share\\lua\\" LUA_VDIR "\\"
-#define LUA_PATH_DEFAULT_STANDARD  \
+#define LUA_PATH_DEFAULT  \
 		LUA_LDIR"?.lua;"  LUA_LDIR"?\\init.lua;" \
 		LUA_CDIR"?.lua;"  LUA_CDIR"?\\init.lua;" \
 		LUA_SHRDIR"?.lua;" LUA_SHRDIR"?\\init.lua;" \
 		".\\?.lua;" ".\\?\\init.lua"
-#define LUA_CPATH_DEFAULT_STANDARD \
+#define LUA_CPATH_DEFAULT \
 		LUA_CDIR"?.dll;" \
 		LUA_CDIR"..\\lib\\lua\\" LUA_VDIR "\\?.dll;" \
 		LUA_CDIR"loadall.dll;" ".\\?.dll"
 
 #else			/* }{ */
 
-#define LUA_MULTILIBDIR "@LUA_MULTILIBDIR@"
-
-#define LUA_ROOT	"@LUA_ROOT@"
+#define LUA_ROOT	"/usr/local/"
 #define LUA_LDIR	LUA_ROOT "share/lua/" LUA_VDIR "/"
-#define LUA_CDIR	LUA_ROOT LUA_MULTILIBDIR "/lua/" LUA_VDIR "/"
-#define LUA_PATH_DEFAULT_STANDARD  \
+#define LUA_CDIR	LUA_ROOT "lib/lua/" LUA_VDIR "/"
+#define LUA_PATH_DEFAULT  \
 		LUA_LDIR"?.lua;"  LUA_LDIR"?/init.lua;" \
 		LUA_CDIR"?.lua;"  LUA_CDIR"?/init.lua;" \
 		"./?.lua;" "./?/init.lua"
-#define LUA_CPATH_DEFAULT_STANDARD \
+#define LUA_CPATH_DEFAULT \
 		LUA_CDIR"?.so;" LUA_CDIR"loadall.so;" "./?.so"
 #endif			/* } */
 
+
+/*
+@@ LUA_DIRSEP is the directory separator (for submodules).
+** CHANGE it if your machine does not use "/" as the directory separator
+** and is not Windows. (On Windows Lua automatically uses "\".)
+*/
+#if defined(_WIN32)
+#define LUA_DIRSEP	"\\"
+#else
+#define LUA_DIRSEP	"/"
+#endif
 
 /* }================================================================== */
 
@@ -243,7 +251,7 @@
 
 #else				/* }{ */
 
-#define LUA_API     extern
+#define LUA_API		extern
 
 #endif				/* } */
 
@@ -774,102 +782,9 @@
 ** without modifying the main part of the file.
 */
 
-/*
-@@ LUA_PATH_DEFAULT_DEBUG is the default path that Lua uses to look for
-** Lua libraries when compiled with DEBUG flag.
-@@ LUA_CPATH_DEFAULT_DEBUG is the default path that Lua uses to look for
-** C libraries when compiled with DEBUG flag.
-*/
 
-#if defined(_WIN32)
-#define LUA_PATH_DEFAULT_DEBUG \
-        "@SCRIPT_OUTPUT_PATH@" "\\lua\\?.lua" \
-        LUA_PATH_SEP \
-        "@SCRIPT_OUTPUT_PATH@" "\\lua\\?\\init.lua" \
-        LUA_PATH_SEP \
-        LUA_PATH_DEFAULT_STANDARD
-#define LUA_CPATH_DEFAULT_DEBUG \
-        "@EXECUTABLE_OUTPUT_PATH@" "\\bin\\?.dll" \
-        LUA_PATH_SEP \
-        "@EXECUTABLE_OUTPUT_PATH@" "\\bin\\?\\loadall.dll" \
-        LUA_PATH_SEP \
-        LUA_PATH_DEFAULT_STANDARD
-#else
-#define LUA_PATH_DEFAULT_DEBUG \
-        "@SCRIPT_OUTPUT_PATH@" "/lua/?.lua" \
-        LUA_PATH_SEP \
-        "@SCRIPT_OUTPUT_PATH@" "/lua/?/init.lua" \
-        LUA_PATH_SEP \
-        LUA_PATH_DEFAULT_STANDARD
-#define LUA_CPATH_DEFAULT_DEBUG \
-        "@EXECUTABLE_OUTPUT_PATH@" "/bin/?.so" \
-        LUA_PATH_SEP \
-        "@EXECUTABLE_OUTPUT_PATH@" "/bin/?/loadall.so" \
-        LUA_PATH_SEP \
-        LUA_PATH_DEFAULT_STANDARD
-#endif
 
-/*
-** When compiled with DEBUG flag, lua will search the project binary directory
-** if current working directory is inside the build path.
-*/
-#if defined(DEBUG)
 
-#if defined(_WIN32)
-inline int __lua_check_buildpath() {
-    // FIXME
-    return 1;
-}
-#else
-#include <unistd.h>
-#include <string.h>
-static inline int __lua_check_buildpath() {
-    char cwd[4096];
-    getcwd(cwd, 4096);
-    return 0 == strncmp(cwd, "/home/jsaw/Workspace/Build/luax", 4096);
-}
-#endif
-
-#define LUA_PATH_DEFAULT ({ __lua_check_buildpath() ? LUA_PATH_DEFAULT_DEBUG : LUA_PATH_DEFAULT_STANDARD; })
-#define LUA_CPATH_DEFAULT ({ __lua_check_buildpath() ? LUA_CPATH_DEFAULT_DEBUG : LUA_CPATH_DEFAULT_STANDARD; })
-#else
-#define LUA_PATH_DEFAULT LUA_PATH_DEFAULT_STANDARD
-#define LUA_CPATH_DEFAULT LUA_CPATH_DEFAULT_STANDARD
-#endif
-
-#if defined(LUA_USER_H)
-#warning "LUA_USER_H cannot be used as it is re-defined with Luax."
-#undef LUA_USER_H
-#endif
-#define LUA_USER_H "luaext.h"
-
-#if defined(__cplusplus)
-#undef LUA_API
-#define LUA_API     extern "C"
-#endif
-
-/*
-@@ LUAX_EXCEPTION_ENABLE Use exceptions when compiling C++.
-*/
-#cmakedefine LUAX_EXCEPTION_ENABLE
-
-/*
-@@ LUAX_EXCEPTION_THROW Exceptions to use (when enabled).
-*/
-#define LUAX_EXCEPTION_THROW(L,c) @LUAX_EXCEPTION_THROW@
-
-/*
-@@ LUAX_THREAD_LOCKING Enable global state (global_State) locking.
-*/
-#cmakedefine LUAX_THREAD_LOCKING
-
-/*
-** Type of threads.
-*/
-#cmakedefine01 LUAX_THREAD_SPROC
-#cmakedefine01 LUAX_THREAD_WIN32
-#cmakedefine01 LUAX_THREAD_PTHREADS
-#cmakedefine01 LUAX_THREAD_PTHREADS_HP
 
 #endif
 
