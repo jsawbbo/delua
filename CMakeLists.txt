@@ -104,6 +104,8 @@ add_subdirectory(src)
 
 # === Embedded ===============================================================
 if(Luax_PARENT_DIR)
-    message(STATUS "Building as sub-project...")
-    list(APPEND CMAKE_MODULE_PATH "${Lua_BINARY_DIR}/cmake")
+    message(STATUS "Building as sub-project (${Luax_BINARY_DIR})...")
+    list(APPEND CMAKE_MODULE_PATH "${Luax_BINARY_DIR}/cmake")
+
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} PARENT_SCOPE)
 endif()
