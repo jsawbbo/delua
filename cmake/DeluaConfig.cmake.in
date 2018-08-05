@@ -1,31 +1,47 @@
 if(NOT Lua_PARENT_DIR)
 	# Native build.
-	message("NOT IMPLEMENTED")
+    set(LUA_FOUND true)
+    set(LUA_VERSION_STRING "@Lua_VERSION@")
+    set(LUA_VERSION_MAJOR "@Lua_VERSION_MAJOR@")
+    set(LUA_VERSION_MINOR "@Lua_VERSION_MINOR@")
+    set(LUA_VERSION_PATCH "@Lua_VERSION_PATCH@")
+
+    set(LUA_INCLUDE_DIR "@CMAKE_INSTALL_PREFIX@/include") # FIXME
+    set(LUA_LIBRARIES "Lua::Lib")
+
+    # Delua targets FIXME
+    add_library(Lua::Lib INTERFACE IMPORTED)
+    set_property(TARGET Lua::Lib
+        PROPERTY
+            INTERFACE_LINK_LIBRARIES "LuaLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}"
+            INCLUDE_DIRECTORIES "${Lua_SOURCE_DIR}/src;${Lua_BINARY_DIR}/include")
+
+    add_library(Lua::LibStatic INTERFACE IMPORTED)
+    set_property(TARGET Lua::LibStatic
+        PROPERTY
+            INTERFACE_LINK_LIBRARIES "LuaLibStatic ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}"
+            INCLUDE_DIRECTORIES "${Lua_SOURCE_DIR}/src;${Lua_BINARY_DIR}/include")
 
 else(NOT Lua_PARENT_DIR)
+    # Sub-project build.
+    set(LUA_FOUND true)
+    set(LUA_VERSION_STRING ${Lua_VERSION})
+    set(LUA_VERSION_MAJOR ${Lua_VERSION_MAJOR})
+    set(LUA_VERSION_MINOR ${Lua_VERSION_MINOR})
+    set(LUA_VERSION_PATCH ${Lua_VERSION_PATCH})
+    set(LUA_INCLUDE_DIR "${Lua_SOURCE_DIR}/src;${Lua_BINARY_DIR}/include")
+    set(LUA_LIBRARIES "Lua::Lib")
 
-    # Luax is embedded in build
-    if(NOT Luax_FOUND)
-        set(Luax_FOUND true)
+    # Delua targets
+    add_library(Lua::Lib INTERFACE IMPORTED)
+    set_property(TARGET Lua::Lib
+        PROPERTY
+            INTERFACE_LINK_LIBRARIES "LuaLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}"
+            INCLUDE_DIRECTORIES "${Lua_SOURCE_DIR}/src;${Lua_BINARY_DIR}/include")
 
-        set(Luax_INCLUDE_DIR "${Luax_SOURCE_DIR}/src;${Luax_BINARY_DIR}/include")
-
-        add_library(Luax::Lib INTERFACE IMPORTED)
-        set_property(TARGET Luax::Lib
-            PROPERTY
-                INTERFACE_LINK_LIBRARIES "LuaxLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}"
-                INCLUDE_DIRECTORIES ${Luax_INCLUDE_DIR})
-
-        add_library(Luax::LibStatic INTERFACE IMPORTED)
-        set_property(TARGET Luax::LibStatic
-            PROPERTY
-                INTERFACE_LINK_LIBRARIES "LuaxLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}"
-                INCLUDE_DIRECTORIES ${Luax_INCLUDE_DIR})
-
-        add_library(Luax::CxxLib INTERFACE IMPORTED)
-        set_property(TARGET Luax::CxxLib
-            PROPERTY
-                INTERFACE_LINK_LIBRARIES "LuaxLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}"
-                INCLUDE_DIRECTORIES ${Luax_INCLUDE_DIR})
-    endif(NOT Luax_FOUND)
+    add_library(Lua::LibStatic INTERFACE IMPORTED)
+    set_property(TARGET Lua::LibStatic
+        PROPERTY
+            INTERFACE_LINK_LIBRARIES "LuaLibStatic ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}"
+            INCLUDE_DIRECTORIES "${Lua_SOURCE_DIR}/src;${Lua_BINARY_DIR}/include")
 endif(NOT Lua_PARENT_DIR)

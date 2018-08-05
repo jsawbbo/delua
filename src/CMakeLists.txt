@@ -5,7 +5,6 @@ else(LUA_LANGUAGE STREQUAL "CXX")
     set(__lua_cplusplus false)
 endif(LUA_LANGUAGE STREQUAL "CXX")
 
-
 set(LUA_HAS_USER_H false)
 if(NOT LUA_USER_H STREQUAL "")
     set(LUA_HAS_USER_H true)
