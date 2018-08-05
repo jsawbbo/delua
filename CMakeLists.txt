@@ -27,6 +27,9 @@ endif(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
 if(NOT DEFINED LIBRARY_OUTPUT_PATH)
     set(LIBRARY_OUTPUT_PATH ${Lua_BINARY_DIR}/bin)
 endif(NOT DEFINED LIBRARY_OUTPUT_PATH)
+if(NOT DEFINED SCRIPT_OUTPUT_PATH)
+    set(SCRIPT_OUTPUT_PATH ${Lua_BINARY_DIR}/share)
+endif(NOT DEFINED SCRIPT_OUTPUT_PATH)
 
 # === Config =================================================================
 # posix features
