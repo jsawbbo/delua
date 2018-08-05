@@ -854,11 +854,22 @@ static inline int __lua_check_buildpath() {
 #cmakedefine LUAX_EXCEPTION_ENABLE
 
 /*
-@@ LUAX_EXCEPTION_THROW Use exceptions when compiling C++.
+@@ LUAX_EXCEPTION_THROW Exceptions to use (when enabled).
 */
 #define LUAX_EXCEPTION_THROW(L,c) @LUAX_EXCEPTION_THROW@
 
+/*
+@@ LUAX_THREAD_LOCKING Enable global state (global_State) locking.
+*/
+#cmakedefine LUAX_THREAD_LOCKING
 
+/*
+** Type of threads.
+*/
+#cmakedefine01 LUAX_THREAD_SPROC
+#cmakedefine01 LUAX_THREAD_WIN32
+#cmakedefine01 LUAX_THREAD_PTHREADS
+#cmakedefine01 LUAX_THREAD_PTHREADS_HP
 
 #endif
 

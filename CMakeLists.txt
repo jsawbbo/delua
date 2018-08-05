@@ -6,7 +6,7 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE "LuaInitFlags.cmake")
 set(Lua_ENABLE_CPACK OFF)
 set(Lua_ENABLE_CTEST ON)
 
-project(Lua C;CXX)
+project(Lua CXX C)
 
 # === Version ================================================================
 set(Lua_VERSION_MAJOR 5)
@@ -29,23 +29,36 @@ if(NOT DEFINED LIBRARY_OUTPUT_PATH)
 endif(NOT DEFINED LIBRARY_OUTPUT_PATH)
 
 # === Config =================================================================
+# posix features
 set(LUA_USE_POSIX_INIT OFF)
 if(UNIX)
     set(LUA_USE_POSIX_INIT ON)
 endif(UNIX)
 
+# dynamic load (dl) library
 set(LUA_USE_DLOPEN_INIT OFF)
 if(CMAKE_DL_LIBS)
     set(LUA_USE_DLOPEN_INIT ON)
 endif(CMAKE_DL_LIBS)
 
+# readline
 find_library(LUA_READLINE_LIBRARY readline)
 set(LUA_USE_READLINE_INIT OFF)
 if(LUA_READLINE_LIBRARY)
     set(LUA_USE_READLINE_INIT ON)
 endif(LUA_READLINE_LIBRARY)
 
+# math lib
 find_library(LUA_MATH_LIBRARY m)
+
+# threads
+set(CMAKE_THREAD_PREFER_PTHREAD true)
+find_package(Threads)
+if(Threads_FOUND)
+    set(LUA_THREAD_LIBRARY Threads::Threads)
+else(Threads_FOUND)
+    set(LUA_THREAD_LIBRARY)
+endif(Threads_FOUND)
 
 # === Options ================================================================
 # lua
@@ -62,6 +75,17 @@ set(LUA_ROOT "${CMAKE_INSTALL_PREFIX}" CACHE PATH "Root installation path.")
 # extensions
 option(LUAX_EXCEPTION_ENABLE "Enable C++ exceptions." ON)
 set(LUAX_EXCEPTION_THROW "lua::except(L,(c)->status)" CACHE STRING "Exception to throw.")
+
+if(Threads_FOUND)
+    option(LUAX_THREAD_LOCKING "Enable thread-locking of the global (internal) state." ON)
+else(Threads_FOUND)
+    set(LUAX_THREAD_LOCKING false CACHE INTERNAL "Enable thread-locking of the global (internal) state." FORCE)
+endif(Threads_FOUND)
+
+set(LUAX_THREAD_SPROC ${CMAKE_USE_SPROC_INIT})
+set(LUAX_THREAD_WIN32 ${CMAKE_USE_WIN32_THREADS_INIT})
+set(LUAX_THREAD_PTHREADS ${CMAKE_USE_PTHREADS_INIT})
+set(LUAX_THREAD_PTHREADS_HP ${CMAKE_HP_PTHREADS_INIT})
 
 # === Build ==================================================================
 include_directories(

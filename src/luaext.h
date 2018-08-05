@@ -9,10 +9,31 @@
 
 #if defined(__cplusplus)
 
+/* load lua::except from luaxx.hpp */
 #define __lua_exception_only
-#include "luaxx.hpp"
+#include <luaxx.hpp>
 #undef luaxx_hpp
 #undef __lua_exception_only
+
+/* threads */
+#if defined(LUAX_THREAD_LOCKING)
+#	if defined(__cplusplus)
+#		include <mutex>
+#	else
+#		if LUAX_THREAD_PTHREADS == 1
+			// FIXME check LUAX_THREAD_PTHREADS_HP?
+#			include <pthread.h>
+#		elif LUAX_THREAD_SPROC == 1
+#			error "SPROC threads not (yet) supported."
+#		elif LUAX_THREAD_WIN32 == 1
+#			error "WIN32 threads not (yet) supported."
+#		else
+#			error "Configuration error: thread locking was enabled, but type is unknown."
+#		endif
+#	endif
+#endif
+
+/* =================================================================== */
 
 #if defined(LUAX_EXCEPTION_ENABLE)
 
@@ -29,38 +50,30 @@
 #	define luai_jmpbuf \
     int  /* dummy variable */
 
-#endif
+#endif // LUAX_EXCEPTION_ENABLE
 
+/* =================================================================== */
 
-
-
-#endif
-
-#if 0
-#if defined(EXPERY_LUA_MULTITHREADED) && (EXPERY_LUA_MULTITHREADED == 1)
-
+#if defined(LUAX_THREAD_LOCKING)
 #	if defined(__cplusplus)
-#		include <mutex>
+#		define 	__LUAX_MUTEX std::mutex mutex;
 #	else
-#		if defined(_POSIX_THREADS)
-# 			warning "CODE UNTESTED"
-#			include <pthread.h>
+#		if LUAX_THREAD_PTHREADS == 1
+#			define 	__LUAX_MUTEX pthread_mutex_t mutex;
+#		elif LUAX_THREAD_SPROC == 1
+#			error "SPROC threads not (yet) supported."
+#		elif LUAX_THREAD_WIN32 == 1
+#			error "WIN32 threads not (yet) supported."
 #		else
-#			error "UNKNOWN THREAD TYPE"
+#			error "Configuration error: thread locking was enabled, but type is unknown."
 #		endif
 #	endif
+#endif
 
 struct global_UserState {
-#	if defined(__cplusplus)
-	std::mutex __mutex;
-#	else
-#		if defined(_POSIX_THREADS)
-	pthread_mutex_t mutex;
-#		endif
-#	endif
+	__LUAX_MUTEX;
 };
-
-#	define LUA_USER_GLOBAL_STATE struct global_UserState
+#define LUA_USER_GLOBAL_STATE struct global_UserState
 
 #   define lua_lock(L)                     luaU_lock(L->l_G->userstate)
 #   define lua_unlock(L)                   luaU_unlock(L->l_G->userstate)
@@ -74,80 +87,66 @@ struct global_UserState {
 #   define luai_userstateyield(L,n)        ((void)L)
 
 static inline void luaU_lock(struct global_UserState *U) {
-#if defined(__cplusplus)
-	U->__mutex.lock();
-#else
-#		if defined(_POSIX_THREADS)
+#	if defined(__cplusplus)
+	U->mutex.lock();
+#	else
+#		if LUAX_THREAD_PTHREADS == 1
 	pthread_mutex_lock(&U->mutex);
-#		else
-#			error "UNKNOWN THREAD TYPE"
+#		elif LUAX_THREAD_SPROC == 1
+#		elif LUAX_THREAD_WIN32 == 1
 #		endif
-#endif
+#	endif
 }
 
 static inline void luaU_unlock(struct global_UserState *U) {
-#if defined(__cplusplus)
-	U->__mutex.unlock();
-#else
-#		if defined(_POSIX_THREADS)
+#	if defined(__cplusplus)
+	U->mutex.unlock();
+#	else
+#		if LUAX_THREAD_PTHREADS == 1
 	pthread_mutex_unlock(&U->mutex);
-#		else
-#			error "UNKNOWN THREAD TYPE"
+#		elif LUAX_THREAD_SPROC == 1
+#		elif LUAX_THREAD_WIN32 == 1
 #		endif
-#endif
+#	endif
 }
 
 static inline void luaU_userstateopen(struct global_UserState **U) {
-#if defined(__cplusplus)
+#	if defined(__cplusplus)
 	if (*U == NULL)
 		*U = new global_UserState;
-#else
+#	else
 	if (*U == NULL) {
-		*U = cmalloc(sizeof(struct global_UserState));
+		*U = ::cmalloc(sizeof(struct global_UserState));
 		assert(*U ~= NULL);
 
-#		if defined(_POSIX_THREADS)
-		pthread_mutex_init(&(*U->mutex));
+#		if LUAX_THREAD_PTHREADS == 1
+	pthread_mutex_init(&(*U->mutex));
+#		elif LUAX_THREAD_SPROC == 1
+#		elif LUAX_THREAD_WIN32 == 1
 #		else
-#			error "UNKNOWN THREAD TYPE"
+#			error "Configuration error: thread locking was enabled, but type is unknown."
 #		endif
-	}
-#endif
+#	endif
 }
 
 static inline void luaU_userstateclose(struct global_UserState **U) {
-#if defined(__cplusplus)
 	if (*U != NULL) {
+#	if defined(__cplusplus)
 		delete (*U);
+#	else
+#		if LUAX_THREAD_PTHREADS == 1
+		pthread_mutex_destroy(&(*U->mutex));
+		::free(*U)
+#		elif LUAX_THREAD_SPROC == 1
+#		elif LUAX_THREAD_WIN32 == 1
+#		endif
+#	endif
 		*U = NULL;
 	}
-#else
-	if (*U != NULL) {
-#		if defined(_POSIX_THREADS)
-		pthread_mutex_destroy(&(*U->mutex));
-#		else
-#			error "UNKNOWN THREAD TYPE"
-#		endif
-		*U = 0;
-	}
-#endif
 }
 
-#elif // defined(EXPERY_LUA_MULTITHREADED) && (EXPERY_LUA_MULTITHREADED == 1)
+#endif // LUAX_THREAD_LOCKING
 
-#   define lua_lock(L)                     ((void)L)
-#   define lua_unlock(L)                   ((void)L)
-#   define luai_threadyield(L)             {lua_unlock(L); lua_lock(L);}
-
-#   define luai_userstateopen(L)           ((void)L)
-#   define luai_userstateclose(L)          ((void)L)
-#   define luai_userstatethread(L,L1)      ((void)L)
-#   define luai_userstatefree(L,L1)        ((void)L)
-#   define luai_userstateresume(L,n)       ((void)L)
-#   define luai_userstateyield(L,n)        ((void)L)
-
-#endif // EXPERY_LUA_MULTITHREADED
-
-#endif
+/* =================================================================== */
 
 #endif
