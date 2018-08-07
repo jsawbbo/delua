@@ -1,4 +1,4 @@
-set(DELUA_CONFIG_CMAKE ${Lua_BINARY_DIR}/cmake/DeluaConfig.cmake)
+set(DELUA_CONFIG_CMAKE ${Lua_BINARY_DIR}/cmake/DeluaConfig.cmake @ONLY)
 configure_file(DeluaConfig.cmake.in ${DELUA_CONFIG_CMAKE})
 
 if(NOT Lua_PARENT_DIR)

@@ -83,6 +83,13 @@ set(LUA_USER_GLOBAL_STATE "${LUA_USER_GLOBAL_STATE_INIT}" CACHE STRING "User ent
 set(LUA_NAME "${LUA_NAME_INIT}" CACHE STRING "The name used for libraries and executables (lib${LUA_NAME} etc.).")
 set(LUA_LANGUAGE "${LUA_LANGUAGE_INIT}" CACHE STRING "Compile language (C or CXX).")
 
+# build options
+option(LUA_BUILD_STATIC "Build static library." ${LUA_BUILD_STATIC_INIT})
+option(LUA_BUILD_SHARED "Build shared library." ${LUA_BUILD_SHARED_INIT})
+option(LUA_BUILD_INTERPRETER "Build interpreter executable." ${LUA_BUILD_INTERPRETER_INIT})
+option(LUA_BUILD_COMPILER "Build compiler executable." ${LUA_BUILD_COMPILER_INIT})
+
+
 # === Build ==================================================================
 include_directories(
     ${PROJECT_BINARY_DIR}/include
