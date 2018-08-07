@@ -170,7 +170,7 @@ typedef struct global_State {
   struct Table *mt[LUA_NUMTAGS];  /* metatables for basic types */
   TString *strcache[STRCACHE_N][STRCACHE_M];  /* cache for strings in API */
 #if defined(LUA_HAS_USER_GLOBAL_STATE)
-  LUA_USER_GLOBAL_STATE userstate;
+  LUA_USER_GLOBAL_STATE *userstate;
 #endif
 } global_State;
 

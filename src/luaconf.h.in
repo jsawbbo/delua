@@ -822,7 +822,9 @@ static inline int __lua_exec_in_buildpath() {
 #endif
 
 #cmakedefine LUA_HAS_USER_GLOBAL_STATE
+#if defined(LUA_HAS_USER_GLOBAL_STATE)
 #define LUA_USER_GLOBAL_STATE @LUA_USER_GLOBAL_STATE@
+#endif
 
 /*
 ** Language used to compile Lua.
@@ -852,10 +854,8 @@ static inline int __lua_exec_in_buildpath() {
 
 #include <stdexcept>
 
-#if !defined(LUAI_THROW)
 #define LUAI_THROW(L,c) \
     throw std::exception()
-#endif
 
 #define LUAI_TRY(L,c,a) \
     try { a } \
