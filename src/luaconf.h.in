@@ -847,15 +847,33 @@ static inline int __lua_exec_in_buildpath() {
 
 #undef LUA_API
 #if defined(LUA_CORE) || defined(LUA_LIB)
+#define LUA_API_CLASS LUA_API_EXPORT
 #define LUA_API extern "C" LUA_API_EXPORT
 #else
+#define LUA_API_CLASS
 #define LUA_API extern "C" LUA_API_IMPORT
 #endif
 
 #include <stdexcept>
 
+typedef struct lua_State lua_State;
+
+class LUA_API_CLASS lua_Exception : public std::exception {
+public:
+	lua_Exception(lua_State *L, int status = -1) : std::exception(), __L(L), __status(status) {}
+
+protected:
+	lua_State *__L;
+	int __status;
+
+public:
+	virtual lua_State *vm() const { return __L; }
+	virtual int status() const { return __status; }
+
+};
+
 #define LUAI_THROW(L,c) \
-    throw std::exception()
+    throw lua_Exception(L, c)
 
 #define LUAI_TRY(L,c,a) \
     try { a } \
