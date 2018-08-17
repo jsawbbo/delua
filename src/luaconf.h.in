@@ -194,8 +194,8 @@
 #else			/* }{ */
 
 #define LUA_ROOT	"@LUA_ROOT@"
-#define LUA_LDIR	LUA_ROOT "share/lua/" LUA_VDIR "/"
-#define LUA_CDIR	LUA_ROOT "lib/lua/" LUA_VDIR "/"
+#define LUA_LDIR	LUA_ROOT "/share/lua/" LUA_VDIR "/"
+#define LUA_CDIR	LUA_ROOT "/lib/lua/" LUA_VDIR "/"
 #define LUA_PATH_DEFAULT  \
 		LUA_LDIR"?.lua;"  LUA_LDIR"?/init.lua;" \
 		LUA_CDIR"?.lua;"  LUA_CDIR"?/init.lua;" \
@@ -797,17 +797,20 @@
         LUA_PATH_SEP \
         LUA_PATH_DEFAULT_NDEBUG
 #define LUA_CPATH_DEFAULT_DEBUG \
-        "@EXECUTABLE_OUTPUT_PATH@" "/bin/?.so" \
+        "@EXECUTABLE_OUTPUT_PATH@" "/?.so" \
         LUA_PATH_SEP \
-        "@EXECUTABLE_OUTPUT_PATH@" "/bin/?/loadall.so" \
+        "@EXECUTABLE_OUTPUT_PATH@" "/?/loadall.so" \
         LUA_PATH_SEP \
         LUA_PATH_DEFAULT_NDEBUG
 
 #include <unistd.h>
 #include <string.h>
+#include <stdio.h>
 static inline int __lua_exec_in_buildpath() {
     char cwd[4096];
     getcwd(cwd, 4096);
+    return 1;
+	// FIXME this does not work, because EXECUTABLE_OUTPUT_PATH is not necessarily CWD, PROJECT_BINARY_DIR is neither
     return 0 == strncmp(cwd, "@EXECUTABLE_OUTPUT_PATH@", 4096);
 }
 
@@ -869,7 +872,6 @@ protected:
 public:
 	virtual lua_State *vm() const { return __L; }
 	virtual int status() const { return __status; }
-
 };
 
 #define LUAI_THROW(L,c) \
