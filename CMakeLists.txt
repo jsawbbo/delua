@@ -82,6 +82,7 @@ set(LUA_USER_H "${LUA_USER_H_INIT}" CACHE STRING "User header.")
 set(LUA_USER_GLOBAL_STATE "${LUA_USER_GLOBAL_STATE_INIT}" CACHE STRING "User entry in global_State.")
 set(LUA_NAME "${LUA_NAME_INIT}" CACHE STRING "The name used for libraries and executables (lib${LUA_NAME} etc.).")
 set(LUA_LANGUAGE "${LUA_LANGUAGE_INIT}" CACHE STRING "Compile language (C or CXX).")
+set_property(CACHE LUA_LANGUAGE PROPERTY STRINGS "C;CXX")
 
 # build options
 option(LUA_BUILD_STATIC "Build static library." ${LUA_BUILD_STATIC_INIT})

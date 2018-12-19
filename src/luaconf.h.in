@@ -875,7 +875,7 @@ public:
 };
 
 #define LUAI_THROW(L,c) \
-    throw lua_Exception(L, c)
+    throw lua_Exception(L, c->status)
 
 #define LUAI_TRY(L,c,a) \
     try { a } \
