@@ -830,15 +830,9 @@ static inline int __lua_exec_in_buildpath() {
 #endif
 
 /*
-** Language used to compile Lua.
-*/
-#define LUA_LANGUAGE "@LUA_LANGUAGE@"
-#cmakedefine __lua_cplusplus
-
-/*
 ** C++ features:
 */
-#if defined(__lua_cplusplus)
+#if defined(__cplusplus)
 
 #if defined(LUA_BUILD_AS_DLL)
 #define LUA_API_EXPORT __declspec(dllexport)

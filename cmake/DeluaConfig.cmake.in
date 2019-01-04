@@ -2,22 +2,28 @@ set(Lua_PARENT_DIR "@Lua_PARENT_DIR@")
 
 # Configuration
 set(LUA_FOUND true)
+
 set(LUA_VERSION_STRING "@Lua_VERSION@")
 set(LUA_VERSION_MAJOR "@Lua_VERSION_MAJOR@")
 set(LUA_VERSION_MINOR "@Lua_VERSION_MINOR@")
 set(LUA_VERSION_PATCH "@Lua_VERSION_PATCH@")
 
 if(NOT Lua_PARENT_DIR)
+
 	# System installed build.
 	message(STATUS "Delua: using system build.")
 
     set(LUA_INCLUDE_DIR "@CMAKE_INSTALL_PREFIX@/include/lua/@Lua_VERSION_MAJOR@.@Lua_VERSION_MINOR@")
     set(LUA_LIBRARIES "Lua::Library")
+    set(LUA_CXX_LIBRARIES "Lua::Library::CXX")
 
     set(LUA_BUILD_STATIC @LUA_BUILD_STATIC@)
     set(LUA_BUILD_SHARED @LUA_BUILD_SHARED@)
     set(LUA_BUILD_INTERPRETER @LUA_BUILD_INTERPRETER@)
     set(LUA_BUILD_COMPILER @LUA_BUILD_COMPILER@)
+
+    set(LUA_LANGUAGE_C @LUA_LANGUAGE_C@)
+    set(LUA_LANGUAGE_CXX @LUA_LANGUAGE_CXX@)
 
     find_library(LUA_MATH_LIBRARY m)
 
@@ -28,16 +34,29 @@ if(NOT Lua_PARENT_DIR)
         set(__lua_imported LuaLibStatic)
     endif(LUA_BUILD_SHARED)
 
-    add_library(Lua::Library INTERFACE IMPORTED)
-    set_property(TARGET Lua::Library
-        PROPERTY
-            INTERFACE_LINK_LIBRARIES "${__lua_imported} ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}"
-            INCLUDE_DIRECTORIES "${LUA_INCLUDE_DIR}")
+    if(LUA_LANGUAGE_C)
+        add_library(Lua::Library INTERFACE IMPORTED)
+        set_property(TARGET Lua::Library
+            PROPERTY
+                INTERFACE_LINK_LIBRARIES "${__lua_imported} ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}"
+                INCLUDE_DIRECTORIES "${LUA_INCLUDE_DIR}")
+    endif()
+    
+    if(LUA_LANGUAGE_CXX)
+        add_library(Lua::Library:CXX INTERFACE IMPORTED)
+        set_property(TARGET Lua::Library::CXX
+            PROPERTY
+                INTERFACE_LINK_LIBRARIES "${__lua_imported}Cxx ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY}"
+                INCLUDE_DIRECTORIES "${LUA_INCLUDE_DIR}")
+    endif()
 
 else(NOT Lua_PARENT_DIR)
+
     # Embedded (as sub-project) build.
     message(STATUS "Delua: using embedded build.")
 
     set(LUA_INCLUDE_DIR "@Lua_SOURCE_DIR@/src;@Lua_BINARY_DIR@/include")
     set(LUA_LIBRARIES "Lua::Library")
+    set(LUA_CXX_LIBRARIES "Lua::Library::CXX")
+
 endif(NOT Lua_PARENT_DIR)

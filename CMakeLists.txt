@@ -3,15 +3,13 @@ cmake_minimum_required(VERSION 3.10)
 # === Project ================================================================
 set(CMAKE_USER_MAKE_RULES_OVERRIDE "LuaInitFlags.cmake")
 
-project(Lua CXX C)
+project(Lua 
+    VERSION 5.3.5
+    LANGUAGES CXX C)
 
 get_directory_property(Lua_PARENT_DIR PARENT_DIRECTORY)
 
 # === Version ================================================================
-set(Lua_VERSION_MAJOR 5)
-set(Lua_VERSION_MINOR 3)
-set(Lua_VERSION_PATCH 5)
-
 set(Lua_VERSION "${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}.${Lua_VERSION_PATCH}")
 set(Lua_RELEASE "${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}")
 
@@ -81,15 +79,24 @@ set(LUA_ROOT "${CMAKE_INSTALL_PREFIX}" CACHE PATH "Root installation path.")
 set(LUA_USER_H "${LUA_USER_H_INIT}" CACHE STRING "User header.")
 set(LUA_USER_GLOBAL_STATE "${LUA_USER_GLOBAL_STATE_INIT}" CACHE STRING "User entry in global_State.")
 set(LUA_NAME "${LUA_NAME_INIT}" CACHE STRING "The name used for libraries and executables (lib${LUA_NAME} etc.).")
-set(LUA_LANGUAGE "${LUA_LANGUAGE_INIT}" CACHE STRING "Compile language (C or CXX).")
-set_property(CACHE LUA_LANGUAGE PROPERTY STRINGS "C;CXX")
+set(LUA_LANGUAGE_C "${LUA_LANGUAGE_C_INIT}" CACHE STRING "Compile C library.")
+set(LUA_LANGUAGE_CXX "${LUA_LANGUAGE_CXX_INIT}" CACHE STRING "Compile C++ libraries.")
 
 # build options
 option(LUA_BUILD_STATIC "Build static library." ${LUA_BUILD_STATIC_INIT})
 option(LUA_BUILD_SHARED "Build shared library." ${LUA_BUILD_SHARED_INIT})
-option(LUA_BUILD_INTERPRETER "Build interpreter executable." ${LUA_BUILD_INTERPRETER_INIT})
-option(LUA_BUILD_COMPILER "Build compiler executable." ${LUA_BUILD_COMPILER_INIT})
 
+set(LUA_BUILD_INTERPRETER ${LUA_BUILD_INTERPRETER_INIT} CACHE BOOL "Build interpreter executable.")
+if(NOT LUA_LANGUAGE_C AND LUA_BUILD_INTERPRETER) 
+    message(WARNING "Building interpreter depends on the C-library, disabling.")
+    set(LUA_BUILD_INTERPRETER OFF CACHE BOOL "Build interpreter executable." FORCE)
+endif()
+
+set(LUA_BUILD_COMPILER ${LUA_BUILD_COMPILER_INIT} CACHE BOOL "Build compiler executable.")
+if(NOT LUA_LANGUAGE_C AND LUA_BUILD_COMPILER) 
+    message(WARNING "Building compiler depends on the C-library, disabling.")
+    set(LUA_BUILD_COMPILER OFF CACHE BOOL "Build compiler executable." FORCE)
+endif()
 
 # === Build ==================================================================
 include_directories(
@@ -97,7 +104,12 @@ include_directories(
     ${Lua_SOURCE_DIR}/src)
 
 add_subdirectory(cmake)
-add_subdirectory(src)
+if(LUA_LANGUAGE_C)
+    add_subdirectory(src)
+endif()
+if(LUA_LANGUAGE_CXX)
+    add_subdirectory(srcpp)
+endif()
 
 # === Embedded ===============================================================
 if(Lua_PARENT_DIR)
