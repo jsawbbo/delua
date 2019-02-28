@@ -92,6 +92,7 @@ option(LUA_BUILD_COMPILER "Build compiler executable." ${LUA_BUILD_COMPILER_INIT
 
 
 # === Build ==================================================================
+add_subdirectory(cmake)
 add_subdirectory(lua)
 #FIXME add_subdirectory(luajit)
 
