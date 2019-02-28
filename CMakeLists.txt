@@ -99,17 +99,10 @@ if(NOT LUA_LANGUAGE_C AND LUA_BUILD_COMPILER)
 endif()
 
 # === Build ==================================================================
-include_directories(
-    ${PROJECT_BINARY_DIR}/include
-    ${Lua_SOURCE_DIR}/src)
-
 add_subdirectory(cmake)
-if(LUA_LANGUAGE_C)
-    add_subdirectory(src)
-endif()
-if(LUA_LANGUAGE_CXX)
-    add_subdirectory(srcpp)
-endif()
+
+add_subdirectory(lua)
+#FIXME add_subdirectory(luajit)
 
 # === Package ================================================================
 include(CPackUtils)
