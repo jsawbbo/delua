@@ -111,6 +111,47 @@ if(LUA_LANGUAGE_CXX)
     add_subdirectory(srcpp)
 endif()
 
+# === Package ================================================================
+include(CPackUtils)
+
+CPackInit(
+    CONTACT "Jürgen \"George\" Sawinski <juergen.sawinski@caesar.de>"
+    VENDOR "Research center caesar."
+    SUMMARY "Simple, extensible, embeddable programming language."
+    DESCRIPTION_FILE ${PROJECT_SOURCE_DIR}/README
+    LICENSE_FILE ${PROJECT_SOURCE_DIR}/LICENSE
+)
+
+CPackSet(
+    HOMEPAGE     "https://bitbucket.org/jsaw/giralua"
+    ABOUT_URL    "https://bitbucket.org/jsaw/giralua"
+    HELP_URL     "https://bitbucket.org/jsaw/giralua"
+    GROUP        "Interpreter"
+)
+
+CPackDefineNSIS(
+)
+
+CPackDefineDMG()
+
+CPackDefineDEB("Debian"
+    # FIXME
+)
+
+CPackDefineDEB("Ubuntu"
+    # FIXME
+)
+
+CPackDefineRPM("Fedora"
+    # FIXME
+)
+
+CPackDefineRPM("Scientific"
+    # FIXME
+)
+
+include(CPack)
+
 # === Embedded ===============================================================
 if(Lua_PARENT_DIR)
     message(STATUS "Building as sub-project (${Luax_BINARY_DIR})...")

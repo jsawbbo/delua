@@ -10,8 +10,8 @@ set(LUA_VERSION_PATCH "@Lua_VERSION_PATCH@")
 
 if(NOT Lua_PARENT_DIR)
 
-	# System installed build.
-	message(STATUS "Delua: using system build.")
+    # System installed build.
+    message(STATUS "Delua: using system build.")
 
     set(LUA_INCLUDE_DIR "@CMAKE_INSTALL_PREFIX@/include/lua/@Lua_VERSION_MAJOR@.@Lua_VERSION_MINOR@")
     set(LUA_LIBRARIES "Lua::Library")
