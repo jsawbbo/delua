@@ -92,12 +92,8 @@ option(LUA_BUILD_COMPILER "Build compiler executable." ${LUA_BUILD_COMPILER_INIT
 
 
 # === Build ==================================================================
-include_directories(
-    ${PROJECT_BINARY_DIR}/include
-    ${Lua_SOURCE_DIR}/src)
-
-add_subdirectory(cmake)
-add_subdirectory(src)
+add_subdirectory(lua)
+#FIXME add_subdirectory(luajit)
 
 # === Embedded ===============================================================
 if(Lua_PARENT_DIR)
