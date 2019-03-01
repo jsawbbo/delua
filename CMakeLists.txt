@@ -32,6 +32,10 @@ if(NOT DEFINED SCRIPT_OUTPUT_PATH)
 endif(NOT DEFINED SCRIPT_OUTPUT_PATH)
 
 # === Config =================================================================
+# defaults
+set(LUA_32BITS_INIT OFF)
+set(LUA_USE_C89_INIT OFF)
+
 # posix features
 set(LUA_USE_POSIX_INIT OFF)
 if(UNIX)
@@ -54,35 +58,24 @@ endif(LUA_READLINE_LIBRARY)
 # math lib
 find_library(LUA_MATH_LIBRARY m)
 
-# threads
-set(CMAKE_THREAD_PREFER_PTHREAD true)
-find_package(Threads)
-if(Threads_FOUND)
-    set(LUA_THREAD_LIBRARY Threads::Threads)
-else(Threads_FOUND)
-    set(LUA_THREAD_LIBRARY)
-endif(Threads_FOUND)
+#    # threads
+#    set(CMAKE_THREAD_PREFER_PTHREAD true)
+#    find_package(Threads)
+#    if(Threads_FOUND)
+#        set(LUA_THREAD_LIBRARY Threads::Threads)
+#    else(Threads_FOUND)
+#        set(LUA_THREAD_LIBRARY)
+#    endif(Threads_FOUND)
 
-# === Options ================================================================
-# lua
-option(LUA_32BITS "Enable 32-bit integers and 32-bit floats (default: auto-detected)." OFF)
+# paths
+set(LUA_ROOT_INIT "${CMAKE_INSTALL_PREFIX}")
 
-option(LUA_USE_C89 "Use of ISO-C89 features only." ${LUA_USE_C89_INIT})
-option(LUA_USE_POSIX "Use Posix features." ${LUA_USE_POSIX_INIT})
-option(LUA_USE_DLOPEN "Use dlopen (requires dl library, auto-detected)." ${LUA_USE_DLOPEN_INIT})
-option(LUA_USE_READLINE "Use readline features (requires readline library, auto-detected)." ${LUA_USE_READLINE_INIT})
-
-#FIXME there are more options in luaconf.h.in that could be added here
-
-# delua modifications
-set(LUA_ROOT "${CMAKE_INSTALL_PREFIX}" CACHE PATH "Root installation path.")
-set(LUA_USER_H "${LUA_USER_H_INIT}" CACHE STRING "User header.")
-set(LUA_USER_GLOBAL_STATE "${LUA_USER_GLOBAL_STATE_INIT}" CACHE STRING "User entry in global_State.")
+# build options
 set(LUA_NAME "${LUA_NAME_INIT}" CACHE STRING "The name used for libraries and executables (lib${LUA_NAME} etc.).")
+
 set(LUA_LANGUAGE_C "${LUA_LANGUAGE_C_INIT}" CACHE STRING "Compile C library.")
 set(LUA_LANGUAGE_CXX "${LUA_LANGUAGE_CXX_INIT}" CACHE STRING "Compile C++ libraries.")
 
-# build options
 option(LUA_BUILD_STATIC "Build static library." ${LUA_BUILD_STATIC_INIT})
 option(LUA_BUILD_SHARED "Build shared library." ${LUA_BUILD_SHARED_INIT})
 
@@ -100,9 +93,7 @@ endif()
 
 # === Build ==================================================================
 add_subdirectory(cmake)
-
-add_subdirectory(lua)
-#FIXME add_subdirectory(luajit)
+add_subdirectory(build)
 
 # === Package ================================================================
 include(CPackUtils)
@@ -111,7 +102,7 @@ CPackInit(
     CONTACT "Jürgen \"George\" Sawinski <juergen.sawinski@caesar.de>"
     VENDOR "Research center caesar."
     SUMMARY "Simple, extensible, embeddable programming language."
-    DESCRIPTION_FILE ${PROJECT_SOURCE_DIR}/README
+    DESCRIPTION_FILE ${PROJECT_SOURCE_DIR}/README.md
     LICENSE_FILE ${PROJECT_SOURCE_DIR}/LICENSE
 )
 

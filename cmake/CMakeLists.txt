@@ -3,7 +3,7 @@ configure_file(DeluaConfig.cmake.in ${DELUA_CONFIG_CMAKE})
 
 if(NOT Lua_PARENT_DIR)
     install(FILES
-            FindDeLua.cmake ${DELUA_CONFIG_CMAKE}
+            FindDelua.cmake ${DELUA_CONFIG_CMAKE}
         DESTINATION ${CMAKE_ROOT}/Modules
         COMPONENT "development")
 endif(NOT Lua_PARENT_DIR)
