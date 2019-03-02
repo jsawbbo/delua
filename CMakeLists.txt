@@ -68,7 +68,7 @@ find_library(LUA_MATH_LIBRARY m)
 #    endif(Threads_FOUND)
 
 # paths
-set(LUA_ROOT_INIT "${CMAKE_INSTALL_PREFIX}")
+set(LUA_ROOT_INIT "${CMAKE_INSTALL_PREFIX}/")
 
 # build options
 set(LUA_NAME "${LUA_NAME_INIT}" CACHE STRING "The name used for libraries and executables (lib${LUA_NAME} etc.).")
@@ -91,6 +91,7 @@ if(NOT LUA_LANGUAGE_C AND LUA_BUILD_COMPILER)
     set(LUA_BUILD_COMPILER OFF CACHE BOOL "Build compiler executable." FORCE)
 endif()
 
+include(build/luaconf.cmake)
 # === Build ==================================================================
 add_subdirectory(cmake)
 add_subdirectory(build)

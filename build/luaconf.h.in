@@ -159,8 +159,8 @@
 */
 #define LUA_ROOT "@LUA_ROOT@"
 
-#define LUA_LDIR    "@LUA_LDIR@"
-#define LUA_CDIR    "@LUA_CDIR@"
+#define LUA_LDIR @LUA_LDIR@
+#define LUA_CDIR @LUA_CDIR@
 
 #if defined(_WIN32)	/* { */
 /*
@@ -168,16 +168,16 @@
 ** path of the directory of the executable file of the current process.
 */
 #define LUA_SHRDIR  "!\\..\\share\\lua\\" LUA_VDIR "\\"
-#define LUA_PATH_DEFAULT  \
+#define LUA_PATH_DEFAULT_DIST  \
 		LUA_LDIR"?.lua;"  LUA_LDIR"?\\init.lua;" \
 		LUA_CDIR"?.lua;"  LUA_CDIR"?\\init.lua;" \
 		LUA_SHRDIR"?.lua;" LUA_SHRDIR"?\\init.lua;" \
 		@LUA_PATH_EXTRA@ \
 		".\\?.lua;" ".\\?\\init.lua"
-#define LUA_CPATH_DEFAULT \
+#define LUA_CPATH_DEFAULT_DIST \
 		LUA_CDIR"?.dll;" \
 		LUA_CDIR"..\\lib\\lua\\" LUA_VDIR "\\?.dll;" \
-		LUA_CDIR"loadall.dll;" \ 
+		LUA_CDIR"loadall.dll;" \
         @LUA_CPATH_EXTRA@ \
 		".\\?.dll"
 
@@ -193,7 +193,7 @@
         @LUA_CPATH_EXTRA@ \
 		"./?.so"
 		
-#if defined(DEBUG)
+#if !defined(DEBUG)
 #define LUA_PATH_DEFAULT LUA_PATH_DEFAULT_DIST
 #define LUA_CPATH_DEFAULT LUA_CPATH_DEFAULT_DIST
 #else

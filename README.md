@@ -42,6 +42,8 @@ For details and more options, see `build/luaconf.cmake` or use the `cmake-gui`.
 
 ## Modifications
 
+### General
+
 The Lua sources, except `luaconf.h` - which is now generated using CMake, are  
 untouched. Future versions may, however, apply patches gathered in the `patches`  
 sub-directory.
@@ -94,3 +96,13 @@ public:
 (see end of generated file `luaconf.h`).
 
 **Note**, that C++ libraries are suffixed with a double-plus (++).
+
+### Search paths
+
+Additional default search paths can be provided throught `LUA_PATH_EXTRA` and  
+`LUA_CPATH_EXTRA`. By default, these are set on Unixoid systems to support the  
+`$HOME/.local` structure. 
+
+When compiled with CMAKE_BUILD_TYPE `Debug`, also the output directory is  
+conditionally added to the search paths (see `__lua_exec_in_buildpath` in the  
+generated `luaconf.h` for further details).

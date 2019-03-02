@@ -427,7 +427,15 @@ static const char *pushnexttemplate (lua_State *L, const char *path) {
   if (*path == '\0') return NULL;  /* no more templates */
   l = strchr(path, *LUA_PATH_SEP);  /* find next separator */
   if (l == NULL) l = path + strlen(path);
-  lua_pushlstring(L, path, l - path);  /* template */
+  if (*path == '~') {
+    luaL_Buffer hpath;
+    luaL_buffinit(L, &hpath);
+    luaL_addstring(&hpath, getenv("HOME"));
+    luaL_addlstring(&hpath, path+1, l - path-1);  /* template */
+    luaL_pushresult(&hpath);
+  }
+  else
+    lua_pushlstring(L, path, l - path);  /* template */
   return l;
 }
 

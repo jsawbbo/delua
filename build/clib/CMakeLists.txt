@@ -30,7 +30,7 @@ endif()
 
 if(LUA_BUILD_INTERPRETER)
     add_executable(LuaInterpreter ${executable_options} ${LUA_SRCS})
-    target_link_libraries(LuaInterpreter LuaCLib)
+    target_link_libraries(LuaInterpreter LuaCLib ${LUA_READLINE_LIBRARY} ${LUA_MATH_LIBRARY})
     set_target_properties(LuaInterpreter
         PROPERTIES
             LINKER_LANGUAGE C
@@ -39,7 +39,7 @@ endif()
 
 if(LUA_BUILD_COMPILER)
     add_executable(LuaCompiler ${executable_options} ${LUAC_SRCS})
-    target_link_libraries(LuaCompiler LuaCLib)
+    target_link_libraries(LuaCompiler LuaCLib ${LUA_MATH_LIBRARY})
     set_target_properties(LuaCompiler
         PROPERTIES
             LINKER_LANGUAGE C
