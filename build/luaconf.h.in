@@ -182,15 +182,19 @@
 		".\\?.dll"
 
 #else			/* }{ */
-
+#define LUA_HOME_LDIR "~/.local/share/lua/" LUA_VDIR "/"
+#define LUA_HOME_CDIR "~/.local/lib/lua/" LUA_VDIR "/"
 #define LUA_PATH_DEFAULT_DIST  \
-		LUA_LDIR"?.lua;"  LUA_LDIR"?/init.lua;" \
-		LUA_CDIR"?.lua;"  LUA_CDIR"?/init.lua;" \
         @LUA_PATH_EXTRA@ \
+        LUA_HOME_LDIR"?.lua;"  LUA_HOME_LDIR"?/init.lua;" \
+        LUA_HOME_CDIR"?.lua;"  LUA_HOME_CDIR"?/init.lua;" \
+        LUA_LDIR"?.lua;"  LUA_LDIR"?/init.lua;" \
+        LUA_CDIR"?.lua;"  LUA_CDIR"?/init.lua;" \
 		"./?.lua;" "./?/init.lua"
 #define LUA_CPATH_DEFAULT_DIST \
-		LUA_CDIR"?.so;" LUA_CDIR"loadall.so;" \
         @LUA_CPATH_EXTRA@ \
+        LUA_HOME_CDIR"?.so;" LUA_HOME_CDIR"loadall.so;" \
+        LUA_CDIR"?.so;" LUA_CDIR"loadall.so;" \
 		"./?.so"
 		
 #if !defined(DEBUG)

@@ -14,17 +14,6 @@ if(WINDOWS AND NOT UNIX)
 else()
     set(LUA_LDIR "LUA_ROOT \"share/lua/\" LUA_VDIR \"/\"" CACHE STRING "Lua module directory.")
     set(LUA_CDIR "LUA_ROOT \"lib/lua/\" LUA_VDIR \"/\"" CACHE STRING "Lua dynamic library (C) directory.")
-
-    set(LUA_HOME_LDIR "\"~/.local/share/lua/\" LUA_VDIR \"/\"")
-    set(LUA_HOME_CDIR "\"~/.local/lib/lua/\" LUA_VDIR \"/\"")
-
-    if(NOT DEFINED LUA_PATH_EXTRA_INIT)
-        set(LUA_PATH_EXTRA_INIT "${LUA_HOME_LDIR} \"?.lua;\"  ${LUA_HOME_LDIR} \"?/init.lua;\" ${LUA_HOME_CDIR} \"\?.lua;\"  ${LUA_HOME_CDIR} \"?/init.lua;\"")
-    endif()
-
-    if(NOT DEFINED LUA_CPATH_EXTRA_INIT)
-        set(LUA_CPATH_EXTRA_INIT "${LUA_HOME_CDIR} \"\?.so;\"  ${LUA_HOME_CDIR} \"?/loadall.so;\"")
-    endif()
 endif()
 
 set(LUA_PATH_EXTRA "${LUA_PATH_EXTRA_INIT}" CACHE STRING "Additional module search path.") 
