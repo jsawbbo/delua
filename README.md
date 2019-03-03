@@ -6,27 +6,29 @@ This is Lua 5.3.5, released on 26 Jun 2018 (see file *lua/README*).
 > It supports procedural programming, object-oriented programming, functional  
 > programming, data-driven programming, and data description.
 
-Delua is the [cmake](https://cmake.org/)'ified [Lua](http://www.lua.org) source.  
-Therefore, no (major) code changes have been made, however, some options have  
-been added, such as using exceptions when building C++ versions of the libraries.  
+Delua is the [cmake](https://cmake.org/)'ified [Lua](http://www.lua.org) source. 
+It can be used to build  Lua binaries and  
+packages on all major operating systems, but may be also embedded in other  
+projects.
+
+No major code changes have been made to the original Lua sources (except the  
+handling of the search path) and the supplement of exceptions when building  
+a C++ version of the libraries.
 
 ## Options
 
 ### General options
 
+*    `LUA_NAME`, output name of binaries and libraries (default: "lua").
 *    `LUA_BUILD_STATIC` Build a static library (default: YES).
 *    `LUA_BUILD_SHARED` Build a shared library (default: YES).
-*    `LUA_BUILD_INTERPRETER` Build the standard ``lua`` interpreter.
-*    `LUA_BUILD_COMPILER` Build the standard ``luac`` compiler.
-
-### Embedded builds
-
-*    `LUA_NAME`, by default "lua", can be changed to avoid name clashes for embedded builds.
+*    `LUA_BUILD_INTERPRETER` Build the standard ``lua`` interpreter (default: YES).
+*    `LUA_BUILD_COMPILER` Build the standard ``luac`` compiler (default: YES).
 
 ### Languages
 
 *    `LUA_LANGUAGE_C` Build C-compiled libraries (and executables, default: YES).
-*    `LUA_LANGUAGE_CXX` Build C++-compiled libraries (see below).
+*    `LUA_LANGUAGE_CXX` Build C++-compiled libraries (default: NO).
 
 ## Configuration
 
@@ -45,64 +47,28 @@ For details and more options, see `build/luaconf.cmake` or use the `cmake-gui`.
 ### General
 
 The Lua sources, except `luaconf.h` - which is now generated using CMake, are  
-untouched. Future versions may, however, apply patches gathered in the `patches`  
-sub-directory.
-
-In addition, when compiling for C++, `lua_Exception` is defined and used:
-
-```C++
-#if defined(__cplusplus)
-
-#if defined(LUA_CORE) || defined(LUA_LIB)
-#define LUA_API_CLASS LUA_API_EXPORT
-#else
-#define LUA_API_CLASS
-#endif
-
-#include <stdexcept>
- 
-typedef struct lua_State lua_State;
-
-class LUA_API_CLASS lua_Exception : public std::exception {
-public:
-       lua_Exception(lua_State *L, int status = -1) : std::exception(), __L(L), __status(status) {}
-       virtual ~lua_Exception() {}
- 
-protected:
-       lua_State *__L;
-       int __status;
-
-public:
-       virtual lua_State *vm() const { return __L; }
-       virtual int status() const { return __status; }
-};
-
-#define LUAI_THROW(L,c) \
-    throw lua_Exception(L, c->status)
-
-#define LUAI_TRY(L,c,a) \
-    try { a } \
-    catch(...) { \
-        if ((c)->status == 0) \
-            throw; \
-    }
-
-#define luai_jmpbuf \
-    int  /* dummy variable */
-
-#endif /* __cplusplus */
-```
-
-(see end of generated file `luaconf.h`).
-
-**Note**, that C++ libraries are suffixed with a double-plus (++).
+almost untouched. Changes made to the pure Lua sources can be found in the  
+`patches` sub-directory.
 
 ### Search paths
 
 Additional default search paths can be provided throught `LUA_PATH_EXTRA` and  
-`LUA_CPATH_EXTRA`. By default, these are set on Unixoid systems to support the  
-`$HOME/.local` structure. 
+`LUA_CPATH_EXTRA`. In addition, the default search path now includes the  
+`$HOME/.local/` file-system structure on Unixoid systems (the Lua sources  
+were modified to expand "~" as first character in the search path to the  
+`HOME` environment variable).
 
-When compiled with CMAKE_BUILD_TYPE `Debug`, also the output directory is  
-conditionally added to the search paths (see `__lua_exec_in_buildpath` in the  
+### In-build testing
+
+When compiled with *CMAKE_BUILD_TYPE* `Debug`, output directories are dynamically  
+added to the script and library search path (see `__lua_exec_in_buildpath` in the  
 generated `luaconf.h` for further details).
+
+### C++
+
+C++ libraries can be build using the `LUA_LANGUAGE_CXX` configuration option. The  
+libraries are suffixed with "++" compared to their standard C versions. 
+
+Additionally, `lua_Exception` was added to the generated `luaconf.h` header.
+
+For further details: [**UTSL**](https://www.urbandictionary.com/define.php?term=UTSL).
