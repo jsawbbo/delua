@@ -94,6 +94,27 @@ if(Lua_PARENT_DIR)
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} PARENT_SCOPE)
 endif(Lua_PARENT_DIR)
 
+# === Resources ==============================================================
+
+install(FILES build/lua.png
+    DESTINATION  share/icons
+    RENAME lua${Lua_VERSION_MAJOR}${Lua_VERSION_MINOR}.png
+    COMPONENT "runtime")
+
+# === Documentation ==========================================================
+
+install(FILES README.md
+    DESTINATION  share/doc/delua/${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}
+    COMPONENT documentation)    
+
+install(FILES lua/README
+    DESTINATION  share/doc/delua/${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}/lua
+    COMPONENT documentation)    
+
+install(DIRECTORY lua/doc
+    DESTINATION  share/doc/delua/${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}/lua
+    COMPONENT documentation)    
+
 # === Package ================================================================
 if(NOT Lua_PARENT_DIR)
 include(CPackUtils)
@@ -126,7 +147,9 @@ CPackCommon(
     ABOUT_URL    "https://www.lua.org/about.html"
     HELP_URL     "https://www.lua.org/docs.html"
     
-    GROUP        "Interpreter"    
+    GROUP        "Interpreter"
+    
+    ICON         "${Lua_SOURCE_DIR}/lua/doc/logo.gif"
 )
 
 CPackComponents(ALL runtime development documentation)

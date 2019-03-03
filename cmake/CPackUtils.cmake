@@ -15,7 +15,7 @@
 include(InstallRequiredSystemLibraries)
 include(CPackComponent)
 
-set(__cpackutils_debug_output ON)
+set(__cpackutils_debug_output OFF)
 function(__cpackutils_debug)
     if(__cpackutils_debug_output)
         message(STATUS ${ARGN})
@@ -573,7 +573,7 @@ function(CPackDefineDEB _DIST_NAME)
             __cpackutils_debug("    CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA=${CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA}")
         endif()
 
-        # === TEMPLATE
+        # === FILE_NAME (TEMPLATE)
         set(NAME ${CPACK_PACKAGE_NAME})
         set(VERSION ${CPACK_PACKAGE_VERSION})
         if(NOT DEFINED __TEMPLATE)
@@ -595,10 +595,12 @@ function(CPackDefineDEB _DIST_NAME)
                 set(SUFFIX "-${component}")
             endif()
             
+            # PACKAGE_NAME
             set(CPACK_DEBIAN_${COMPONENT}_PACKAGE_NAME "${NAME}${SUFFIX}")
             set(CPACK_DEBIAN_${COMPONENT}_PACKAGE_NAME "${CPACK_DEBIAN_${COMPONENT}_PACKAGE_NAME}" PARENT_SCOPE)
             __cpackutils_debug("    CPACK_DEBIAN_${COMPONENT}_PACKAGE_NAME=${NAME}")
             
+            # FILE_NAME
             if(NOT DEFINED __TEMPLATE)
                 set(CPACK_DEBIAN_${COMPONENT}_FILE_NAME "DEB-DEFAULT")
             else()
@@ -606,8 +608,24 @@ function(CPackDefineDEB _DIST_NAME)
             endif()
             set(CPACK_DEBIAN_${COMPONENT}_FILE_NAME "${CPACK_DEBIAN_${COMPONENT}_FILE_NAME}" PARENT_SCOPE)
             __cpackutils_debug("    CPACK_DEBIAN_${COMPONENT}_FILE_NAME=${CPACK_DEBIAN_${COMPONENT}_FILE_NAME}")
-                    
-            # FIXME CPACK_DEBIAN_<COMPONENT>_PACKAGE_DEPENDS
+        endforeach()
+        
+        # PACKAGE_DEPENDS
+        foreach(component ${CPACK_COMPONENTS_ALL})
+            string(TOUPPER "${component}" COMPONENT)
+        
+            set(CPACK_DEBIAN_${COMPONENT}_PACKAGE_DEPENDS ${__DEPENDS})
+            foreach(dep ${CPACK_COMPONENT_${component}_DEPENDS})
+                string(TOUPPER "${dep}" DEP)
+                if(DEFINED CPACK_DEBIAN_${DEP}_PACKAGE_NAME)
+                    list(APPEND CPACK_DEBIAN_${COMPONENT}_PACKAGE_DEPENDS ${CPACK_DEBIAN_${DEP}_PACKAGE_NAME})
+                else()
+                    list(APPEND CPACK_DEBIAN_${COMPONENT}_PACKAGE_DEPENDS ${dep})
+                endif()
+            endforeach()
+            string(REPLACE ";" ", " CPACK_DEBIAN_${COMPONENT}_PACKAGE_DEPENDS "${CPACK_DEBIAN_${COMPONENT}_PACKAGE_DEPENDS}")
+            set(CPACK_DEBIAN_${COMPONENT}_PACKAGE_DEPENDS "${CPACK_DEBIAN_${COMPONENT}_PACKAGE_DEPENDS}" PARENT_SCOPE)
+            __cpackutils_debug("    CPACK_DEBIAN_${COMPONENT}_PACKAGE_DEPENDS=${CPACK_DEBIAN_${COMPONENT}_PACKAGE_DEPENDS}")
         endforeach()
     endif()
 endfunction(CPackDefineDEB)
