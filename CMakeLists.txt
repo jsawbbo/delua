@@ -138,12 +138,14 @@ CPackComponents(runtime DEFAULT
 
 CPackComponents(development
     INSTALL NO
+    PACKAGE_SUFFIX dev
     DISPLAY_NAME "Development headers"
     DEPENDS runtime
 )
 
 CPackComponents(documentation
     INSTALL NO
+    PACKAGE_SUFFIX doc
     DISPLAY_NAME "Documentation"
 )
 

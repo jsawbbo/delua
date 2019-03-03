@@ -15,7 +15,7 @@
 include(InstallRequiredSystemLibraries)
 include(CPackComponent)
 
-set(__cpackutils_debug_output OFF)
+set(__cpackutils_debug_output ON)
 function(__cpackutils_debug)
     if(__cpackutils_debug_output)
         message(STATUS ${ARGN})
@@ -222,34 +222,26 @@ Declare and setup components.
 .. command: CPackComponents
 
     ::
-        CPackComponents(
-            [ALL <component-list>
-                [IN_ONE][IGNORE]]
-            [<COMPONENT>
+        CPackComponents(ALL <component-list> [IN_ONE][IGNORE]])
+        CPackComponent(<component>
                 [...]
             ]
         )
 
 #]=======================================================================]
-function(CPackComponents)
-    __cpackutils_debug("CPackComponents()")
+function(CPackComponents compName)
+    __cpackutils_debug("CPackComponents(${compName})")
     
     # === ALL
-    cmake_parse_arguments(_ "IN_ONE;IGNORE" "" "ALL" ${ARGN})
-    if(CPACK_COMPONENTS_ALL AND __ALL)
-        message(FATAL_ERROR "CPack components cannot be overridden.")
-    endif()
-    
-    if(__ALL)
-        set(CPACK_COMPONENTS_ALL ${__ALL})
-        set(CPACK_COMPONENTS_ALL ${__ALL} PARENT_SCOPE)
-        
-        if(__cpackutils_debug_output)
-            __cpackutils_debug("    CPACK_COMPONENTS_ALL")
-            foreach(component ${__ALL})
-                __cpackutils_debug("        ${component}")
-            endforeach()
+    if(compName STREQUAL ALL)
+        cmake_parse_arguments(_ "IN_ONE;IGNORE" "" "" ${ARGN})
+        if(CPACK_COMPONENTS_ALL)
+            message(FATAL_ERROR "CPack components cannot be overridden.")
         endif()
+        
+        set(CPACK_COMPONENTS_ALL ${__UNPARSED_ARGUMENTS})
+        set(CPACK_COMPONENTS_ALL ${CPACK_COMPONENTS_ALL} PARENT_SCOPE)
+        __cpackutils_debug("    CPACK_COMPONENTS_ALL=${CPACK_COMPONENTS_ALL}")
         
         if (__IN_ONE)
             set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE PARENT_SCOPE)
@@ -258,23 +250,41 @@ function(CPackComponents)
             set(CPACK_COMPONENTS_GROUPING IGNORE PARENT_SCOPE)
             __cpackutils_debug("        CPACK_COMPONENTS_GROUPING=IGNORE")
         endif()
-    endif()
-    
-    # === COMPONENTS
-    if(DEFINED CPACK_COMPONENTS_ALL)
-        cmake_parse_arguments(_ "" "" "ALL;${CPACK_COMPONENTS_ALL}" ${ARGN})
-    
-        foreach(component ${CPACK_COMPONENTS_ALL})
-            if(DEFINED __${component})
-                __cpackutils_debug("    adding component ${component}")
-                cpack_add_component(${component} ${__${COMPONENT}})
-            endif()
-        endforeach()
+    # === COMPONENT
     else()
-        if(__UNPARSED_ARGUMENTS)
-            message(FATAL_ERROR "Invalid arguments: missing ALL?")
+        if(NOT DEFINED CPACK_COMPONENTS_ALL)
+            message(FATAL_ERROR "No components defined.")
         endif()
-    endif()    
+        
+        __cpackutils_debug("    adding component ${compName}")
+        cmake_parse_arguments(_ "DEFAULT" "PACKAGE_SUFFIX" "DEPENDS" ${ARGN})
+        
+        # DEFAULT
+        if(__DEFAULT)
+            set(CPACK_COMPONENT_${compName}_PACKAGE_SUFFIX "" PARENT_SCOPE)
+            
+            if(__PACKAGE_SUFFIX)
+                message(FATAL_ERROR "Invalid arguments passed: DEFAULT and PACKAGE_SUFFIX are mutually exclusive")
+            endif()
+        endif()
+        
+        # PACKAGE_SUFFIX
+        if(__PACKAGE_SUFFIX)
+            set(CPACK_COMPONENT_${compName}_PACKAGE_SUFFIX "-${__PACKAGE_SUFFIX}" PARENT_SCOPE)
+            __cpackutils_debug("        CPACK_COMPONENT_${compName}_PACKAGE_SUFFIX=-${__PACKAGE_SUFFIX}")
+        endif()
+
+        # DEPENDS
+        if(__DEPENDS)
+            set(CPACK_COMPONENT_${compName}_DEPENDS "${__DEPENDS}" PARENT_SCOPE)
+            __cpackutils_debug("        CPACK_COMPONENT_${compName}_DEPENDS=${__DEPENDS}")
+        endif()
+            
+        # FIXME ...
+        
+        # other options
+        cpack_add_component(${compName} ${__UNPARSED_ARGUMENTS})
+    endif()
 endfunction()
         
 #[=======================================================================[.rst:
@@ -569,11 +579,36 @@ function(CPackDefineDEB _DIST_NAME)
         if(NOT DEFINED __TEMPLATE)
             set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
         else()
-            _CPackEval(CPACK_PACKAGE_FILE_NAME "${__TEMPLATE}" PARENT_SCOPE)
+            _CPackEval(CPACK_DEBIAN_FILE_NAME "${__TEMPLATE}.deb")
         endif()
+        set(CPACK_DEBIAN_FILE_NAME "${CPACK_DEBIAN_FILE_NAME}" PARENT_SCOPE)
+        __cpackutils_debug("    CPACK_DEBIAN_FILE_NAME=${CPACK_DEBIAN_FILE_NAME}")
         
         # === COMPONENTS
         set(CPACK_DEB_PACKAGE_COMPONENT TRUE PARENT_SCOPE)
+        foreach(component ${CPACK_COMPONENTS_ALL})
+            string(TOUPPER "${component}" COMPONENT)
+            
+            if(DEFINED CPACK_COMPONENT_${component}_PACKAGE_SUFFIX)
+                set(SUFFIX "${CPACK_COMPONENT_${component}_PACKAGE_SUFFIX}")
+            else()
+                set(SUFFIX "-${component}")
+            endif()
+            
+            set(CPACK_DEBIAN_${COMPONENT}_PACKAGE_NAME "${NAME}${SUFFIX}")
+            set(CPACK_DEBIAN_${COMPONENT}_PACKAGE_NAME "${CPACK_DEBIAN_${COMPONENT}_PACKAGE_NAME}" PARENT_SCOPE)
+            __cpackutils_debug("    CPACK_DEBIAN_${COMPONENT}_PACKAGE_NAME=${NAME}")
+            
+            if(NOT DEFINED __TEMPLATE)
+                set(CPACK_DEBIAN_${COMPONENT}_FILE_NAME "DEB-DEFAULT")
+            else()
+                _CPackEval(CPACK_DEBIAN_${COMPONENT}_FILE_NAME "${__TEMPLATE}${SUFFIX}.deb")
+            endif()
+            set(CPACK_DEBIAN_${COMPONENT}_FILE_NAME "${CPACK_DEBIAN_${COMPONENT}_FILE_NAME}" PARENT_SCOPE)
+            __cpackutils_debug("    CPACK_DEBIAN_${COMPONENT}_FILE_NAME=${CPACK_DEBIAN_${COMPONENT}_FILE_NAME}")
+                    
+            # FIXME CPACK_DEBIAN_<COMPONENT>_PACKAGE_DEPENDS
+        endforeach()
     endif()
 endfunction(CPackDefineDEB)
 
