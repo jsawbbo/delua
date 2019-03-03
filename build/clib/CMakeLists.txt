@@ -54,12 +54,12 @@ install(TARGETS ${__lua_targets}
     ARCHIVE DESTINATION lib COMPONENT "development"
 )
 
-if(lua_interpreter)
+if(LUA_BUILD_INTERPRETER)
     install(TARGETS LuaInterpreter
         RUNTIME DESTINATION bin COMPONENT "runtime")
 endif()
 
-if(lua_compiler)
+if(LUA_BUILD_COMPILER)
     install(TARGETS LuaCompiler
         RUNTIME DESTINATION bin COMPONENT "runtime")
 endif()

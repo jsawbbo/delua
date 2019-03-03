@@ -58,15 +58,6 @@ endif(LUA_READLINE_LIBRARY)
 # math lib
 find_library(LUA_MATH_LIBRARY m)
 
-#    # threads
-#    set(CMAKE_THREAD_PREFER_PTHREAD true)
-#    find_package(Threads)
-#    if(Threads_FOUND)
-#        set(LUA_THREAD_LIBRARY Threads::Threads)
-#    else(Threads_FOUND)
-#        set(LUA_THREAD_LIBRARY)
-#    endif(Threads_FOUND)
-
 # paths
 set(LUA_ROOT_INIT "${CMAKE_INSTALL_PREFIX}/")
 
@@ -96,50 +87,114 @@ include(build/luaconf.cmake)
 add_subdirectory(cmake)
 add_subdirectory(build)
 
-# === Package ================================================================
-include(CPackUtils)
-
-CPackInit(
-    CONTACT "Jürgen \"George\" Sawinski <juergen.sawinski@caesar.de>"
-    VENDOR "Research center caesar."
-    SUMMARY "Simple, extensible, embeddable programming language."
-    DESCRIPTION_FILE ${PROJECT_SOURCE_DIR}/README.md
-    LICENSE_FILE ${PROJECT_SOURCE_DIR}/LICENSE
-)
-
-CPackSet(
-    HOMEPAGE     "https://bitbucket.org/jsaw/giralua"
-    ABOUT_URL    "https://bitbucket.org/jsaw/giralua"
-    HELP_URL     "https://bitbucket.org/jsaw/giralua"
-    GROUP        "Interpreter"
-)
-
-CPackDefineNSIS(
-)
-
-CPackDefineDMG()
-
-CPackDefineDEB("Debian"
-    # FIXME
-)
-
-CPackDefineDEB("Ubuntu"
-    # FIXME
-)
-
-CPackDefineRPM("Fedora"
-    # FIXME
-)
-
-CPackDefineRPM("Scientific"
-    # FIXME
-)
-
-include(CPack)
-
 # === Embedded ===============================================================
 if(Lua_PARENT_DIR)
     message(STATUS "Building as sub-project (${Luax_BINARY_DIR})...")
     list(APPEND CMAKE_MODULE_PATH "${Lua_BINARY_DIR}/cmake")
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} PARENT_SCOPE)
 endif(Lua_PARENT_DIR)
+
+# === Package ================================================================
+if(NOT Lua_PARENT_DIR)
+include(CPackUtils)
+
+CPackSetup(
+    NAME "delua-${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}"
+    CONTACT "Jürgen 'George' Sawinski <george@caesar.de>"
+    VENDOR "Research center caesar."
+    SUMMARY "Simple, extensible, embeddable programming language."
+    DESCRIPTION 
+"This is Lua 5.3.5, released on 26 Jun 2018.
+
+> Lua is a powerful, efficient, lightweight, embeddable scripting language.  
+> It supports procedural programming, object-oriented programming, functional  
+> programming, data-driven programming, and data description.
+
+Delua is the cmake'ified Lua source (http://www.lua.org) source. It can be used 
+to build Lua binaries and packages on all major operating systems, but may be 
+also embedded in other projects.
+
+No major code changes have been made to the original Lua sources (except the  
+handling of the search path) and the supplement of exceptions when building  
+a C++ version of the libraries."
+    LICENSE "MIT"
+        FILE ${Lua_SOURCE_DIR}/LICENSE
+)
+
+CPackCommon(
+    HOMEPAGE     "https://bitbucket.org/jsaw/delua"
+    ABOUT_URL    "https://www.lua.org/about.html"
+    HELP_URL     "https://www.lua.org/docs.html"
+    
+    GROUP        "Interpreter"    
+)
+
+CPackComponents(ALL runtime development documentation)
+
+CPackComponents(runtime DEFAULT
+    INSTALL YES
+    DISPLAY_NAME "Runtime"
+)
+
+CPackComponents(development
+    INSTALL NO
+    DISPLAY_NAME "Development headers"
+    DEPENDS runtime
+)
+
+CPackComponents(documentation
+    INSTALL NO
+    DISPLAY_NAME "Documentation"
+)
+
+###
+
+#CPackDefineNSIS(
+#)
+
+#CPackDefineDMG(
+#)
+
+CPackDefineDEB("Debian"
+    SECTION "Interpreter"    
+    # FIXME
+)
+
+set(ubuntu_debian_version "0")
+set(ubuntu_package_release "0")
+CPackDefineDEB("Ubuntu"
+    TEMPLATE "\${NAME}_\${VERSION}-${ubuntu_debian_version}ubuntu${ubuntu_package_release}_\${ARCHITECTURE}"
+    RECOMMENDS "delua-${Lua_VERSION_MAJOR}.${LUA_VERSOIN_MINOR}-doc"
+    # FIXME
+)
+
+#CPackDefineRPM("Fedora"
+#    # FIXME
+#)
+
+#CPackDefineRPM("Scientific"
+#    # FIXME
+#)
+
+#macro(gen_cpack_suse _DEPENDENCIES _SCRIPT_DIR)
+#    gen_cpack_rpm("openSUSE.*"
+#                         ${_DEPENDENCIES}
+#                         ${_SCRIPT_DIR}
+#                         "\${NAME}-\${VERSION}-\${RELEASE}.\${ARCHITECTURE}")
+#endmacro()
+#
+#macro(gen_cpack_fedora _DEPENDENCIES _SCRIPT_DIR)
+#    gen_cpack_rpm("Fedora"
+#                         ${_DEPENDENCIES}
+#                         ${_SCRIPT_DIR}
+#                         "\${NAME}-\${VERSION}.fc\${RELEASE}.\${ARCHITECTURE}")
+#endmacro()
+#
+#macro(gen_cpack_scientific _DEPENDENCIES _SCRIPT_DIR)
+#    gen_cpack_rpm("Scientific"
+#                         ${_DEPENDENCIES}
+#                         ${_SCRIPT_DIR}
+#                        "\${NAME}-\${VERSION}-\${RELEASE}.\${ARCHITECTURE}")
+
+include(CPack)
+endif()

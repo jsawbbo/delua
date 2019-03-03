@@ -11,6 +11,7 @@ include_directories(${luaconf_include_dir})
         
 # build
 include(${Lua_SOURCE_DIR}/lua/Sources.cmake)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 if(LUA_LANGUAGE_C)
     add_subdirectory(clib)

@@ -13,26 +13,36 @@
 # for more information.
 
 include(InstallRequiredSystemLibraries)
+include(CPackComponent)
+
+set(__cpackutils_debug_output OFF)
+function(__cpackutils_debug)
+    if(__cpackutils_debug_output)
+        message(STATUS ${ARGN})
+    endif()
+endfunction()
 
 #[=======================================================================[.rst:
-CPackInit
+CPackSetup
 
-Initializes basic/common CPack variables.
+Setup and initialize basic/common CPack variables.
 
-.. command: CPackInit
+.. command: CPackSetup
 
     ::
-        CPackInit(
+        CPackSetup(
             [NAME <name>]
-            [VERSION <version>]
-            [VERSION_MAJOR <major-version>
-            VERSION_MINOR <minor-version>
-            VERSION_PATCH <patch-version>]
+            [VERSION <version>
+                [MAJOR <major-version>
+                MINOR <minor-version>
+                PATCH <patch-version>]]
             [VENDOR <vendor>]
             CONTACT <contact>
             SUMMARY <summary>
-            [DESCRIPTION <description>]
-            [DESCRIPTION_FILE <description-file>]
+            [DESCRIPTION [<description>]
+                [FILE <description-file>]]
+            [LICENSE [<license>]
+                [FILE <license-file>]]
         )
  
     ``<name>``: Package name, default: PROJECT_NAME
@@ -50,38 +60,27 @@ Initializes basic/common CPack variables.
 
     ``<description-file>``: Path to full package description file, e.g path/to/README.txt.
 
+    ``<license>``: Package license.
+    
+    ``<license-file>``: Path to full license file, e.g. path/to/LICENSE.
+    
 #]=======================================================================]
-function(CPackInit)
-    cmake_parse_arguments(_ "" "NAME;VERSION;VERSION_MAJOR;VERSION_MINOR;VERSION_PATCH;VENDOR;CONTACT;SUMMARY;DESCRIPTION;DESCRIPTION_FILE" "" ${ARGN})
+function(CPackSetup)
+    __cpackutils_debug("CPackSetup()")
+    cmake_parse_arguments(_ "" "NAME;VENDOR;CONTACT;SUMMARY" "VERSION;DESCRIPTION;LICENSE" ${ARGN})
+    
+    # === defaults
+    set(CPACK_GENERATOR "ZIP" PARENT_SCOPE)
+    set(CPACK_SYSTEM_NAME
+        "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}"
+        PARENT_SCOPE)
+    set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} PARENT_SCOPE)
 
-    # Defaults
+    # === NAME, VENDOR, CONTACT and SUMMARY
     if(NOT __NAME)
-        set(__NAME ${PROJECT_NAME})
-    endif()
-    
-    if(NOT __VERSION_MAJOR)
-        set(__VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
-        set(__VERSION_MINOR ${PROJECT_VERSION_MINOR})
-        set(__VERSION_PATCH ${PROJECT_VERSION_PATCH})
+        string(TOLOWER ${PROJECT_NAME}  __NAME)
     endif()
 
-    if(__VERSION)
-        string(REGEX REPLACE "^([0-9]+)\\.[0-9]+.*" "\\1" __VERSION_MAJOR ${__VERSION})
-        if(__VERSION_MAJOR STREQUAL __VERSION)
-            message(FATAL_ERROR "Invalid version string format (expected x.y or x.y.z).")
-        endif()
-        string(REGEX REPLACE "^[0-9]+\\.([0-9]+).*" "\\1" __VERSION_MINOR ${__VERSION})
-        string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" __VERSION_PATCH ${__VERSION})
-        if(__VERSION_PATCH STREQUAL __VERSION)
-            unset(__VERSION_PATCH)
-        endif()
-    endif()
-    if(__VERSION_PATCH)
-        set(__VERSION ${__VERSION_MAJOR}.${__VERSION_MINOR}.${__VERSION_PATCH})
-    else()
-        set(__VERSION ${__VERSION_MAJOR}.${__VERSION_MINOR})
-    endif()
-    
     if(NOT __VENDOR)
         set(__VENDOR ${PROJECT_NAME})
     endif()
@@ -94,46 +93,221 @@ function(CPackInit)
         message(FATAL_ERROR "Option SUMMARY is required.")
     endif()
 
-    # Set some good system defaults
-    set(CPACK_GENERATOR "ZIP" PARENT_SCOPE)
-    set(CPACK_SYSTEM_NAME
-        "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}"
-        PARENT_SCOPE)
-
-    # Set name, version and vendor
     set(CPACK_PACKAGE_NAME ${__NAME} PARENT_SCOPE)
-    set(CPACK_PACKAGE_VERSION ${__VERSION} PARENT_SCOPE)
+    __cpackutils_debug("    CPACK_PACKAGE_NAME=${__NAME}")
+    
     set(CPACK_PACKAGE_VENDOR "${__VENDOR}" PARENT_SCOPE)
-
-    # Use supplied info to all other variables
+    __cpackutils_debug("    CPACK_PACKAGE_VENDOR=${__VENDOR}")
+    
     set(CPACK_PACKAGE_CONTACT "${__CONTACT}" PARENT_SCOPE)
+    __cpackutils_debug("    CPACK_PACKAGE_CONTACT=${__CONTACT}")
+    
     set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${__SUMMARY}" PARENT_SCOPE)
-    if(__DESCRIPTION)
-        set(CPACK_PACKAGE_DESCRIPTION "${__DESCRIPTION}" PARENT_SCOPE)
+    __cpackutils_debug("    CPACK_PACKAGE_DESCRIPTION_SUMMARY=${__SUMMARY}")
+        
+    # === VERSION        
+    if(__VERSION)
+        cmake_parse_arguments(__VERSION "" "MAJOR;MINOR;PATCH" "" ${__VERSION})
+        if(__VERSION_MAJOR)
+            if(__VERSION_UNPARSED_ARGUMENTS OR NOT __VERSION_MINOR)
+                message(FATAL_ERROR "Invalid arguments passed to option `VERSION`.")
+            endif()
+        else()
+            if(NOT __VERSION_UNPARSED_ARGUMENTS)
+                message(FATAL_ERROR "Invalid arguments passed to option `VERSION`.")
+            endif()
+            
+            string(REGEX REPLACE "^([0-9]+)\\.[0-9]+.*" "\\1" __VERSION_MAJOR ${__VERSION})
+            if(__VERSION_MAJOR STREQUAL __VERSION)
+                message(FATAL_ERROR "Invalid version string format (expected x.y or x.y.z).")
+            endif()
+            string(REGEX REPLACE "^[0-9]+\\.([0-9]+).*" "\\1" __VERSION_MINOR ${__VERSION})
+            string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" __VERSION_PATCH ${__VERSION})
+            if(__VERSION_PATCH STREQUAL __VERSION)
+                unset(__VERSION_PATCH)
+            endif()
+        endif()
+    else()
+        set(__VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+        set(__VERSION_MINOR ${PROJECT_VERSION_MINOR})
+        set(__VERSION_PATCH ${PROJECT_VERSION_PATCH})
     endif()
-    if(__DESCRIPTION_FILE)
-        set(CPACK_PACKAGE_DESCRIPTION_FILE "${__DESCRIPTION_FILE}" PARENT_SCOPE)
+
+    if(__VERSION_PATCH)
+        set(__VERSION ${__VERSION_MAJOR}.${__VERSION_MINOR}.${__VERSION_PATCH})
+    else()
+        set(__VERSION ${__VERSION_MAJOR}.${__VERSION_MINOR})
+    endif()
+    
+    set(CPACK_PACKAGE_VERSION ${__VERSION} PARENT_SCOPE)
+    __cpackutils_debug("    CPACK_PACKAGE_VERSION=${__VERSION}")
+    
+    # === DESCRIPTION    
+    if(__DESCRIPTION)
+        cmake_parse_arguments(__DESCRIPTION "" "FILE" "" ${__DESCRIPTION})
+        if(__DESCRIPTION_FILE)
+            set(CPACK_PACKAGE_DESCRIPTION_FILE "${__DESCRIPTION_FILE}" PARENT_SCOPE)
+            __cpackutils_debug("    CPACK_PACKAGE_DESCRIPTION_FILE=${__DESCRIPTION_FILE}")
+        else()
+            set(CPACK_PACKAGE_DESCRIPTION "${__DESCRIPTION}" PARENT_SCOPE)
+            __cpackutils_debug("    CPACK_PACKAGE_DESCRIPTION=\"${__DESCRIPTION}\"")
+        endif()
+    endif()
+
+    # === LICENSE
+    if(__LICENSE)
+        cmake_parse_arguments(__LICENSE "" "FILE" "" ${__LICENSE})
+        if(__LICENSE_UNPARSED_ARGUMENTS)
+            set(CPACK_PACKAGE_LICENSE "${__LICENSE_UNPARSED_ARGUMENTS}" PARENT_SCOPE)
+            __cpackutils_debug("    CPACK_PACKAGE_LICENSE=${__LICENSE_UNPARSED_ARGUMENTS}")
+        endif()
+        if(__LICENSE_FILE)
+            set(CPACK_RESOURCE_FILE_LICENSE "${__LICENSE_FILE}" PARENT_SCOPE)        
+            __cpackutils_debug("    CPACK_RESOURCE_FILE_LICENSE=${__LICENSE_FILE}")
+        endif()
     endif()
 endfunction()
 
 #[=======================================================================[.rst:
-CPackSet
+CPackCommon
 
-Set common (generator independent) variables. 
+Common package settings.
 
-.. command: CPackSet
+.. command: CPackCommon
 
     ::
-        CPackSet(
+        CPackCommon(
+            [HOMEPAGE <homepage>]
+            [ABOUT_URL <about-url>]
+            [HELP_URL <help-url>]
+            [ICON <icon-file>]
+            [SECTION|GROUP <package-group-or-section>]
         )
+
 #]=======================================================================]
-function(CPackSet)
+function(CPackCommon)
+    __cpackutils_debug("CPackCommon()")
+        
+    set(options "HOMEPAGE;ABOUT_URL;HELP_URL;ICON")
+    cmake_parse_arguments(_ "" "${options};SECTION;GROUP" "" ${ARGN})
+    
+    if(__UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "Invalid arguments: ${__UNPARSED_ARGUMENTS}")
+    endif()
+    if(__SECTION AND __GROUP)
+        message(FATAL_ERROR "Invalid arguments: SECTION and GROUP provided.")
+    endif()
+    
+    foreach(opt ${options})
+        if(DEFINED __${opt})
+            set(CPACK_PACKAGE_${opt} ${__${opt}} PARENT_SCOPE)
+            __cpackutils_debug("    CPACK_PACKAGE_${opt}=${__${opt}}")
+        endif()
+    endforeach()
+
+    if(__SECTION)
+        set(__GROUP ${__SECTION})
+    endif()
+    if(__GROUP) 
+        set(CPACK_PACKAGE_GROUP ${__GROUP} PARENT_SCOPE)
+        __cpackutils_debug("    CPACK_PACKAGE_GROUP=${__GROUP}")
+    endif()
+endfunction()
+        
+#[=======================================================================[.rst:
+CPackComponents
+
+Declare and setup components.
+
+.. command: CPackComponents
+
+    ::
+        CPackComponents(
+            [ALL <component-list>
+                [IN_ONE][IGNORE]]
+            [<COMPONENT>
+                [...]
+            ]
+        )
+
+#]=======================================================================]
+function(CPackComponents)
+    __cpackutils_debug("CPackComponents()")
+    
+    # === ALL
+    cmake_parse_arguments(_ "IN_ONE;IGNORE" "" "ALL" ${ARGN})
+    if(CPACK_COMPONENTS_ALL AND __ALL)
+        message(FATAL_ERROR "CPack components cannot be overridden.")
+    endif()
+    
+    if(__ALL)
+        set(CPACK_COMPONENTS_ALL ${__ALL})
+        set(CPACK_COMPONENTS_ALL ${__ALL} PARENT_SCOPE)
+        
+        if(__cpackutils_debug_output)
+            __cpackutils_debug("    CPACK_COMPONENTS_ALL")
+            foreach(component ${__ALL})
+                __cpackutils_debug("        ${component}")
+            endforeach()
+        endif()
+        
+        if (__IN_ONE)
+            set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE PARENT_SCOPE)
+            __cpackutils_debug("        CPACK_COMPONENTS_GROUPING=ALL_COMPONENTS_IN_ONE")
+        elseif(__IGNORE)
+            set(CPACK_COMPONENTS_GROUPING IGNORE PARENT_SCOPE)
+            __cpackutils_debug("        CPACK_COMPONENTS_GROUPING=IGNORE")
+        endif()
+    endif()
+    
+    # === COMPONENTS
+    if(DEFINED CPACK_COMPONENTS_ALL)
+        cmake_parse_arguments(_ "" "" "ALL;${CPACK_COMPONENTS_ALL}" ${ARGN})
+    
+        foreach(component ${CPACK_COMPONENTS_ALL})
+            if(DEFINED __${component})
+                __cpackutils_debug("    adding component ${component}")
+                cpack_add_component(${component} ${__${COMPONENT}})
+            endif()
+        endforeach()
+    else()
+        if(__UNPARSED_ARGUMENTS)
+            message(FATAL_ERROR "Invalid arguments: missing ALL?")
+        endif()
+    endif()    
+endfunction()
+        
+#[=======================================================================[.rst:
+CPackXYZ
+
+FIXME
+
+.. command: CPackXYZ
+
+    ::
+        CPackXYZ(
+        )
+
+#]=======================================================================]
+function(CPackXYZ)
 endfunction()
 
 ############################
 # Windows specific helpers #
 ############################
 
+#[=======================================================================[.rst:
+CPackDefineNSIS
+
+Define NSIS pacakge.
+
+.. command: CPackDefineNSIS
+
+    ::
+        CPackDefineNSIS(
+        )
+
+#]=======================================================================]
 function(CPackDefineNSIS)
     if(WIN32)
         set(CPACK_GENERATOR "NSIS" PARENT_SCOPE)
@@ -185,7 +359,18 @@ endfunction()
 ##########################
 # Apple specific helpers #
 ##########################
+#[=======================================================================[.rst:
+CPackDefineDMG
 
+Create DMG (Apple/OSx) package.
+
+.. command: CPackDefineDMG
+
+    ::
+        CPackDefineDMG(
+        )
+
+#]=======================================================================]
 function(CPackDefineDMG)
     if(APPLE)
         set(CPACK_GENERATOR "DragNDrop" PARENT_SCOPE)
@@ -215,6 +400,17 @@ macro(_CPackReadShellVars _FILE_NAME _VAR_PREFIX)
     endforeach()
 endmacro()
 
+#[=======================================================================[.rst:
+CPackUnixSysInfo
+
+Get UNIX system information.
+
+.. command: CPackUnixSysInfo
+
+    ::
+        CPackUnixSysInfo(<dist-variable> <version-variable> <codename-variable> <architecture-variable>)
+
+#]=======================================================================]
 function(CPackUnixSysInfo _DIST_VAR _VERSION_VAR _CODENAME_VAR _ARCH_VAR)
     if(UNIX AND NOT APPLE)
         # Read distribution, release, and, codename from /etc/lsb-release and /etc/os-release - if present.
@@ -251,51 +447,148 @@ function(CPackUnixSysInfo _DIST_VAR _VERSION_VAR _CODENAME_VAR _ARCH_VAR)
     endif()
 endfunction()
 
+#[=======================================================================[.rst:
+CPackDefineDEB
+
+Create a Debian-style package.
+
+.. command: CPackDefineDEB
+
+    ::
+        CPackDefineDEB(<distribution>
+            [MAINTAINER <contact-email>]
+            [TEMPLATE <output-template>]
+            [SCRIPT_DIR <installation-script-directory>]
+            [DEPENDS <dependencies>]
+            [SUGGESTS <suggested>]
+            [RECOMMENDS <recommends>]
+            [BREAKS <breaks>]
+            [CONFLICTS <conflicts>]
+            [SECTION|GROUP <section>]
+        )
+
+
+    ``distribution``: The distribution this definition is specified for (e.g. "Ubuntu").
+
+    ``contact-email``: Package maintainer contact email (if different from contact provided to CPackSetup).
+
+    ``output-template``: Template for package file name (default: "\${NAME}_\${VERSION}-\${CODENAME}_\${ARCHITECTURE}")
+
+    ``installation-script-directory``: Debian-style installation script directory.
+
+    ``codename``: Override of the auto-detected distribution 'codename'.
+
+    ``dependencies``: Package dependencies.
+    
+    ``suggested``: List of suggested packages.
+
+    ``recommends``: List of recommended packages.
+    
+    ``breaks``: List of packages that will break by installing this package.
+    
+    ``conflicts``: List of conflicting packages.
+
+    ``section``: Package section or group.
+
+#]=======================================================================]
 function(CPackDefineDEB _DIST_NAME)
     CPackUnixSysInfo(DISTRIBUTION VERSION CODENAME ARCHITECTURE)
 
     if(DISTRIBUTION MATCHES ${_DIST_NAME})
+        __cpackutils_debug("CPackDefineDEB(${_DIST_NAME})")
         set(CPACK_GENERATOR "DEB" PARENT_SCOPE)
+        set(CPACK_DEB_COMPONENT_INSTALL TRUE PARENT_SCOPE)
 
-#        # Set defaults
-#        set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "http://neurosuite.github.io" PARENT_SCOPE)
-#        set(CPACK_DEBIAN_PACKAGE_SECTION "Science" PARENT_SCOPE)
-##
-        # Set architecture
+        set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "${CPACK_PACKAGE_HOMEPAGE}" PARENT_SCOPE)
+        __cpackutils_debug("    CPACK_DEBIAN_PACKAGE_HOMEPAGE=${CPACK_PACKAGE_HOMEPAGE}")
         set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE ${ARCHITECTURE} PARENT_SCOPE)
+        __cpackutils_debug("    CPACK_DEBIAN_PACKAGE_ARCHITECTURE=${ARCHITECTURE}")
+        
+        cmake_parse_arguments(_ "" "MAINTAINER;TEMPLATE;SCRIPT_DIR;SECTION;GROUP" "DEPENDS;SUGGESTS;RECOMMENDS;BREAKS;CONFLICTS" ${ARGN})
+    
+        # === MAINTAINER
+        if(__MAINTAINER)
+            set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${__MAINTAINER}")
+        else()
+            set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_CONTACT}")
+        endif()
+        __cpackutils_debug("    CPACK_DEBIAN_PACKAGE_MAINTAINER=${CPACK_DEBIAN_PACKAGE_MAINTAINER}")
+        set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_DEBIAN_PACKAGE_MAINTAINER}" PARENT_SCOPE)
 
-#        # Set dependencies
-#        set(CPACK_DEBIAN_PACKAGE_DEPENDS ${_DEPENDS} PARENT_SCOPE)
-#
-#        # Determine suggested packages
-#        list(REMOVE_ITEM GEN_SUGGESTED_PACKAGES ${CPACK_PACKAGE_NAME})
-#        string(REPLACE ";" ", "
-#               CPACK_DEBIAN_PACKAGE_SUGGESTS
-#               "${GEN_SUGGESTED_PACKAGES}")
-#        set(CPACK_DEBIAN_PACKAGE_SUGGESTS
-#            "${CPACK_DEBIAN_PACKAGE_SUGGESTS}"
-#            PARENT_SCOPE)
-#
-#        # Add install scripts if supplied
-#        if(_EXTRA_DIR)
-#            foreach(SCRIPT shlibs postinst prerm postrm)
-#                if(EXISTS "${_EXTRA_DIR}/${SCRIPT}")
-#                    list(APPEND CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
-#                    "${_EXTRA_DIR}/${SCRIPT}")
-#                endif()
-#            endforeach()
-#            set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
-#                ${CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA}
-#                PARENT_SCOPE)
-#        endif()
-#
-#        # Determine package name
-#        set(NAME ${CPACK_PACKAGE_NAME})
-#        set(VERSION ${CPACK_PACKAGE_VERSION})
-#        _CPackEval(CPACK_PACKAGE_FILE_NAME "${_NAME_TEMPL}" PARENT_SCOPE)
+        # === SECTION/GROUP
+        if(__GROUP)
+            if(__SECTION)
+                message(FATAL_ERROR "Invalid parameter: SECTION or GROUP")
+            endif()
+            
+            set(__SECTION "${__GROUP}")
+        else()
+            set(__SECTION "${CPACK_PACKAGE_GROUP}")
+        endif()
+        
+        set(CPACK_DEBIAN_PACKAGE_SECTION "${__SECTION}" PARENT_SCOPE)
+        __cpackutils_debug("    CPACK_DEBIAN_PACKAGE_SECTION=${__SECTION}")
+
+        # BUILD_DEPENDS;DEPENDS;SUGGESTS;CONFICTS;BREAKS
+        string(REPLACE ";" ", " CPACK_DEBINA_PACKAGE_DEPENDS "${__DEPENDS}")
+        set(CPACK_DEBINA_PACKAGE_DEPENDS "${CPACK_DEBINA_PACKAGE_DEPENDS}" PARENT_SCOPE)
+        __cpackutils_debug("    CPACK_DEBINA_PACKAGE_DEPENDS=${CPACK_DEBINA_PACKAGE_DEPENDS}")
+
+        string(REPLACE ";" ", " CPACK_DEBINA_PACKAGE_RECOMMENDS "${__RECOMMENDS}")
+        set(CPACK_DEBINA_PACKAGE_RECOMMENDS "${CPACK_DEBINA_PACKAGE_RECOMMENDS}" PARENT_SCOPE)
+        __cpackutils_debug("    CPACK_DEBINA_PACKAGE_RECOMMENDS=${CPACK_DEBINA_PACKAGE_RECOMMENDS}")
+
+        string(REPLACE ";" ", " CPACK_DEBINA_PACKAGE_SUGGESTS "${__SUGGESTS}")
+        set(CPACK_DEBINA_PACKAGE_SUGGESTS "${CPACK_DEBINA_PACKAGE_SUGGESTS}" PARENT_SCOPE)
+        __cpackutils_debug("    CPACK_DEBINA_PACKAGE_SUGGESTS=${CPACK_DEBINA_PACKAGE_SUGGESTS}")
+
+        string(REPLACE ";" ", " CPACK_DEBINA_PACKAGE_BREAKS "${__BREAKS}")
+        set(CPACK_DEBINA_PACKAGE_BREAKS "${CPACK_DEBINA_PACKAGE_BREAKS}" PARENT_SCOPE)
+        __cpackutils_debug("    CPACK_DEBINA_PACKAGE_BREAKS=${CPACK_DEBINA_PACKAGE_BREAKS}")
+
+        string(REPLACE ";" ", " CPACK_DEBINA_PACKAGE_CONFLICTS "${__CONFLICTS}")
+        set(CPACK_DEBINA_PACKAGE_CONFLICTS "${CPACK_DEBINA_PACKAGE_CONFLICTS}" PARENT_SCOPE)
+        __cpackutils_debug("    CPACK_DEBINA_PACKAGE_CONFLICTS=${CPACK_DEBINA_PACKAGE_CONFLICTS}")
+
+
+        # === SCRIPT_DIR
+        if(__SCRIPT_DIR)
+            foreach(SCRIPT shlibs postinst prerm postrm)
+                if(EXISTS "${__SCRIPT_DIR}/${SCRIPT}")
+                    list(APPEND CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
+                    "${__SCRIPT_DIR}/${SCRIPT}")
+                endif()
+            endforeach()
+            set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA ${CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA} PARENT_SCOPE)
+            __cpackutils_debug("    CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA=${CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA}")
+        endif()
+
+        # === TEMPLATE
+        set(NAME ${CPACK_PACKAGE_NAME})
+        set(VERSION ${CPACK_PACKAGE_VERSION})
+        if(NOT DEFINED __TEMPLATE)
+            set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
+        else()
+            _CPackEval(CPACK_PACKAGE_FILE_NAME "${__TEMPLATE}" PARENT_SCOPE)
+        endif()
+        
+        # === COMPONENTS
+        set(CPACK_DEB_PACKAGE_COMPONENT TRUE PARENT_SCOPE)
     endif()
 endfunction(CPackDefineDEB)
 
+#[=======================================================================[.rst:
+CPackDefineRPM
+
+Defined RPM (Redhat) package.
+
+.. command: CPackDefineRPM
+
+    ::
+        CPackDefineRPM(
+        )
+
+#]=======================================================================]
 function(CPackDefineRPM _DIST_NAME)
     CPackUnixSysInfo(DISTRIBUTION VERSION CODENAME ARCHITECTURE)
 
@@ -343,33 +636,3 @@ function(CPackDefineRPM _DIST_NAME)
     endif()
 endfunction(CPackDefineRPM)
 
-#################################
-# Distribution specific helpers #
-#################################
-
-#macro(gen_cpack_ubuntu _DEPENDENCIES _EXTRA_DIR)
-#    gen_cpack_deb("Ubuntu"
-#                        ${_DEPENDENCIES}
-#                        ${_EXTRA_DIR}
-#                        "\${NAME}_\${VERSION}-\${CODENAME}_\${ARCHITECTURE}")
-#endmacro()
-#
-#macro(gen_cpack_suse _DEPENDENCIES _SCRIPT_DIR)
-#    gen_cpack_rpm("openSUSE.*"
-#                         ${_DEPENDENCIES}
-#                         ${_SCRIPT_DIR}
-#                         "\${NAME}-\${VERSION}-\${RELEASE}.\${ARCHITECTURE}")
-#endmacro()
-#
-#macro(gen_cpack_fedora _DEPENDENCIES _SCRIPT_DIR)
-#    gen_cpack_rpm("Fedora"
-#                         ${_DEPENDENCIES}
-#                         ${_SCRIPT_DIR}
-#                         "\${NAME}-\${VERSION}.fc\${RELEASE}.\${ARCHITECTURE}")
-#endmacro()
-#
-#macro(gen_cpack_scientific _DEPENDENCIES _SCRIPT_DIR)
-#    gen_cpack_rpm("Scientific"
-#                         ${_DEPENDENCIES}
-#                         ${_SCRIPT_DIR}
-#                        "\${NAME}-\${VERSION}-\${RELEASE}.\${ARCHITECTURE}")
