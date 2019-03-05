@@ -28,7 +28,7 @@ a C++ version of the libraries.
 ### Languages
 
 *    `LUA_LANGUAGE_C` Build C-compiled libraries (and executables, default: YES).
-*    `LUA_LANGUAGE_CXX` Build C++-compiled libraries (default: NO).
+*    `LUA_LANGUAGE_CXX` Build C++-compiled libraries (default: YES).
 
 ## Configuration
 

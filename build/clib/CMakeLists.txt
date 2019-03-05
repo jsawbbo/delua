@@ -6,7 +6,11 @@ if(LUA_BUILD_STATIC)
     set_target_properties(LuaCLibStatic
         PROPERTIES
             LINKER_LANGUAGE C
-            OUTPUT_NAME ${LUA_NAME}${Lua_RELEASE})
+            OUTPUT_NAME ${LUA_NAME}-${Lua_RELEASE})
+    target_include_directories(LuaCLibStatic PUBLIC
+        $<BUILD_INTERFACE:${luaconf_include_dir}>
+        $<BUILD_INTERFACE:${Lua_SOURCE_DIR}/lua/src>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/${Lua_RELEASE}>)
 endif()
 
 if(LUA_BUILD_SHARED)
@@ -16,9 +20,13 @@ if(LUA_BUILD_SHARED)
     set_target_properties(LuaCLib
         PROPERTIES
             LINKER_LANGUAGE C
-            OUTPUT_NAME ${LUA_NAME}
+            OUTPUT_NAME ${LUA_NAME}-${Lua_RELEASE}
             VERSION ${Lua_VERSION}
             SOVERSION ${Lua_VERSION_MAJOR})
+    target_include_directories(LuaCLib PUBLIC
+        $<BUILD_INTERFACE:${luaconf_include_dir}>
+        $<BUILD_INTERFACE:${Lua_SOURCE_DIR}/lua/src>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/${Lua_RELEASE}>)
 endif()
 
 if(LUA_BUILD_SHARED)
@@ -30,26 +38,26 @@ endif()
 
 if(LUA_BUILD_INTERPRETER)
     add_executable(LuaInterpreter ${executable_options} ${LUA_SRCS})
-    target_link_libraries(LuaInterpreter LuaCLib ${LUA_READLINE_LIBRARY} ${LUA_MATH_LIBRARY})
     set_target_properties(LuaInterpreter
         PROPERTIES
             LINKER_LANGUAGE C
-            OUTPUT_NAME ${LUA_NAME})
+            OUTPUT_NAME ${LUA_NAME}-${Lua_RELEASE})
+    target_link_libraries(LuaInterpreter LuaCLib ${LUA_READLINE_LIBRARY} ${LUA_MATH_LIBRARY})
 endif()
 
 if(LUA_BUILD_COMPILER)
     add_executable(LuaCompiler ${executable_options} ${LUAC_SRCS})
-    target_link_libraries(LuaCompiler LuaCLib ${LUA_MATH_LIBRARY})
     set_target_properties(LuaCompiler
         PROPERTIES
             LINKER_LANGUAGE C
-            OUTPUT_NAME ${LUA_NAME}c)
+            OUTPUT_NAME ${LUA_NAME}c-${Lua_RELEASE})
+    target_link_libraries(LuaCompiler LuaCLib ${LUA_MATH_LIBRARY})
 endif()
 
 # === Installation ===========================================================
 # FIXME multilib support
 install(TARGETS ${__lua_targets}
-    EXPORT DeluaTargets
+    EXPORT DeluaTargets-${Lua_RELEASE}
     LIBRARY DESTINATION lib COMPONENT "runtime"
     ARCHIVE DESTINATION lib COMPONENT "development"
 )
@@ -63,7 +71,4 @@ if(LUA_BUILD_COMPILER)
     install(TARGETS LuaCompiler
         RUNTIME DESTINATION bin COMPONENT "runtime")
 endif()
-
-install(FILES ${LUALIB_HDRS} ${LUALIB_CXX_HDRS}
-    DESTINATION include COMPONENT "development")
 

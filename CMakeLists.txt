@@ -12,6 +12,8 @@ get_directory_property(Lua_PARENT_DIR PARENT_DIRECTORY)
 # === Version ================================================================
 set(Lua_VERSION "${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}.${Lua_VERSION_PATCH}")
 set(Lua_RELEASE "${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}")
+set(Lua_RELEASE_SUFFIX "${Lua_VERSION_MAJOR}${Lua_VERSION_MINOR}")
+
 
 message(STATUS "Lua version ${Lua_VERSION}")
 
@@ -93,26 +95,26 @@ if(Lua_PARENT_DIR)
     list(APPEND CMAKE_MODULE_PATH "${Lua_BINARY_DIR}/cmake")
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} PARENT_SCOPE)
 endif(Lua_PARENT_DIR)
-
+message(STATUS "CMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}")
 # === Resources ==============================================================
 
 install(FILES build/lua.png
     DESTINATION  share/icons
-    RENAME lua${Lua_VERSION_MAJOR}${Lua_VERSION_MINOR}.png
+    RENAME lua${Lua_RELEASE_SUFFIX}.png
     COMPONENT "runtime")
 
 # === Documentation ==========================================================
 
 install(FILES README.md
-    DESTINATION  share/doc/delua/${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}
+    DESTINATION  share/doc/delua/${Lua_RELEASE}
     COMPONENT documentation)    
 
 install(FILES lua/README
-    DESTINATION  share/doc/delua/${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}/lua
+    DESTINATION  share/doc/delua/${Lua_RELEASE}/lua
     COMPONENT documentation)    
 
 install(DIRECTORY lua/doc
-    DESTINATION  share/doc/delua/${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}/lua
+    DESTINATION  share/doc/delua/${Lua_RELEASE}/lua
     COMPONENT documentation)    
 
 # === Package ================================================================
@@ -120,7 +122,7 @@ if(NOT Lua_PARENT_DIR)
 include(CPackUtils)
 
 CPackSetup(
-    NAME "delua-${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}"
+    NAME "delua-${Lua_RELEASE}"
     CONTACT "Jürgen 'George' Sawinski <george@caesar.de>"
     VENDOR "Research center caesar."
     SUMMARY "Simple, extensible, embeddable programming language."

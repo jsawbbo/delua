@@ -40,26 +40,13 @@
 # This is because, the lua location is not standardized and may exist in
 # locations other than lua/
 
-include(DeluaConfig
+if(Delua_FIND_VERSION_MAJOR AND NOT Delua_FIND_VERSION_MINOR)
+    message("Version major and minor are required.")
+endif()
+
+if(Delua_FIND_VERSION_MAJOR AND Delua_FIND_VERSION_PATCH)
+    message(AUTHOR_WARNING "Patch version ignored.")
+endif()
+
+include(DeluaConfig-${Delua_FIND_VERSION_MAJOR}.${Delua_FIND_VERSION_MINOR}
     OPTIONAL RESULT_VARIABLE DeluaConfig_FOUND)
-
-if(DeluaConfig_FOUND)
-    set(PACKAGE_VERSION ${LUA_VERSION_STRING})
-
-    if(Delua_FIND_VERSION)
-        # FIXME
-        if("${Delua_FIND_VERSION_MAJOR}" EQUAL "${LUA_VERSION_MAJOR}")
-            if("${Delua_FIND_VERSION_MINOR}" EQUAL "${LUA_VERSION_MINOR}")
-            else()
-                message(FATAL_ERROR "Requested unsuitable version: ${Delua_FIND_VERSION}")
-            endif()
-        else()
-            message(FATAL_ERROR "Requested unsuitable version: ${Delua_FIND_VERSION}")
-        endif()
-    endif(Delua_FIND_VERSION)
-elseif(DeluaConfig_FOUND)
-    message("DeluaConfig.cmake not found.")
-    find_package(Lua)
-endif(DeluaConfig_FOUND)
-
-
