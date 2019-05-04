@@ -1,4 +1,4 @@
-include($ENV{HOME}/.local/share/cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}/Modules/LocalInitFlags.cmake OPTIONAL)
+include($ENV{HOME}/.local/share/cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}/Modules/UserInitFlags.cmake OPTIONAL)
 
 # COMPILER SETTINGS
 
