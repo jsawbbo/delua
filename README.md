@@ -15,7 +15,38 @@ No major code changes have been made to the original Lua sources (except the
 handling of the search path) and the supplement of exceptions when building  
 a C++ version of the libraries.
 
-## Options
+## Modifications
+
+### General
+
+The Lua sources, except `luaconf.h` - which is now generated using CMake, are  
+almost untouched. Changes made to the pure Lua sources can be found in the  
+`patches` sub-directory.
+
+### Search paths
+
+Additional default search paths can be provided throught `LUA_PATH_EXTRA` and  
+`LUA_CPATH_EXTRA`. In addition, the default search path now includes the  
+`$HOME/.local/` file-system structure on Unixoid systems. In addition, a
+leading '~' expands to the  (the Lua sources `HOME` (environment variable) 
+directory.
+
+### In-build testing
+
+When compiled with *CMAKE_BUILD_TYPE* `Debug`, output directories are dynamically  
+added to the script and library search path (see `__lua_exec_in_buildpath` in the  
+generated `luaconf.h` for further details).
+
+### C++
+
+C++ libraries can be build using the `LUA_LANGUAGE_CXX` configuration option. The  
+libraries are suffixed with "++" compared to their standard C versions. 
+
+Additionally, `lua_Exception` was added to the generated `luaconf.h` header.
+
+For further details: [**UTSL**](https://www.urbandictionary.com/define.php?term=UTSL).
+
+## Build options
 
 ### General options
 
@@ -42,33 +73,3 @@ be set using CMake:
 
 For details and more options, see `build/luaconf.cmake` or use the `cmake-gui`.
 
-## Modifications
-
-### General
-
-The Lua sources, except `luaconf.h` - which is now generated using CMake, are  
-almost untouched. Changes made to the pure Lua sources can be found in the  
-`patches` sub-directory.
-
-### Search paths
-
-Additional default search paths can be provided throught `LUA_PATH_EXTRA` and  
-`LUA_CPATH_EXTRA`. In addition, the default search path now includes the  
-`$HOME/.local/` file-system structure on Unixoid systems (the Lua sources  
-were modified to expand "~" as first character in the search path to the  
-`HOME` environment variable).
-
-### In-build testing
-
-When compiled with *CMAKE_BUILD_TYPE* `Debug`, output directories are dynamically  
-added to the script and library search path (see `__lua_exec_in_buildpath` in the  
-generated `luaconf.h` for further details).
-
-### C++
-
-C++ libraries can be build using the `LUA_LANGUAGE_CXX` configuration option. The  
-libraries are suffixed with "++" compared to their standard C versions. 
-
-Additionally, `lua_Exception` was added to the generated `luaconf.h` header.
-
-For further details: [**UTSL**](https://www.urbandictionary.com/define.php?term=UTSL).

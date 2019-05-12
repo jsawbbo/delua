@@ -14,7 +14,6 @@ set(Lua_VERSION "${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}.${Lua_VERSION_PATCH}"
 set(Lua_RELEASE "${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}")
 set(Lua_RELEASE_SUFFIX "${Lua_VERSION_MAJOR}${Lua_VERSION_MINOR}")
 
-
 message(STATUS "Lua version ${Lua_VERSION}")
 
 # === CMake Paths ============================================================
@@ -119,12 +118,12 @@ install(DIRECTORY lua/doc
 
 # === Package ================================================================
 if(NOT Lua_PARENT_DIR)
-include(CPackUtils)
+include(CPackSimple)
 
-CPackSetup(
+CPackSimple(
     NAME "delua-${Lua_RELEASE}"
     CONTACT "Jürgen 'George' Sawinski <george@caesar.de>"
-    VENDOR "Research center caesar."
+    VENDOR "Research center caesar"
     SUMMARY "Simple, extensible, embeddable programming language."
     DESCRIPTION 
 "This is Lua 5.3.5, released on 26 Jun 2018.
@@ -142,86 +141,64 @@ handling of the search path) and the supplement of exceptions when building
 a C++ version of the libraries."
     LICENSE "MIT"
         FILE ${Lua_SOURCE_DIR}/LICENSE
-)
-
-CPackCommon(
-    HOMEPAGE     "https://bitbucket.org/jsaw/delua"
-    ABOUT_URL    "https://www.lua.org/about.html"
-    HELP_URL     "https://www.lua.org/docs.html"
-    
-    GROUP        "Interpreter"
-    
+        
+    URL
+		HOMEPAGE "https://bitbucket.org/jsaw/delua"
+		ABOUT    "https://www.lua.org/about.html"
+		HELP     "https://www.lua.org/docs.html"
+        
     ICON         "${Lua_SOURCE_DIR}/lua/doc/logo.gif"
+    
+    PACKAGE
+	    GROUP "Interpreter"
+
+	COMPONENTS
+		BEGIN runtime
+			DEFAULT
+			INSTALL YES
+			DISPLAY_NAME "Runtime"
+		END	
+		
+		BEGIN development
+			INSTALL NO
+			PACKAGE_SUFFIX dev
+		    DISPLAY_NAME "Development files"
+		    DEPENDS runtime
+	    END
+	
+		BEGIN documentation
+		    INSTALL NO
+		    PACKAGE_SUFFIX doc
+		    DISPLAY_NAME "Documentation"
+		    DEPENDS runtime
+		    
+		    BEGIN manuals GROUP
+			    INSTALL NO
+			    DISPLAY_NAME "Manuals"
+		    END
+	    END
 )
 
-CPackComponents(ALL runtime development documentation)
-
-CPackComponents(runtime DEFAULT
-    INSTALL YES
-    DISPLAY_NAME "Runtime"
-)
-
-CPackComponents(development
-    INSTALL NO
-    PACKAGE_SUFFIX dev
-    DISPLAY_NAME "Development headers"
-    DEPENDS runtime
-)
-
-CPackComponents(documentation
-    INSTALL NO
-    PACKAGE_SUFFIX doc
-    DISPLAY_NAME "Documentation"
-)
-
-###
-
-#CPackDefineNSIS(
+#CPackSimplePackage(NSIS
 #)
-
-#CPackDefineDMG(
-#)
-
-CPackDefineDEB("Debian"
-    SECTION "Interpreter"    
-    # FIXME
-)
-
-set(ubuntu_debian_version "0")
-set(ubuntu_package_release "0")
-CPackDefineDEB("Ubuntu"
-    TEMPLATE "\${NAME}_\${VERSION}-${ubuntu_debian_version}ubuntu${ubuntu_package_release}_\${ARCHITECTURE}"
-    RECOMMENDS "delua-${Lua_VERSION_MAJOR}.${LUA_VERSOIN_MINOR}-doc"
-    # FIXME
-)
-
-#CPackDefineRPM("Fedora"
-#    # FIXME
-#)
-
-#CPackDefineRPM("Scientific"
-#    # FIXME
-#)
-
-#macro(gen_cpack_suse _DEPENDENCIES _SCRIPT_DIR)
-#    gen_cpack_rpm("openSUSE.*"
-#                         ${_DEPENDENCIES}
-#                         ${_SCRIPT_DIR}
-#                         "\${NAME}-\${VERSION}-\${RELEASE}.\${ARCHITECTURE}")
-#endmacro()
 #
-#macro(gen_cpack_fedora _DEPENDENCIES _SCRIPT_DIR)
-#    gen_cpack_rpm("Fedora"
-#                         ${_DEPENDENCIES}
-#                         ${_SCRIPT_DIR}
-#                         "\${NAME}-\${VERSION}.fc\${RELEASE}.\${ARCHITECTURE}")
-#endmacro()
+#CPackSimplePackage(DMG
+#)
 #
-#macro(gen_cpack_scientific _DEPENDENCIES _SCRIPT_DIR)
-#    gen_cpack_rpm("Scientific"
-#                         ${_DEPENDENCIES}
-#                         ${_SCRIPT_DIR}
-#                        "\${NAME}-\${VERSION}-\${RELEASE}.\${ARCHITECTURE}")
+#CPackSimplePackage(RPM
+#)
+#
+#CPackSimplePackage(DEB
+#	VERSION "0"
+#)
+
+CPackSimplePackage(DEB DISTRO Ubuntu
+	RELEASE "0"
+	MAINTAINER "Juergen 'George' Sawinski <juergen.sawinski@gmail.com>"
+	
+#	TEMPLATE "\${NAME}_\${VERSION}-${DEB_VERSION}ubuntu${UBUNTU_RELEASE}_\${ARCHITECTURE}"
+	RECOMMENDS "delua-${Lua_VERSION_MAJOR}.${LUA_VERSOIN_MINOR}-doc"
+)
 
 include(CPack)
 endif()
