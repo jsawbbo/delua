@@ -1,5 +1,8 @@
 include(CPackSimple/UnixUtils)
 
+# TODO 
+#     CPACK_DEBIAN_PACKAGE_HOMEPAGE
+# see also https://cmake.org/cmake/help/v3.10/module/CPackDeb.html
 macro(cpack_simple_package_deb)
 	if(UNIX AND NOT APPLE)
 		cmake_parse_arguments(__deb "" "DISTRIBUTION;TEMPLATE;MAINTAINER;SCRIPTS;GROUP" "DEPENDS;SUGGESTS;RECOMMENDS;BREAKS;CONFLICTS;COMPONENTS" ${ARGN})

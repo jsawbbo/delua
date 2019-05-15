@@ -106,15 +106,15 @@ install(FILES build/lua.png
 
 install(FILES README.md
     DESTINATION  share/doc/delua/${Lua_RELEASE}
-    COMPONENT documentation)    
+    COMPONENT "documentation")    
 
 install(FILES lua/README
     DESTINATION  share/doc/delua/${Lua_RELEASE}/lua
-    COMPONENT documentation)    
+    COMPONENT "documentation")    
 
 install(DIRECTORY lua/doc
     DESTINATION  share/doc/delua/${Lua_RELEASE}/lua
-    COMPONENT documentation)    
+    COMPONENT "documentation")
 
 # === Package ================================================================
 if(NOT Lua_PARENT_DIR)
@@ -153,24 +153,26 @@ a C++ version of the libraries."
 	    GROUP "Interpreter"
 
 	COMPONENTS
-		BEGIN runtime
+		BEGIN runtime GROUP
 			DEFAULT
 			INSTALL YES
 			DISPLAY_NAME "Runtime"
-		END	
-		
-		BEGIN development
+		END
+			
+		BEGIN development GROUP
 			INSTALL NO
 		    DISPLAY_NAME "Development files"
 		    DEPENDS runtime
-	    END
-	
+		END
+			
 		BEGIN documentation
 		    INSTALL NO
 		    DISPLAY_NAME "Documentation"
 		    DEPENDS runtime
-	    END
+		END
 )
+
+set(CPACK_COMPONENTS_ALL runtime development documentation)
 
 #CPackSimplePackage(NSIS
 #)
@@ -193,15 +195,15 @@ cpack_simple_package(DEB DISTRIBUTION Ubuntu
 #	RECOMMENDS "delua-${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}-doc"
 #	
 	COMPONENTS
-		BEGIN runtime
+		BEGIN runtime 
 			PACKAGE_SUFFIX OFF
 		END
 			
-		BEGIN development
+		BEGIN development 
 			PACKAGE_SUFFIX dev
 		END
 			
-		BEGIN documentation
+		BEGIN documentation-delua
 			PACKAGE_SUFFIX doc
 		END
 )

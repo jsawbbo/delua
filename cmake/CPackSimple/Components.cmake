@@ -103,84 +103,146 @@ macro(cpack_simple_add_component compname)
 	# ...
 endmacro()
 
+set(__cpack_add_component_group_OPT "EXPANDED;BOLD_TITLE")
+set(__cpack_add_component_group_ONE "DISPLAY_NAME;DESCRIPTION")
+set(__cpack_add_component_group_MULTI "")
 macro(cpack_simple_add_component_group groupname)
-message("cpack_simple_add_component_group(${groupname} ${ARGN})")
 #cpack_add_component_group(groupname
 #                         [DISPLAY_NAME name]
 #                         [DESCRIPTION description]
 #                         [PARENT_GROUP parent]
 #                         [EXPANDED]
 #                         [BOLD_TITLE])
-	cmake_parse_arguments(__csacg "" "" "" ${ARGN})
+	cmake_parse_arguments(__csacg "${__cpack_add_component_group_OPT};DEFAULT" "${__cpack_add_component_group_ONE};PARENT;INSTALL;PACKAGE_SUFFIX" "${__cpack_add_component_group_MULTI}" ${ARGN})
+	
+	if(__csacg_UNPARSED_ARGUMENTS)
+		message(FATAL_ERROR "CPackSimple - invalid arguments passed to cpack_simple_add_component: ${__csacg_UNPARSED_ARGUMENTS}")
+	endif()
+	
+	# re-generate arguments for cpack_add_component_group
+	set(__csacg_add_args)
+	foreach(k ${__cpack_add_component_group_OPT})
+		if(DEFINED __csacg_${k} AND __csacg_${k})
+			list(APPEND __csacg_add_args ${k})
+			if(__cpack_simple_report)
+				message(STATUS "[CPackSimple] CPACK_COMPONENT_${compname}_${k} = TRUE")
+			endif()
+		endif()
+	endforeach()
+	foreach(k ${__cpack_add_component_group_ONE} ${__cpack_add_component_group_MULTI})
+		if(DEFINED __csacg_${k})
+			list(APPEND __csacg_add_args ${k} ${__csacg_${k}})
+			if(__cpack_simple_report)
+				message(STATUS "[CPackSimple] CPACK_COMPONENT_${compname}_${k} = ${__csacg_${k}}")
+			endif()
+		endif()
+	endforeach()
+	
+	# parent?
+	if(__csacg_PARENT)
+		list(APPEND __csacg_add_args PARENT_GROUP ${__csacg_PARENT})
+	endif()
+	
+	# add component
+	cpack_add_component_group(${compname} ${__csacg_add_args})
+	
+	# DEFAULT
+	if(__csacg_DEFAULT)
+		cpack_simple_set(CPACK_SIMPLE_COMPONENT_${compname}_DEFAULT TRUE)
+	endif()
+
+	# INSTALL
+	if(__csacg_INSTALL)
+		cpack_simple_set(CPACK_SIMPLE_COMPONENT_${compname}_INSTALL ${__csacg_INSTALL})
+	endif()
+	
+	# PACKAGE_SUFFIX
+	if(__csacg_PACKAGE_SUFFIX)
+		cpack_simple_set(CPACK_SIMPLE_COMPONENT_${compname}_PACKAGE_SUFFIX ${__csacg_PACKAGE_SUFFIX})
+	endif()
+	
+	# ...
 endmacro()
 
 set(__cpack_simple_parse_component_context)
 macro(cpack_simple_parse_component)
-#message("cpack_simple_parse_component(${ARGN})")
-	# split component declaration and sub-component
-	unset(__csac_component)
+	# === split component declaration and sub-components
+	unset(__cspc_component)
 
-	set(__csac_group FALSE)
-	set(__csac_decl)
-	set(__csac_subdecl)
+	set(__cspc_group FALSE)
+	set(__cspc_decl)
+	set(__cspc_subdecl)
+	set(__cspc_subdecl_n 0)
 	
-	set(__csac_group 0)
-	set(__csac_waitfor_end OFF)
-	set(__csac_end_of_args OFF)
+	set(__cspc_group 0)
+	set(__cspc_waitfor_end OFF)
+	set(__cspc_end_of_args OFF)
 	
-	foreach(__csac_arg ${ARGN})
-		if(NOT __csac_waitfor_end)
-			if(__csac_arg STREQUAL BEGIN)
-				set(__csac_group 1)
-				set(__csac_waitfor_end ON)
-			elseif(__csac_arg STREQUAL GROUP)
-				set(__csac_group TRUE)
+	foreach(__cspc_arg ${ARGN})
+		if(NOT __cspc_waitfor_end)
+			if(__cspc_arg STREQUAL BEGIN)
+				set(__cspc_group 1)
+				set(__cspc_waitfor_end ON)
+				math(EXPR __cspc_subdecl_n "${__cspc_subdecl_n} + 1")
+				set(__cspc_subdecl${__cspc_subdecl_n})
+			elseif(__cspc_arg STREQUAL GROUP)
+				set(__cspc_group TRUE)
 			else()
-				if(NOT DEFINED __csac_component)
-					set(__csac_component ${__csac_arg})
+				if(NOT DEFINED __cspc_component)
+					set(__cspc_component ${__cspc_arg})
 				else()
-					list(APPEND __csac_decl ${__csac_arg})
+					list(APPEND __cspc_decl ${__cspc_arg})
 				endif()
 			endif()
-		elseif(__csac_end_of_args)
-			message(FATAL_ERROR "CPackSimple - unbalance BEGIN-END block: No arguments must follow END")
+		elseif(__cspc_end_of_args)
+			if(__cspc_arg STREQUAL BEGIN)
+				set(__cspc_group 1)
+				set(__cspc_waitfor_end ON)
+				set(__cspc_end_of_args FALSE)
+				math(EXPR __cspc_subdecl_n "${__cspc_subdecl_n} + 1")
+				set(__cspc_subdecl${__cspc_subdecl_n})
+			else()
+				message(FATAL_ERROR "CPackSimple - unbalance BEGIN-END block: No arguments must follow END")
+			endif()
 		else()
-			if(__csac_arg STREQUAL BEGIN)
-				math(EXPR __csac_group "${__csac_group} + 1")
-			elseif(__csac_arg STREQUAL END)
-				math(EXPR __csac_group "${__csac_group} - 1")
+			if(__cspc_arg STREQUAL BEGIN)
+				math(EXPR __cspc_group "${__cspc_group} + 1")
+			elseif(__cspc_arg STREQUAL END)
+				math(EXPR __cspc_group "${__cspc_group} - 1")
 			endif()
 			
-			if(__csac_group EQUAL 0)
-				set(__csac_end_of_args ON)
+			if(__cspc_group EQUAL 0)
+				set(__cspc_end_of_args ON)
 			else()
-				list(APPEND __csac_subdecl ${__csac_arg})
+				list(APPEND __cspc_subdecl${__cspc_subdecl_n} ${__cspc_arg})
 			endif()
 		endif()
 	endforeach()
 
 	# === component declaration ===
-	cmake_parse_arguments(__csac "GROUP" "" "" ${__csac_decl})
-	if(__csac_GROUP)
-		cmake_parse_arguments(__csac "GROUP" "" "" ${__csac_decl})
-		cpack_simple_add_component_group(${__csac_component} ${__csac_UNPARSED_ARGUMENTS})
+	cmake_parse_arguments(__cspc "GROUP" "" "" ${__cspc_decl})
+	if(__cspc_GROUP)
+		cmake_parse_arguments(__cspc "GROUP" "" "" ${__cspc_decl})
+		cpack_simple_add_component_group(${__cspc_component} ${__cspc_UNPARSED_ARGUMENTS})
 	else()
-		cpack_simple_add_component(${__csac_component} ${__csac_decl})
+		cpack_simple_add_component(${__cspc_component} ${__cspc_decl})
 	endif()
 	
-	# === sub-component ===
-	if(__csac_subdecl AND NOT "${__csac_subdecl}" STREQUAL "")
-		cpack_simple_stack(__cpack_simple_parse_component_context PUSH ${__csac_component})
-		
-	    cpack_simple_parse_component(${__csac_subdecl} PARENT ${__csac_component})
-	    
-#		cpack_simple_stack(__cpack_simple_parse_component_context TOP __csac_component)
-		cpack_simple_stack(__cpack_simple_parse_component_context POP)
+	# === sub-component(s) ===
+	if(__cspc_subdecl_n GREATER 0)
+		set(__cspc_${__cspc_component}_i 1)
+		set(__cspc_${__cspc_component}_n ${__cspc_subdecl_n})
+
+		while(${__cspc_${__cspc_component}_i} LESS_EQUAL ${__cspc_${__cspc_component}_n})
+			cpack_simple_stack(__cpack_simple_parse_component_context PUSH ${__cspc_component})
+			
+		    cpack_simple_parse_component(${__cspc_subdecl${__cspc_${__cspc_component}_i}} PARENT ${__cspc_component})
+		    
+			cpack_simple_stack(__cpack_simple_parse_component_context TOP __cspc_component)
+			cpack_simple_stack(__cpack_simple_parse_component_context POP)
+			
+			math(EXPR __cspc_${__cspc_component}_i "${__cspc_${__cspc_component}_i} + 1")
+		endwhile()
 	endif()
-	
-	# clean variable prefix
-	string(LENGTH __cpack_simple_component_varprefix __cpack_simple_component_varlength)
-	math(EXPR __cpack_simple_component_varlength "${__cpack_simple_component_varlength} - 1")
-	string(SUBSTRING "${__cpack_simple_component_varprefix}" 0 ${__cpack_simple_component_varlength} __cpack_simple_component_varprefix)
 endmacro()
 
