@@ -187,17 +187,30 @@ a C++ version of the libraries."
 #
 #CPackSimplePackage(RPM
 #)
-#
-#CPackSimplePackage(DEB
-#	VERSION "0"
-#)
 
-CPackSimplePackage(DEB DISTRO Ubuntu
+CPackSimplePackage(DEB
+	VERSION "0"
+)
+
+CPackSimplePackage(DEB DISTRIBUTION Ubuntu
 	RELEASE "0"
 	MAINTAINER "Juergen 'George' Sawinski <juergen.sawinski@gmail.com>"
 	
 #	TEMPLATE "\${NAME}_\${VERSION}-${DEB_VERSION}ubuntu${UBUNTU_RELEASE}_\${ARCHITECTURE}"
-	RECOMMENDS "delua-${Lua_VERSION_MAJOR}.${LUA_VERSOIN_MINOR}-doc"
+	RECOMMENDS "delua-${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}-doc"
+	
+	COMPONENTS
+		BEGIN runtime
+			PACKAGE_SUFFIX OFF
+		END
+			
+		BEGIN development
+			PACKAGE_SUFFIX dev
+		END
+			
+		BEGIN documentation
+			PACKAGE_SUFFIX doc
+		END
 )
 
 include(CPack)

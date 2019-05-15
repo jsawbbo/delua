@@ -1,4 +1,4 @@
-function(CPackSimpleDefineNSIS)
+macro(CPackSimpleDefineNSIS)
     if(WIN32)
 #        set(CPACK_GENERATOR "NSIS" PARENT_SCOPE)
 #
@@ -44,4 +44,4 @@ function(CPackSimpleDefineNSIS)
 ##            set(CPACK_SYSTEM_NAME "win32" PARENT_SCOPE)
 ##        endif()
     endif()
-endfunction()
+endmacro()

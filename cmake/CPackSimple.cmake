@@ -37,8 +37,9 @@ macro(cpack_simple_set outvar)
 		set(__cpack_simple_prefix "CPACK")
 	endif()
 
-	set(${__cpack_simple_prefix}_${outvar} ${__cpack_simple_set_UNPARSED_ARGUMENTS})
-	set(${__cpack_simple_prefix}_${outvar} ${__cpack_simple_set_UNPARSED_ARGUMENTS} PARENT_SCOPE)
+#	set(${__cpack_simple_prefix}_${outvar} ${__cpack_simple_set_UNPARSED_ARGUMENTS})
+#	set(${__cpack_simple_prefix}_${outvar} ${__cpack_simple_set_UNPARSED_ARGUMENTS} PARENT_SCOPE)
+	set(${__cpack_simple_prefix}_${outvar} "${__cpack_simple_set_UNPARSED_ARGUMENTS}" CACHE INTERNAL "Set by CPackSimple." FORCE)
 	
 	# [[ report ]]
 	if(__cpack_simple_report)
@@ -104,6 +105,35 @@ macro(cpack_simple_read_variables _FILE_NAME _VAR_PREFIX)
         string(REGEX REPLACE "\"$" "" value "${value}")
         set(${_VAR_PREFIX}${var} "${value}")
     endforeach()
+endmacro()
+
+macro(cpack_simple_pass_arguments _varname _options _one _multi _command)
+	set(__pass_args)
+	
+	# options
+	foreach(k ${_options})
+		if(${_varname}_${k})
+			list(APPEND __pass_args ${k})
+		endif()
+	endforeach()
+
+	# one and multi keys
+	foreach(k ${_one} ${_multi})
+		if(DEFINED ${_varname}_${k})
+			list(APPEND __pass_args ${k} ${${_varname}_${k}})
+		endif()
+	endforeach()
+	
+	# exec 
+	if(__pass_args)
+		if(${_command} STREQUAL cpack_add_component)
+			cpack_add_component(${__pass_args})
+		elseif(${_command} STREQUAL cpack_add_component_group)
+			cpack_add_component_group(${__pass_args})
+		else()
+			message(FATAL_ERROR "CPackSimple: cannot execute ${_command}(${__pass_args}) - command unknown")
+		endif()
+	endif()
 endmacro()
 
 # === [ PARSING ] ===
@@ -239,36 +269,73 @@ macro(cpack_simple_component component)
 		
 		if(__component)
 		# === add component
-		#cpack_add_component(compname
-		#                    [DISPLAY_NAME name]
-		#                    [DESCRIPTION description]
-		#                    [HIDDEN | REQUIRED | DISABLED ]
-		#                    [DEPENDS comp1 comp2 ... ]
-		#                    [INSTALL_TYPES type1 type2 ... ]
-		#                    [DOWNLOADED]
-		#                    [ARCHIVE_FILE filename])
-			if(__cpack_simple_context)
-				cpack_add_component(${component} ${ARGN} GROUP ${__cpack_simple_context})
-			else()
-				cpack_add_component(${component} ${ARGN})
+			set(__cpack_simple_add_component_OPTIONS)
+			set(__cpack_simple_add_component_ONE PACKAGE_SUFFIX)
+			set(__cpack_simple_add_component_MULTI)
+			cmake_parse_arguments(__component "HIDDEN;REQUIRED;DISABLED;DOWNLOADED;${__cpack_simple_add_component_OPTIONS}" 
+				"DISPLAY_NAME;DESCRIPTION;ARCHIVE_FILE;${__cpack_simple_add_component_ONE}" 
+				"DEPENDS;INSTALL_TYPES;${__cpack_simple_add_component_MULTI}" ${ARGN})
+			
+			if(__coponent_UNPARSED_ARGUMENTS)
+				message(FATAL_ERROR "CPackSimple: Invalid arguments passed with component declaration: ${__coponent_UNPARSED_ARGUMENTS}.")
 			endif()
+			
+			#cpack_add_component(compname
+			#                    [DISPLAY_NAME name]
+			#                    [DESCRIPTION description]
+			#                    [HIDDEN | REQUIRED | DISABLED ]
+			#                    [DEPENDS comp1 comp2 ... ]
+			#                    [INSTALL_TYPES type1 type2 ... ]
+			#                    [DOWNLOADED]
+			#                    [ARCHIVE_FILE filename])
+			if(__cpack_simple_context)
+				set(__component_GROUP ${__cpack_simple_context})
+			else()
+				unset(__component_GROUP)
+			endif()
+			cpack_simple_pass_arguments(__component "HIDDEN;REQUIRED;DISABLED;DOWNLOADED" "DISPLAY_NAME;DESCRIPTION;ARCHIVE_FILE" "DEPENDS;INSTALL_TYPES" cpack_add_component)
+			
+			if(DEFINED __component_PACKAGE_SUFFIX)
+				if(NOT __component_PACKAGE_SUFFIX)
+					cpack_simple_set(COMPONENT_${component}_PACKAGE_SUFFIX "")
+				else()
+					cpack_simple_set(COMPONENT_${component}_PACKAGE_SUFFIX "-${__component_PACKAGE_SUFFIX}")
+				endif()
+			endif()
+
+			# book keeping
+			list(APPEND CPACK_COMPONENTS_ALL ${component})
+			list(REMOVE_DUPLICATES CPACK_COMPONENTS_ALL)
+			cpack_simple_set(COMPONENTS_ALL ${CPACK_COMPONENTS_ALL})
 			
 			# [[ report ]]
 			if(__cpack_simple_report)
-				message(STATUS "[CPackSimple] Adding component ${component}")
+				message(STATUS "[CPackSimple] Added or modified component ${component}")
 			endif()
 		else()
 		# === add component group
-		#cpack_add_component_group(groupname
-		#                         [DISPLAY_NAME name]
-		#                         [DESCRIPTION description]
-		#                         [EXPANDED]
-		#                         [BOLD_TITLE])
-			if(__cpack_simple_context)
-				cpack_add_component_group(${component} ${ARGN} PARENT_GROUP ${__cpack_simple_context})
-			else()
-				cpack_add_component_group(${component} ${ARGN})
+			set(__cpack_simple_add_component_OPTIONS)
+			set(__cpack_simple_add_component_ONE)
+			set(__cpack_simple_add_component_MULTI)
+			cmake_parse_arguments(__component "${__cpack_simple_add_component_OPTIONS}" 
+				"DISPLAY_NAME;DESCRIPTION;${__cpack_simple_add_component_ONE}" 
+				"${__cpack_simple_add_component_MULTI}" ${ARGN})
+			
+			if(__coponent_UNPARSED_ARGUMENTS)
+				message(FATAL_ERROR "CPackSimple: Invalid arguments passed with component declaration: ${__coponent_UNPARSED_ARGUMENTS}.")
 			endif()
+		
+			#cpack_add_component_group(groupname
+			#                         [DISPLAY_NAME name]
+			#                         [DESCRIPTION description]
+			#                         [EXPANDED]
+			#                         [BOLD_TITLE])
+			if(__cpack_simple_context)
+				set(__component_PARENT_GROUP ${__cpack_simple_context})
+			else()
+				unset(__component_PARENT_GROUP)
+			endif()
+			cpack_simple_pass_arguments(__component "EXPANDED;BOLD_TITLE" "DISPLAY_NAME;DESCRIPTION;PARENT_GROUP" "" cpack_add_component_group)
 	
 			# [[ report ]]
 			if(__cpack_simple_report)
@@ -412,16 +479,16 @@ endfunction()
 
 # === [ PACKAGING ] ===
 function(CPackSimplePackage)
-	cmake_parse_arguments(__cpack_simple_package "NSIS;DMG;DEB;RPM" "" "")
+	cmake_parse_arguments(__cpack_simple_package "NSIS;DMG;DEB;RPM" "" "" ${ARGN})
 	
 	if(__cpack_simple_package_NSIS)
-		CPackSimpleDefineNSIS(${ARGN})
+		CPackSimpleDefineNSIS(${__cpack_simple_package_UNPARSED_ARGUMENTS})
 	elseif(__cpack_simple_package_DMG)
-		CPackSimpleDefineDMG(${ARGN})
+		CPackSimpleDefineDMG(${__cpack_simple_package_UNPARSED_ARGUMENTS})
 	elseif(__cpack_simple_package_DEB)
-		CPackSimpleDefineDEB(${ARGN})
+		CPackSimpleDefineDEB(${__cpack_simple_package_UNPARSED_ARGUMENTS})
 	elseif(__cpack_simple_package_RPM)
-		CPackSimpleDefineRPM(${ARGN})
+		CPackSimpleDefineRPM(${__cpack_simple_package_UNPARSED_ARGUMENTS})
 	endif()
 endfunction()
 

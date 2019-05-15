@@ -12,7 +12,7 @@ include(CPackSimpleUnix)
 #        )
 #
 ##]=======================================================================]
-#function(CPackDefineRPM _DIST_NAME)
+#macro(CPackSimpleDefineRPM _DIST_NAME)
 #    cpack_simple_unix_sysinfo(DISTRIBUTION VERSION CODENAME ARCHITECTURE)
 #
 #    if(DISTRIBUTION MATCHES ${_DIST_NAME})
@@ -57,4 +57,4 @@ include(CPackSimpleUnix)
 ##        set(VERSION ${CPACK_PACKAGE_VERSION})
 ##        gen_eval(CPACK_PACKAGE_FILE_NAME "${_NAME_TEMPL}" PARENT_SCOPE)
 #    endif()
-#endfunction(CPackDefineRPM)
+#endmacro()
