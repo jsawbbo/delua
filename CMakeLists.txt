@@ -188,12 +188,16 @@ set(CPACK_COMPONENTS_ALL runtime development documentation)
 #)
 
 cpack_simple_package(DEB DISTRIBUTION Ubuntu
-#	RELEASE "0"
-#	MAINTAINER "Juergen 'George' Sawinski <juergen.sawinski@gmail.com>"
-#	
-##	TEMPLATE "\${NAME}_\${VERSION}-${DEB_VERSION}ubuntu${UBUNTU_RELEASE}_\${ARCHITECTURE}"
-#	RECOMMENDS "delua-${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}-doc"
-#	
+	RELEASE "0"
+	MAINTAINER "Juergen 'George' Sawinski <juergen.sawinski@gmail.com>"
+	
+	VARIABLES
+		DEB_VERSION 0
+		UBUNTU_RELEASE 0
+	
+	TEMPLATE "@NAME@_@VERSION@-@DEB_VERSION@ubuntu@UBUNTU_RELEASE@_@ARCHITECTURE@"
+	RECOMMENDS "delua-${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}-doc"
+	
 	COMPONENTS
 		BEGIN runtime 
 			PACKAGE_SUFFIX OFF

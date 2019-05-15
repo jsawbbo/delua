@@ -1,8 +1,20 @@
 macro(cpack_simple_set outvar)
-	set(${outvar} ${ARGN})
-	
-	if(__cpack_simple_report)
-		message(STATUS "[CPackSimple] ${outvar} = ${ARGN}")
+	if(${outvar} STREQUAL VARIABLES)
+		math(EXPR __cps_N "${ARGC}-1")
+		foreach(k RANGE 1 ${__cps_N} 2)
+			math(EXPR v "${k}+1")
+			
+			set(args ${ARGV})
+			list(GET args ${k} __cps_key)
+			list(GET args ${v} __cps_value)
+			cpack_simple_set(${__cps_key} ${__cps_value})
+		endforeach()
+	else()
+		set(${outvar} ${ARGN})
+		
+		if(__cpack_simple_report)
+			message(STATUS "[CPackSimple] ${outvar} = ${ARGN}")
+		endif()
 	endif()
 endmacro()
 

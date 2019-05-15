@@ -5,7 +5,7 @@ include(CPackSimple/UnixUtils)
 # see also https://cmake.org/cmake/help/v3.10/module/CPackDeb.html
 macro(cpack_simple_package_deb)
 	if(UNIX AND NOT APPLE)
-		cmake_parse_arguments(__deb "" "DISTRIBUTION;TEMPLATE;MAINTAINER;SCRIPTS;GROUP" "DEPENDS;SUGGESTS;RECOMMENDS;BREAKS;CONFLICTS;COMPONENTS" ${ARGN})
+		cmake_parse_arguments(__deb "" "DISTRIBUTION;TEMPLATE;MAINTAINER;SCRIPTS;GROUP" "DEPENDS;SUGGESTS;RECOMMENDS;BREAKS;CONFLICTS;COMPONENTS;VARIABLES" ${ARGN})
 		
 		if(NOT __deb_DISTRIBUTION)
 			set(__deb_DISTRIBUTION "Debian")
@@ -19,6 +19,11 @@ macro(cpack_simple_package_deb)
 			
 			cpack_simple_set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "${CPACK_PACKAGE_HOMEPAGE}")
 			cpack_simple_set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE ${ARCHITECTURE})
+
+			# VARIABLES
+			if(__deb_VARIABLES)
+				cpack_simple_set(VARIABLES ${__deb_VARIABLES})
+			endif()
 
 			# MAINTAINER
 			if(NOT __deb_MAINTAINER)
@@ -71,7 +76,7 @@ macro(cpack_simple_package_deb)
 	        if(NOT DEFINED __deb_TEMPLATE)
 	            set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
 	        else()
-	            cpack_simple_eval(CPACK_DEBIAN_FILE_NAME "${__deb_TEMPLATE}.deb")
+		        string(CONFIGURE "${__deb_TEMPLATE}.deb" __deb_TEMPLATE @ONLY)
 	        endif()
             cpack_simple_set(CPACK_DEBIAN_FILE_NAME "${CPACK_DEBIAN_FILE_NAME}")
 			
