@@ -1,5 +1,5 @@
 
-macro(CPackSimpleDefineDMG)
+macro(cpack_simple_package_dmg)
     if(APPLE)
 #        set(CPACK_GENERATOR "DragNDrop" PARENT_SCOPE)
 #        set(CPACK_DMG_FORMAT "UDBZ" PARENT_SCOPE)

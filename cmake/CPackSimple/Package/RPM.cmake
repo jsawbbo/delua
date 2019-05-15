@@ -1,4 +1,4 @@
-include(CPackSimpleUnix)
+include(CPackSimple/UnixUtils)
 
 ##[=======================================================================[.rst:
 #CPackDefineRPM
@@ -12,7 +12,7 @@ include(CPackSimpleUnix)
 #        )
 #
 ##]=======================================================================]
-#macro(CPackSimpleDefineRPM _DIST_NAME)
+#macro(cpack_simple_package_rpm _DIST_NAME)
 #    cpack_simple_unix_sysinfo(DISTRIBUTION VERSION CODENAME ARCHITECTURE)
 #
 #    if(DISTRIBUTION MATCHES ${_DIST_NAME})

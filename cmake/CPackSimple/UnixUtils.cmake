@@ -1,3 +1,17 @@
+macro(cpack_simple_read_variables _FILE_NAME _VAR_PREFIX)
+    # Copyright 2015 by Florian Franzen
+    file(READ "${_FILE_NAME}" contents)
+    string(REGEX REPLACE ";" "\\\\;" contents "${contents}")
+    string(REGEX REPLACE "\n" ";" contents "${contents}")
+    foreach(line ${contents})
+        string(REGEX REPLACE "=.*" "" var "${line}")
+        string(REGEX REPLACE "[^=]*=" "" value "${line}")
+        string(REGEX REPLACE "^\"" "" value "${value}")
+        string(REGEX REPLACE "\"$" "" value "${value}")
+        set(${_VAR_PREFIX}${var} "${value}")
+    endforeach()
+endmacro()
+
 function(cpack_simple_unix_sysinfo _DIST_VAR _VERSION_VAR _CODENAME_VAR _ARCH_VAR)
     # Copyright 2015 by Florian Franzen
     if(UNIX AND NOT APPLE)

@@ -1,4 +1,4 @@
-macro(CPackSimpleDefineNSIS)
+macro(cpack_simple_package_nsis)
     if(WIN32)
 #        set(CPACK_GENERATOR "NSIS" PARENT_SCOPE)
 #

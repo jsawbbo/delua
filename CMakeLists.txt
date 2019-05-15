@@ -94,7 +94,7 @@ if(Lua_PARENT_DIR)
     list(APPEND CMAKE_MODULE_PATH "${Lua_BINARY_DIR}/cmake")
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} PARENT_SCOPE)
 endif(Lua_PARENT_DIR)
-message(STATUS "CMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}")
+
 # === Resources ==============================================================
 
 install(FILES build/lua.png
@@ -120,7 +120,7 @@ install(DIRECTORY lua/doc
 if(NOT Lua_PARENT_DIR)
 include(CPackSimple)
 
-CPackSimple(
+cpack_simple_configure(
     NAME "delua-${Lua_RELEASE}"
     CONTACT "Jürgen 'George' Sawinski <george@caesar.de>"
     VENDOR "Research center caesar"
@@ -161,21 +161,14 @@ a C++ version of the libraries."
 		
 		BEGIN development
 			INSTALL NO
-			PACKAGE_SUFFIX dev
 		    DISPLAY_NAME "Development files"
 		    DEPENDS runtime
 	    END
 	
 		BEGIN documentation
 		    INSTALL NO
-		    PACKAGE_SUFFIX doc
 		    DISPLAY_NAME "Documentation"
 		    DEPENDS runtime
-		    
-		    BEGIN manuals GROUP
-			    INSTALL NO
-			    DISPLAY_NAME "Manuals"
-		    END
 	    END
 )
 
@@ -188,17 +181,17 @@ a C++ version of the libraries."
 #CPackSimplePackage(RPM
 #)
 
-CPackSimplePackage(DEB
-	VERSION "0"
-)
+#CPackSimplePackage(DEB
+#	VERSION "0"
+#)
 
-CPackSimplePackage(DEB DISTRIBUTION Ubuntu
-	RELEASE "0"
-	MAINTAINER "Juergen 'George' Sawinski <juergen.sawinski@gmail.com>"
-	
-#	TEMPLATE "\${NAME}_\${VERSION}-${DEB_VERSION}ubuntu${UBUNTU_RELEASE}_\${ARCHITECTURE}"
-	RECOMMENDS "delua-${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}-doc"
-	
+cpack_simple_package(DEB DISTRIBUTION Ubuntu
+#	RELEASE "0"
+#	MAINTAINER "Juergen 'George' Sawinski <juergen.sawinski@gmail.com>"
+#	
+##	TEMPLATE "\${NAME}_\${VERSION}-${DEB_VERSION}ubuntu${UBUNTU_RELEASE}_\${ARCHITECTURE}"
+#	RECOMMENDS "delua-${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}-doc"
+#	
 	COMPONENTS
 		BEGIN runtime
 			PACKAGE_SUFFIX OFF
