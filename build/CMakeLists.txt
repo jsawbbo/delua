@@ -8,7 +8,7 @@ set_source_files_properties(${luaconf_h}
         GENERATED TRUE)
 
 # build
-include(${Lua_SOURCE_DIR}/lua/Sources.cmake)
+include(${DeLua_SOURCE_DIR}/lua/Sources.cmake)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 if(LUA_LANGUAGE_C)
@@ -19,8 +19,8 @@ if(LUA_LANGUAGE_CXX)
 endif()
 
 install(FILES ${LUALIB_HDRS} ${LUALIB_CXX_HDRS}
-    DESTINATION include/${Lua_RELEASE} COMPONENT "development")
+    DESTINATION ${DeLua_HEADER_DIR}/${DeLua_RELEASE} COMPONENT "development")
 
-install(EXPORT DeluaTargets-${Lua_RELEASE}
+install(EXPORT DeluaTargets-${DeLua_RELEASE}
     DESTINATION ${CMAKE_ROOT}/Modules COMPONENT "development")
 

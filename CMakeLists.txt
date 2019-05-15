@@ -1,36 +1,43 @@
 cmake_minimum_required(VERSION 3.10)
 
 # === Project ================================================================
-set(CMAKE_USER_MAKE_RULES_OVERRIDE "LuaInitFlags.cmake")
+set(CMAKE_USER_MAKE_RULES_OVERRIDE "DeLuaInitFlags.cmake")
 
-project(Lua 
+project(DeLua 
     VERSION 5.3.5
     LANGUAGES CXX C)
 
-get_directory_property(Lua_PARENT_DIR PARENT_DIRECTORY)
+get_directory_property(DeLua_PARENT_DIR PARENT_DIRECTORY)
 
 # === Version ================================================================
-set(Lua_VERSION "${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}.${Lua_VERSION_PATCH}")
-set(Lua_RELEASE "${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}")
-set(Lua_RELEASE_SUFFIX "${Lua_VERSION_MAJOR}${Lua_VERSION_MINOR}")
+set(DeLua_VERSION "${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR}.${DeLua_VERSION_PATCH}")
+set(DeLua_RELEASE "${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR}")
+set(DeLua_RELEASE_SUFFIX "${DeLua_VERSION_MAJOR}${DeLua_VERSION_MINOR}")
 
-message(STATUS "Lua version ${Lua_VERSION}")
+message(STATUS "DeLua version ${DeLua_VERSION}")
 
 # === CMake Paths ============================================================
-list(APPEND CMAKE_MODULE_PATH "${Lua_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${DeLua_SOURCE_DIR}/cmake")
 
 # single library and executable output path
 if(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
-    set(EXECUTABLE_OUTPUT_PATH ${Lua_BINARY_DIR}/bin)
+    set(EXECUTABLE_OUTPUT_PATH ${DeLua_BINARY_DIR}/bin)
 endif(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
 if(NOT DEFINED LIBRARY_OUTPUT_PATH)
-    set(LIBRARY_OUTPUT_PATH ${Lua_BINARY_DIR}/bin)
+    set(LIBRARY_OUTPUT_PATH ${DeLua_BINARY_DIR}/bin)
 endif(NOT DEFINED LIBRARY_OUTPUT_PATH)
 
 # script output path
 if(NOT DEFINED SCRIPT_OUTPUT_PATH)
-    set(SCRIPT_OUTPUT_PATH ${Lua_BINARY_DIR}/share)
+    set(SCRIPT_OUTPUT_PATH ${DeLua_BINARY_DIR}/share)
 endif(NOT DEFINED SCRIPT_OUTPUT_PATH)
+
+# include directory
+if(${LUA_NAME} STREQUAL "lua")
+	set(DeLua_HEADER_DIR include)
+else()
+	set(DeLua_HEADER_DIR include/${LUA_NAME})
+endif()
 
 # === Config =================================================================
 # defaults
@@ -89,39 +96,39 @@ add_subdirectory(cmake)
 add_subdirectory(build)
 
 # === Embedded ===============================================================
-if(Lua_PARENT_DIR)
-    message(STATUS "Building as sub-project (${Luax_BINARY_DIR})...")
-    list(APPEND CMAKE_MODULE_PATH "${Lua_BINARY_DIR}/cmake")
+if(DeLua_PARENT_DIR)
+    message(STATUS "Building as sub-project (${DeLua_BINARY_DIR})...")
+    list(APPEND CMAKE_MODULE_PATH "${DeLua_BINARY_DIR}/cmake")
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} PARENT_SCOPE)
-endif(Lua_PARENT_DIR)
+endif(DeLua_PARENT_DIR)
 
 # === Resources ==============================================================
 
 install(FILES build/lua.png
     DESTINATION  share/icons
-    RENAME lua${Lua_RELEASE_SUFFIX}.png
+    RENAME lua${DeLua_RELEASE_SUFFIX}.png
     COMPONENT "runtime")
 
 # === Documentation ==========================================================
 
 install(FILES README.md
-    DESTINATION  share/doc/delua/${Lua_RELEASE}
+    DESTINATION  share/doc/delua/${DeLua_RELEASE}
     COMPONENT "documentation")    
 
 install(FILES lua/README
-    DESTINATION  share/doc/delua/${Lua_RELEASE}/lua
+    DESTINATION  share/doc/delua/${DeLua_RELEASE}/lua
     COMPONENT "documentation")    
 
 install(DIRECTORY lua/doc
-    DESTINATION  share/doc/delua/${Lua_RELEASE}/lua
+    DESTINATION  share/doc/delua/${DeLua_RELEASE}/lua
     COMPONENT "documentation")
 
 # === Package ================================================================
-if(NOT Lua_PARENT_DIR)
+if(NOT DeLua_PARENT_DIR)
 include(CPackSimple)
 
 cpack_simple_configure(
-    NAME "delua-${Lua_RELEASE}"
+    NAME "delua-${DeLua_RELEASE}"
     CONTACT "Jürgen 'George' Sawinski <george@caesar.de>"
     VENDOR "Research center caesar"
     SUMMARY "Simple, extensible, embeddable programming language."
@@ -140,14 +147,14 @@ No major code changes have been made to the original Lua sources (except the
 handling of the search path) and the supplement of exceptions when building  
 a C++ version of the libraries."
     LICENSE "MIT"
-        FILE ${Lua_SOURCE_DIR}/LICENSE
+        FILE ${DeLua_SOURCE_DIR}/LICENSE
         
     URL
 		HOMEPAGE "https://bitbucket.org/jsaw/delua"
 		ABOUT    "https://www.lua.org/about.html"
 		HELP     "https://www.lua.org/docs.html"
         
-    ICON         "${Lua_SOURCE_DIR}/lua/doc/logo.gif"
+    ICON         "${DeLua_SOURCE_DIR}/lua/doc/logo.gif"
     
     PACKAGE
 	    GROUP "Interpreter"
@@ -196,7 +203,7 @@ cpack_simple_package(DEB DISTRIBUTION Ubuntu
 		UBUNTU_RELEASE 0
 	
 	TEMPLATE "@NAME@_@VERSION@-@DEB_VERSION@ubuntu@UBUNTU_RELEASE@_@ARCHITECTURE@"
-	RECOMMENDS "delua-${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}-doc"
+	RECOMMENDS "delua-${DeLua_RELEASE}-doc"
 	
 	COMPONENTS
 		BEGIN runtime 
@@ -207,7 +214,7 @@ cpack_simple_package(DEB DISTRIBUTION Ubuntu
 			PACKAGE_SUFFIX dev
 		END
 			
-		BEGIN documentation-delua
+		BEGIN documentation
 			PACKAGE_SUFFIX doc
 		END
 )

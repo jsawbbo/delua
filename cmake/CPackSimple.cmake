@@ -13,7 +13,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Debugging
-set(__cpack_simple_report ON CACHE INTERNAL "Generate report for CPackSimple.")
+set(__cpack_simple_report OFF CACHE INTERNAL "Generate report for CPackSimple.")
 
 # === Initialize defaults.
 set(CPACK_GENERATOR "ZIP")

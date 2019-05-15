@@ -96,7 +96,7 @@ macro(cpack_simple_add_component compname)
 	endif()
 	
 	# PACKAGE_SUFFIX
-	if(__csac_PACKAGE_SUFFIX)
+	if(DEFINED __csac_PACKAGE_SUFFIX)
 		cpack_simple_set(CPACK_SIMPLE_COMPONENT_${compname}_PACKAGE_SUFFIX ${__csac_PACKAGE_SUFFIX})
 	endif()
 	
