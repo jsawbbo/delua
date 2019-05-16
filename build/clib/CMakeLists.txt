@@ -30,10 +30,16 @@ if(LUA_BUILD_SHARED)
 endif()
 
 if(LUA_BUILD_SHARED)
-    add_library(Lua::Library ALIAS DeLuaCLib)
-    add_library(Lua::Library::C ALIAS DeLuaCLib)
+    add_library(DeLua::Library ALIAS DeLuaCLib)
+    add_library(DeLua::Library::C ALIAS DeLuaCLib)
+    set_target_properties(DeLuaCLib
+        PROPERTIES
+	        EXPORT_NAME DeLua::Library::C)
 elseif()
-    add_library(Lua::Library::C ALIAS DeLuaCLibStatic)
+    add_library(DeLua::Library::C ALIAS DeLuaCLibStatic)
+    set_target_properties(DeLuaCLibStatic
+        PROPERTIES
+	        EXPORT_NAME DeLua::Library::C)
 endif()
 
 if(LUA_BUILD_INTERPRETER)
@@ -57,7 +63,7 @@ endif()
 # === Installation ===========================================================
 # FIXME multilib support
 install(TARGETS ${__lua_targets}
-    EXPORT DeluaTargets-${DeLua_RELEASE}
+    EXPORT DeLuaTargets-${DeLua_RELEASE}
     LIBRARY DESTINATION lib COMPONENT "runtime"
     ARCHIVE DESTINATION lib COMPONENT "development"
 )

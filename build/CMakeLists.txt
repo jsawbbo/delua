@@ -21,6 +21,6 @@ endif()
 install(FILES ${LUALIB_HDRS} ${LUALIB_CXX_HDRS}
     DESTINATION ${DeLua_HEADER_DIR}/${DeLua_RELEASE} COMPONENT "development")
 
-install(EXPORT DeluaTargets-${DeLua_RELEASE}
+install(EXPORT DeLuaTargets-${DeLua_RELEASE}
     DESTINATION ${CMAKE_ROOT}/Modules COMPONENT "development")
 

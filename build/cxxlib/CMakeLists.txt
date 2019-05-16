@@ -16,6 +16,9 @@ if(LUA_BUILD_STATIC)
         $<BUILD_INTERFACE:${luaconf_include_dir}>
         $<BUILD_INTERFACE:${DeLua_SOURCE_DIR}/lua/src>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${DeLua_HEADER_DIR}/${DeLua_RELEASE}>)
+    target_compile_definitions(DeLuaCXXLibStatic
+	    INTERFACE DELUA_LANGUAGE_CXX 
+    )
 endif()
 
 if(LUA_BUILD_SHARED)
@@ -32,19 +35,28 @@ if(LUA_BUILD_SHARED)
         $<BUILD_INTERFACE:${luaconf_include_dir}>
         $<BUILD_INTERFACE:${DeLua_SOURCE_DIR}/lua/src>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${DeLua_HEADER_DIR}/${DeLua_RELEASE}>)
+    target_compile_definitions(DeLuaCXXLib
+	    INTERFACE DELUA_LANGUAGE_CXX 
+    )
 endif()
 
 if(LUA_BUILD_SHARED)
-    add_library(Lua::Library::CXX ALIAS DeLuaCXXLib)
+    add_library(DeLua::Library::CXX ALIAS DeLuaCXXLib)
+    set_target_properties(DeLuaCXXLib
+        PROPERTIES
+	        EXPORT_NAME DeLua::Library::CXX)
 elseif()
-    add_library(Lua::Library::CXX ALIAS DeLuaCXXLibStatic)
+    add_library(DeLua::Library::CXX ALIAS DeLuaCXXLibStatic)
+    set_target_properties(DeLuaCXXLibStatic
+        PROPERTIES
+	        EXPORT_NAME DeLua::Library::CXX)
 endif()
 
 
 # === Installation ===========================================================
 # FIXME multilib support
 install(TARGETS ${__lua_targets}
-    EXPORT DeluaTargets-${DeLua_RELEASE}
+    EXPORT DeLuaTargets-${DeLua_RELEASE}
     LIBRARY DESTINATION lib COMPONENT "runtime"
     ARCHIVE DESTINATION lib COMPONENT "development"
 )
