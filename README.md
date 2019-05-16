@@ -50,7 +50,7 @@ For further details: [**UTSL**](https://www.urbandictionary.com/define.php?term=
 
 ### General options
 
-*    `LUA_NAME`, output name of binaries and libraries (default: "lua").
+*    `LUA_NAME`, output name of binaries and libraries (default: "delua").
 *    `LUA_BUILD_STATIC` Build a static library (default: YES).
 *    `LUA_BUILD_SHARED` Build a shared library (default: YES).
 *    `LUA_BUILD_INTERPRETER` Build the standard ``lua`` interpreter (default: YES).
