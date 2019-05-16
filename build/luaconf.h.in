@@ -152,7 +152,7 @@
 ** hierarchy or if you want to install your libraries in
 ** non-conventional directories.
 */
-#define LUA_VDIR	LUA_VERSION_MAJOR "." LUA_VERSION_MINOR
+#define LUA_VDIR	"@LUA_VDIR@"
 
 /*
 ** Root installation path.

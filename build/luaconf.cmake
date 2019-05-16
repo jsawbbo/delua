@@ -7,6 +7,7 @@ option(LUA_USE_DLOPEN "Use dlopen (requires dl library, auto-detected)." ${LUA_U
 option(LUA_USE_READLINE "Use readline features (requires readline library, auto-detected)." ${LUA_USE_READLINE_INIT})
 
 set(LUA_ROOT "${LUA_ROOT_INIT}" CACHE STRING "Root installation path.")
+set(LUA_VDIR "${DeLua_RELEASE}" CACHE STRING "Version folder.")
 
 if(WINDOWS AND NOT UNIX)
     set(LUA_LDIR "!\\lua\\" CACHE STRING "Lua module directory.")

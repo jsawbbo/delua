@@ -19,17 +19,14 @@ message(STATUS "DeLua version ${DeLua_VERSION}")
 # === CMake Paths ============================================================
 list(APPEND CMAKE_MODULE_PATH "${DeLua_SOURCE_DIR}/cmake")
 
-# single library and executable output path
 if(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
-    set(EXECUTABLE_OUTPUT_PATH ${DeLua_BINARY_DIR}/bin)
+    set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 endif(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
 if(NOT DEFINED LIBRARY_OUTPUT_PATH)
-    set(LIBRARY_OUTPUT_PATH ${DeLua_BINARY_DIR}/bin)
+    set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 endif(NOT DEFINED LIBRARY_OUTPUT_PATH)
-
-# script output path
 if(NOT DEFINED SCRIPT_OUTPUT_PATH)
-    set(SCRIPT_OUTPUT_PATH ${DeLua_BINARY_DIR}/share)
+    set(SCRIPT_OUTPUT_PATH ${PROJECT_BINARY_DIR}/share)
 endif(NOT DEFINED SCRIPT_OUTPUT_PATH)
 
 # === Config =================================================================
@@ -84,6 +81,14 @@ if(NOT LUA_LANGUAGE_C AND LUA_BUILD_COMPILER)
 endif()
 
 include(build/luaconf.cmake)
+
+# === Installation ===========================================================
+
+include(DeLuaPaths)
+
+# script and library path
+delua_path_to_dir(DeLua_PATH_DIR "${LUA_LDIR}")
+delua_path_to_dir(DeLua_CPATH_DIR "${LUA_CDIR}")
 
 # === Build ==================================================================
 # include directory
