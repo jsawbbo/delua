@@ -1,4 +1,5 @@
-include($ENV{HOME}/.local/share/cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}/Modules/UserInitFlags.cmake OPTIONAL)
+list(APPEND CMAKE_MODULE_PATH "/users/jsaw/Workspace/git/personal/cmyke/cmake") # FIXME debug only!
+include(CMyke/Local)
 
 # COMPILER SETTINGS
 

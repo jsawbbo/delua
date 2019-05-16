@@ -32,13 +32,6 @@ if(NOT DEFINED SCRIPT_OUTPUT_PATH)
     set(SCRIPT_OUTPUT_PATH ${DeLua_BINARY_DIR}/share)
 endif(NOT DEFINED SCRIPT_OUTPUT_PATH)
 
-# include directory
-if(${LUA_NAME} STREQUAL "lua")
-	set(DeLua_HEADER_DIR include)
-else()
-	set(DeLua_HEADER_DIR include/${LUA_NAME})
-endif()
-
 # === Config =================================================================
 # defaults
 set(LUA_32BITS_INIT OFF)
@@ -91,7 +84,16 @@ if(NOT LUA_LANGUAGE_C AND LUA_BUILD_COMPILER)
 endif()
 
 include(build/luaconf.cmake)
+
 # === Build ==================================================================
+# include directory
+if(${LUA_NAME} STREQUAL "lua")
+	set(DeLua_HEADER_DIR include)
+else()
+	set(DeLua_HEADER_DIR include/${LUA_NAME})
+endif()
+
+# sub-directories
 add_subdirectory(cmake)
 add_subdirectory(build)
 
@@ -125,9 +127,9 @@ install(DIRECTORY lua/doc
 
 # === Package ================================================================
 if(NOT DeLua_PARENT_DIR)
-include(CPackSimple)
+include(CMyke/Package)
 
-cpack_simple_configure(
+cmyke_package_setup(
     NAME "delua-${DeLua_RELEASE}"
     CONTACT "Jürgen 'George' Sawinski <george@caesar.de>"
     VENDOR "Research center caesar"
@@ -179,31 +181,25 @@ a C++ version of the libraries."
 		END
 )
 
-set(CPACK_COMPONENTS_ALL runtime development documentation)
-
-#CPackSimplePackage(NSIS
+#cmyke_package_define(NSIS
 #)
 #
-#CPackSimplePackage(DMG
+#cmyke_package_define(DMG
 #)
 #
-#CPackSimplePackage(RPM
+#cmyke_package_define(RPM
 #)
 
-#CPackSimplePackage(DEB
-#	VERSION "0"
+#cmyke_package_define(DEB
+#	RELEASE "0"
 #)
 
-cpack_simple_package(DEB DISTRIBUTION Ubuntu
-	RELEASE "0"
-	MAINTAINER "Juergen 'George' Sawinski <juergen.sawinski@gmail.com>"
-	
-	VARIABLES
-		DEB_VERSION 0
-		UBUNTU_RELEASE 0
-	
-	TEMPLATE "@NAME@_@VERSION@-@DEB_VERSION@ubuntu@UBUNTU_RELEASE@_@ARCHITECTURE@"
+cmyke_package_define(DEB DISTRIBUTION Ubuntu
+	MAINTAINER "Juergen \"George\" Sawinski <juergen.sawinski@gmail.com>"	
 	RECOMMENDS "delua-${DeLua_RELEASE}-doc"
+
+	RELEASE "0"
+	Ubuntu_RELEASE 0
 	
 	COMPONENTS
 		BEGIN runtime 
