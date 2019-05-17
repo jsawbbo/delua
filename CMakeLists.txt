@@ -179,6 +179,7 @@ a C++ version of the libraries."
 		BEGIN common-development
 			INSTALL NO
 		    DISPLAY_NAME "Common development files"
+			ARCHITECTURE all
 		    DEPENDS runtime
 		END
 			
