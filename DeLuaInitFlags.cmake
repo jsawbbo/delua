@@ -1,4 +1,3 @@
-list(APPEND CMAKE_MODULE_PATH "/users/jsaw/Workspace/git/personal/cmyke/cmake") # FIXME debug only!
 include(CMyke/Local)
 
 # COMPILER SETTINGS
