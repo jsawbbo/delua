@@ -41,6 +41,8 @@ set(LUA_DIRSEP "${LUA_DIRSEP_INIT}" CACHE STRING "Directory separator (for submo
 # LUA_NOCVTN2S/LUA_NOCVTS2N 
 # LUA_USE_APICHECK
 
+set(LUA_COMPAT_5_3 "${LUA_COMPAT_5_3_INIT}" CACHE BOOL "Retain 5.3 compatibility.")
+
 set(LUA_USER_H "${LUA_USER_H_INIT}" CACHE STRING "User header.")
 set(LUA_GLOBAL_USERSTATE "${LUA_GLOBAL_USERSTATE_INIT}" CACHE STRING "User entry in global_State.")
 

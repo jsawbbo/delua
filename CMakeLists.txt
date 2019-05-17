@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_USER_MAKE_RULES_OVERRIDE "DeLuaInitFlags.cmake")
 
 project(DeLua 
-    VERSION 5.3.5
+    VERSION 5.4.0.2
     LANGUAGES CXX C)
 
 get_directory_property(DeLua_PARENT_DIR PARENT_DIRECTORY)
@@ -33,6 +33,7 @@ endif(NOT DEFINED SCRIPT_OUTPUT_PATH)
 
 # === Config =================================================================
 # defaults
+set(LUA_COMPAT_5_3_INIT OFF)
 set(LUA_32BITS_INIT OFF)
 set(LUA_USE_C89_INIT OFF)
 
