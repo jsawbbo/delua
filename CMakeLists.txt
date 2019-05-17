@@ -178,7 +178,6 @@ a C++ version of the libraries."
 		BEGIN common-development
 			INSTALL NO
 		    DISPLAY_NAME "Common development files"
-			ARCHITECTURE all
 		    DEPENDS runtime
 		END
 			
@@ -221,8 +220,10 @@ cmyke_package_define(DEB DISTRIBUTION Ubuntu
 		END
 			
 		BEGIN common-development 
-			NAME delua
-			PACKAGE_SUFFIX common-dev
+			COMPONENT_NAME delua-common
+			COMPONENT_ARCHITECTURE all
+			COMPONENT_TEMPLATE "@NAME@-@RELEASE@ubuntu@Ubuntu_RELEASE@_@ARCHITECTURE@"
+			PACKAGE_SUFFIX dev
 		END
 			
 		BEGIN development 
