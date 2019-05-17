@@ -169,16 +169,22 @@ a C++ version of the libraries."
 	    GROUP "Interpreter"
 
 	COMPONENTS
-		BEGIN runtime GROUP
+		BEGIN runtime
 			DEFAULT
 			INSTALL YES
 			DISPLAY_NAME "Runtime"
 		END
 			
-		BEGIN development GROUP
+		BEGIN common-development
+			INSTALL NO
+		    DISPLAY_NAME "Common development files"
+		    DEPENDS runtime
+		END
+			
+		BEGIN development
 			INSTALL NO
 		    DISPLAY_NAME "Development files"
-		    DEPENDS runtime
+		    DEPENDS common-development
 		END
 			
 		BEGIN documentation
@@ -211,6 +217,11 @@ cmyke_package_define(DEB DISTRIBUTION Ubuntu
 	COMPONENTS
 		BEGIN runtime 
 			PACKAGE_SUFFIX OFF
+		END
+			
+		BEGIN common-development 
+			NAME delua
+			PACKAGE_SUFFIX common-dev
 		END
 			
 		BEGIN development 
