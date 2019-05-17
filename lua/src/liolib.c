@@ -1,5 +1,5 @@
 /*
-** $Id: liolib.c,v 2.151.1.1 2017/04/19 17:29:57 roberto Exp $
+** $Id: liolib.c,v 2.156 2018/03/02 18:25:00 roberto Exp $
 ** Standard I/O (and system) library
 ** See Copyright Notice in lua.h
 */
@@ -186,7 +186,7 @@ static FILE *tofile (lua_State *L) {
 ** handle is in a consistent state.
 */
 static LStream *newprefile (lua_State *L) {
-  LStream *p = (LStream *)lua_newuserdata(L, sizeof(LStream));
+  LStream *p = (LStream *)lua_newuserdatauv(L, sizeof(LStream), 0);
   p->closef = NULL;  /* mark file handle as 'closed' */
   luaL_setmetatable(L, LUA_FILEHANDLE);
   return p;
@@ -447,7 +447,7 @@ static int read_number (lua_State *L, FILE *f) {
   decp[1] = '.';  /* always accept a dot */
   l_lockfile(rn.f);
   do { rn.c = l_getc(rn.f); } while (isspace(rn.c));  /* skip spaces */
-  test2(&rn, "-+");  /* optional signal */
+  test2(&rn, "-+");  /* optional sign */
   if (test2(&rn, "00")) {
     if (test2(&rn, "xX")) hex = 1;  /* numeral is hexadecimal */
     else count = 1;  /* count initial '0' as a valid digit */
@@ -456,7 +456,7 @@ static int read_number (lua_State *L, FILE *f) {
   if (test2(&rn, decp))  /* decimal point? */
     count += readdigits(&rn, hex);  /* fractional part */
   if (count > 0 && test2(&rn, (hex ? "pP" : "eE"))) {  /* exponent mark? */
-    test2(&rn, "-+");  /* exponent signal */
+    test2(&rn, "-+");  /* exponent sign */
     readdigits(&rn, 0);  /* exponent digits */
   }
   ungetc(rn.c, rn.f);  /* unread look-ahead char */
@@ -528,14 +528,14 @@ static int read_chars (lua_State *L, FILE *f, size_t n) {
 
 static int g_read (lua_State *L, FILE *f, int first) {
   int nargs = lua_gettop(L) - 1;
-  int success;
-  int n;
+  int n, success;
   clearerr(f);
   if (nargs == 0) {  /* no arguments? */
     success = read_line(L, f, 1);
-    n = first+1;  /* to return 1 result */
+    n = first + 1;  /* to return 1 result */
   }
-  else {  /* ensure stack space for all results and for auxlib's buffer */
+  else {
+    /* ensure stack space for all results and for auxlib's buffer */
     luaL_checkstack(L, nargs+LUA_MINSTACK, "too many arguments");
     success = 1;
     for (n = first; nargs-- && success; n++) {
