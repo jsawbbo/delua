@@ -11,6 +11,9 @@ if(LUA_BUILD_STATIC)
         $<BUILD_INTERFACE:${luaconf_include_dir}>
         $<BUILD_INTERFACE:${DeLua_SOURCE_DIR}/lua/src>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${DeLua_HEADER_DIR}/${DeLua_RELEASE}>)
+    target_compile_definitions(DeLuaCLibStatic
+	    INTERFACE DELUA_LANGUAGE_C DELUA_VERSION=${DeLua_VERSION_NUM}
+    )
 endif()
 
 if(LUA_BUILD_SHARED)
@@ -27,6 +30,9 @@ if(LUA_BUILD_SHARED)
         $<BUILD_INTERFACE:${luaconf_include_dir}>
         $<BUILD_INTERFACE:${DeLua_SOURCE_DIR}/lua/src>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${DeLua_HEADER_DIR}/${DeLua_RELEASE}>)
+    target_compile_definitions(DeLuaCLib
+	    INTERFACE DELUA_LANGUAGE_C DELUA_VERSION=${DeLua_VERSION_NUM}
+    )
 endif()
 
 if(LUA_BUILD_SHARED)

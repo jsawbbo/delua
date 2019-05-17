@@ -816,7 +816,7 @@ static inline int __lua_exec_in_buildpath() {
 /*
 ** C++ features:
 */
-#if defined(__cplusplus)
+#if defined(DELUA_LANGUAGE_CXX)
 
 #if defined(LUA_CORE) || defined(LUA_LIB)
 #define LUA_API_CLASS LUA_API_EXPORT
@@ -855,7 +855,7 @@ public:
 #define luai_jmpbuf \
     int  /* dummy variable */
 
-#endif /* __cplusplus */
+#endif /* DELUA_LANGUAGE_CXX */
 
 #endif
 

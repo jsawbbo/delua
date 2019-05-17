@@ -1,10 +1,11 @@
-set(DeLua_FOUND true)
-
 # (De-)Lua version 
-set(DeLua_VERSION_STRING "@DeLua_VERSION@")
 set(DeLua_VERSION_MAJOR "@DeLua_VERSION_MAJOR@")
 set(DeLua_VERSION_MINOR "@DeLua_VERSION_MINOR@")
 set(DeLua_VERSION_PATCH "@DeLua_VERSION_PATCH@")
+
+set(DeLua_VERSION_STRING "@DeLua_VERSION@")
+
+set(DeLua_VERSION_NUM "@DeLua_VERSION_NUM@")
 
 # (De-)Lua config
 set(DeLua_CPATH_DIR "@DeLua_CPATH_DIR@")

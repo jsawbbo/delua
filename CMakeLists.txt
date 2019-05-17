@@ -14,6 +14,8 @@ set(DeLua_VERSION "${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR}.${DeLua_VERSION
 set(DeLua_RELEASE "${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR}")
 set(DeLua_RELEASE_SUFFIX "${DeLua_VERSION_MAJOR}${DeLua_VERSION_MINOR}")
 
+math(EXPR DeLua_VERSION_NUM "${DeLua_VERSION_MAJOR}*100 + ${DeLua_VERSION_MINOR}")
+
 message(STATUS "DeLua version ${DeLua_VERSION}")
 
 # === CMake Paths ============================================================
