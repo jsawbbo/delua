@@ -27,9 +27,8 @@ almost untouched. Changes made to the pure Lua sources can be found in the
 
 Additional default search paths can be provided throught `LUA_PATH_EXTRA` and  
 `LUA_CPATH_EXTRA`. In addition, the default search path now includes the  
-`$HOME/.local/` file-system structure on Unixoid systems. In addition, a
-leading '~' expands to the  (the Lua sources `HOME` (environment variable) 
-directory.
+`$HOME/.local/` file-system structure on Unixoid systems. In addition, a leading  
+'~' expands to the  (the Lua sources `HOME` (environment variable) directory.
 
 ### In-build testing
 
