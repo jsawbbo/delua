@@ -8,6 +8,7 @@ project(DeLua
     LANGUAGES CXX C)
 
 get_directory_property(DeLua_PARENT_DIR PARENT_DIRECTORY)
+include(CMyke/Paths)
 
 # === Version ================================================================
 set(DeLua_VERSION "${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR}.${DeLua_VERSION_PATCH}")
@@ -86,7 +87,6 @@ endif()
 include(build/luaconf.cmake)
 
 # === Installation ===========================================================
-
 include(DeLuaPaths)
 
 # script and library path
