@@ -182,8 +182,8 @@
 		".\\?.dll"
 
 #else			/* }{ */
-#define LUA_HOME_LDIR "~/.local/share/lua/" LUA_VDIR "/"
-#define LUA_HOME_CDIR "~/.local/lib/lua/" LUA_VDIR "/"
+#define LUA_HOME_LDIR "~/.local/share/@LUA_NAME@/" LUA_VDIR "/"
+#define LUA_HOME_CDIR "~/.local/lib/@LUA_NAME@/" LUA_VDIR "/"
 #define LUA_PATH_DEFAULT_DIST  \
         @LUA_PATH_EXTRA@ \
         LUA_HOME_LDIR"?.lua;"  LUA_HOME_LDIR"?/init.lua;" \
@@ -207,9 +207,9 @@
 */
 
 #define LUA_PATH_DEFAULT_DEBUG \
-        "@SCRIPT_OUTPUT_PATH@" "/lua/?.lua" \
+        "@SCRIPT_OUTPUT_PATH@" "/@LUA_NAME@/?.lua" \
         LUA_PATH_SEP \
-        "@SCRIPT_OUTPUT_PATH@" "/lua/?/init.lua" \
+        "@SCRIPT_OUTPUT_PATH@" "/@LUA_NAME@/?/init.lua" \
         LUA_PATH_SEP \
         LUA_PATH_DEFAULT_DIST
 #define LUA_CPATH_DEFAULT_DEBUG \
