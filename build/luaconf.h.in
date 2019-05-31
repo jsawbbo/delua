@@ -219,17 +219,6 @@
         LUA_PATH_SEP \
         LUA_PATH_DEFAULT_DIST
 
-#include <unistd.h>
-#include <string.h>
-#include <stdio.h>
-static inline int __lua_exec_in_buildpath() {
-    char cwd[4096];
-    getcwd(cwd, 4096);
-    return 1;
-       // FIXME this does not work, because EXECUTABLE_OUTPUT_PATH is not necessarily CWD, PROJECT_BINARY_DIR is neither
-    return 0 == strncmp(cwd, "@EXECUTABLE_OUTPUT_PATH@", 4096);
-}
-
 #define LUA_PATH_DEFAULT ({ __lua_exec_in_buildpath() ? LUA_PATH_DEFAULT_DEBUG : LUA_PATH_DEFAULT_DIST; })
 #define LUA_CPATH_DEFAULT ({ __lua_exec_in_buildpath() ? LUA_CPATH_DEFAULT_DEBUG : LUA_CPATH_DEFAULT_DIST; })
 
@@ -308,6 +297,9 @@ static inline int __lua_exec_in_buildpath() {
 
 /* }================================================================== */
 
+#if defined(DEBUG)
+LUAI_FUNC int __lua_exec_in_buildpath();
+#endif
 
 /*
 ** {==================================================================
