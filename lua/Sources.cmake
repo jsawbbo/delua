@@ -33,7 +33,7 @@ set(LUALIB_INTERNAL_HDRS
     ${DeLua_SOURCE_DIR}/lua/src/lzio.h)
 
 set(LUALIB_CXX_HDRS
-    ${DeLua_SOURCE_DIR}/build/cxxlib/lua.hpp)
+    ${DeLua_SOURCE_DIR}/target/cxxlib/lua.hpp)
 
 set(LUACORE_SRCS
     ${luaconf_c}

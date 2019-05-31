@@ -2,7 +2,7 @@
 set(luaconf_include_dir ${PROJECT_BINARY_DIR}/include)
 set(luaconf_h ${luaconf_include_dir}/luaconf.h)
 
-set(luaconf_source_dir ${PROJECT_BINARY_DIR}/build)
+set(luaconf_source_dir ${PROJECT_BINARY_DIR}/target)
 set(luaconf_c ${luaconf_source_dir}/luaconf.c)
 
 configure_file(luaconf.h.in ${luaconf_h})

@@ -84,7 +84,7 @@ if(NOT LUA_LANGUAGE_C AND LUA_BUILD_COMPILER)
     set(LUA_BUILD_COMPILER OFF CACHE BOOL "Build compiler executable." FORCE)
 endif()
 
-include(build/luaconf.cmake)
+include(target/luaconf.cmake)
 
 # === Installation ===========================================================
 include(DeLuaPaths)
@@ -103,7 +103,7 @@ endif()
 
 # sub-directories
 add_subdirectory(cmake)
-add_subdirectory(build)
+add_subdirectory(target)
 
 # === Embedded ===============================================================
 if(DeLua_PARENT_DIR)
@@ -114,7 +114,7 @@ endif(DeLua_PARENT_DIR)
 
 # === Resources ==============================================================
 
-install(FILES build/lua.png
+install(FILES target/lua.png
     DESTINATION  share/icons
     RENAME lua${DeLua_RELEASE_SUFFIX}.png
     COMPONENT "runtime")
