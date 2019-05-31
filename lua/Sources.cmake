@@ -36,6 +36,7 @@ set(LUALIB_CXX_HDRS
     ${DeLua_SOURCE_DIR}/build/cxxlib/lua.hpp)
 
 set(LUACORE_SRCS
+    ${luaconf_c}
     ${DeLua_SOURCE_DIR}/lua/src/lapi.c
     ${DeLua_SOURCE_DIR}/lua/src/lcode.c
     ${DeLua_SOURCE_DIR}/lua/src/lctype.c
