@@ -25,10 +25,23 @@ almost untouched. Changes made to the pure Lua sources can be found in the
 
 ### Search paths
 
+#### Local home directory
+
+The default search path includes the `$HOME/.local/` file-system structure on  
+Unixoid systems, `%AppData%\\Roaming\\${LUA_NAME}` on Microsoft Windows®, and,  
+`$HOME/Library` on MacOS. In addition, a leading '~' expands to the `HOME` (environment  
+variable) directory.
+
+#### Extra paths
+
 Additional default search paths can be provided throught `LUA_PATH_EXTRA` and  
-`LUA_CPATH_EXTRA`. In addition, the default search path now includes the  
-`$HOME/.local/` file-system structure on Unixoid systems. In addition, a leading  
-'~' expands to the  (the Lua sources `HOME` (environment variable) directory.
+`LUA_CPATH_EXTRA` in the CMake configuration. 
+
+#### Debugging
+
+When compiled with preprocessor macro `DEBUG` defined (*CMAKE_BUILD_TYPE*  
+`Debug`), additional search path elements can be added through the environment  
+variables LUA\_PATH and LUA\_CPATH. 
 
 ### In-build testing
 
