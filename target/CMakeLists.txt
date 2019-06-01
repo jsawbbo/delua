@@ -7,15 +7,6 @@ set_source_files_properties(${luaconf_h}
     PROPERTIES
         GENERATED TRUE)
 
-#set(luaconf_source_dir ${PROJECT_BINARY_DIR}/target)
-#set(luaconf_c ${luaconf_source_dir}/luaconf.c)
-#
-#configure_file(luaconf.c.in ${luaconf_c})
-#set_source_files_properties(${luaconf_c}
-#    PROPERTIES
-#        GENERATED TRUE)
-set(luaconf_c ${DeLua_SOURCE_DIR}/target/luaconf.c)
-
 # build
 include(${DeLua_SOURCE_DIR}/lua/Sources.cmake)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)

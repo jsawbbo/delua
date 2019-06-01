@@ -37,12 +37,6 @@ variable) directory.
 Additional default search paths can be provided throught `LUA_PATH_EXTRA` and  
 `LUA_CPATH_EXTRA` in the CMake configuration. 
 
-#### Debugging
-
-When compiled with preprocessor macro `DEBUG` defined (*CMAKE_BUILD_TYPE*  
-`Debug`), additional search path elements can be added through the environment  
-variables LUA\_PATH and LUA\_CPATH. 
-
 ### In-build testing
 
 When compiled with *CMAKE_BUILD_TYPE* `Debug`, output directories are dynamically  
