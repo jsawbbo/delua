@@ -2,18 +2,19 @@
 set(luaconf_include_dir ${PROJECT_BINARY_DIR}/include)
 set(luaconf_h ${luaconf_include_dir}/luaconf.h)
 
-set(luaconf_source_dir ${PROJECT_BINARY_DIR}/target)
-set(luaconf_c ${luaconf_source_dir}/luaconf.c)
-
 configure_file(luaconf.h.in ${luaconf_h})
 set_source_files_properties(${luaconf_h}
     PROPERTIES
         GENERATED TRUE)
 
-configure_file(luaconf.c.in ${luaconf_c})
-set_source_files_properties(${luaconf_c}
-    PROPERTIES
-        GENERATED TRUE)
+#set(luaconf_source_dir ${PROJECT_BINARY_DIR}/target)
+#set(luaconf_c ${luaconf_source_dir}/luaconf.c)
+#
+#configure_file(luaconf.c.in ${luaconf_c})
+#set_source_files_properties(${luaconf_c}
+#    PROPERTIES
+#        GENERATED TRUE)
+set(luaconf_c ${DeLua_SOURCE_DIR}/target/luaconf.c)
 
 # build
 include(${DeLua_SOURCE_DIR}/lua/Sources.cmake)
