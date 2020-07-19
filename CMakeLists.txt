@@ -1,13 +1,12 @@
 cmake_minimum_required(VERSION 3.17)
 
-set(CMAKE_MESSAGE_LOG_LEVEL VERBOSE)
+set(CMAKE_MESSAGE_LOG_LEVEL TRACE)
 
 # === Project ================================================================
 include("DeLuaInitFlags.cmake")
 include(CMyke/Init OPTIONAL)
-message("CMYKE_FOUND=${CMYKE_FOUND}")
 project(DeLua 
-    VERSION 5.4.0.3
+    VERSION 5.4.0.4
     LANGUAGES CXX C)
 
 get_directory_property(DeLua_PARENT_DIR PARENT_DIRECTORY)
@@ -140,13 +139,13 @@ install(DIRECTORY lua/doc
 if(NOT DeLua_PARENT_DIR AND CMYKE_FOUND)
 include(CMyke/Package OPTIONAL)
 
-cmyke_package_setup(
+cmyke_package(
     NAME "delua-${DeLua_RELEASE}"
     CONTACT "Jürgen 'George' Sawinski <george@caesar.de>"
     VENDOR "Research center caesar"
     SUMMARY "Simple, extensible, embeddable programming language."
     DESCRIPTION 
-"This is Lua 5.4.09, released on 29 Jun 2020.
+"This is Lua 5.4.0, released on 29 Jun 2020.
 
 > Lua is a powerful, efficient, lightweight, embeddable scripting language.  
 > It supports procedural programming, object-oriented programming, functional  
@@ -170,71 +169,73 @@ a C++ version of the libraries."
     ICON         "${DeLua_SOURCE_DIR}/lua/doc/logo.gif"
     
     PACKAGE
-	    GROUP "Interpreter"
+	    CATEGORY "Interpreter"
 
 	COMPONENTS
-		BEGIN runtime
+		COMPONENT runtime
 			DEFAULT
 			INSTALL YES
 			DISPLAY_NAME "Runtime"
-		END
+			BEGIN
+				# sub-component....
+			END
 			
-		BEGIN common-development
+		COMPONENT common-development
 			INSTALL NO
 		    DISPLAY_NAME "Common development files"
 		    DEPENDS runtime
-		END
+			BEGIN
+				GROUP something
+				DISPLAY_NAME Something
+			END
 			
-		BEGIN development
+		COMPONENT development
 			INSTALL NO
 		    DISPLAY_NAME "Development files"
 		    DEPENDS runtime common-development
-		END
 			
-		BEGIN documentation
+		COMPONENT documentation
 		    INSTALL NO
 		    DISPLAY_NAME "Documentation"
 		    DEPENDS runtime
-		END
 )
 
-#cmyke_package_define(NSIS
+#cmyke_package(NSIS
 #)
 #
-#cmyke_package_define(DMG
+#cmyke_package(DMG
 #)
 #
-#cmyke_package_define(RPM
+#cmyke_package(RPM
 #)
 
-#cmyke_package_define(DEB
+#cmyke_package(DEB
 #	RELEASE "0"
 #)
 
-cmyke_package_define(DEB DISTRIBUTION Ubuntu
+cmyke_package(DEB DISTRIBUTION Ubuntu
 	MAINTAINER "Juergen \"George\" Sawinski <juergen.sawinski@gmail.com>"	
 
-	RELEASE "0"
+	RELEASE "${DeLua_VERSION_TWEAK}"
 	Ubuntu_RELEASE 0
 	
 	COMPONENTS
-		BEGIN runtime 
-			COMPONENT_SUFFIX OFF
-		END
+		COMPONENT runtime 
+			SUFFIX OFF
+			RECOMMENDS documentation
 			
-		BEGIN common-development 
-			COMPONENT_NAME delua-common
-			COMPONENT_SUFFIX OFF
-			COMPONENT_ARCHITECTURE all
-		END
-			
-		BEGIN development 
-			COMPONENT_SUFFIX dev
-		END
-			
-		BEGIN documentation
-			COMPONENT_SUFFIX doc
-		END
+		COMPONENT common-development 
+			NAME delua-common
+			SUFFIX OFF
+			ARCHITECTURE all
+				
+		COMPONENT development 
+			SUFFIX dev
+			DEPENDS common-development
+			RECOMMENDS documentation
+					
+		COMPONENT documentation
+			SUFFIX doc
 )
 
 include(CPack)
