@@ -1,5 +1,3 @@
-include(CMyke/Local)
-
 # COMPILER SETTINGS
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)

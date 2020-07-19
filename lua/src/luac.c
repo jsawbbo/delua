@@ -1,5 +1,5 @@
 /*
-** $Id: luac.c,v 1.75 2015/03/12 01:58:27 lhf Exp $
+** $Id: luac.c $
 ** Lua compiler (saves bytecodes to files; also lists bytecodes)
 ** See Copyright Notice in lua.h
 */
@@ -18,7 +18,10 @@
 #include "lua.h"
 #include "lauxlib.h"
 
+#include "ldebug.h"
 #include "lobject.h"
+#include "lopcodes.h"
+#include "lopnames.h"
 #include "lstate.h"
 #include "lundump.h"
 
@@ -34,6 +37,7 @@ static int stripping=0;			/* strip debug information? */
 static char Output[]={ OUTPUT };	/* default output file name */
 static const char* output=Output;	/* actual output file name */
 static const char* progname=PROGNAME;	/* actual program name */
+static TString **tmname;
 
 static void fatal(const char* message)
 {
@@ -168,6 +172,7 @@ static int pmain(lua_State* L)
  char** argv=(char**)lua_touserdata(L,2);
  const Proto* f;
  int i;
+ tmname=G(L)->tmname;
  if (!lua_checkstack(L,argc)) fatal("too many input files");
  for (i=0; i<argc; i++)
  {
@@ -209,20 +214,9 @@ int main(int argc, char* argv[])
 ** print bytecodes
 */
 
-#include <ctype.h>
-#include <stdio.h>
-
-#define luac_c
-#define LUA_CORE
-#define LUAI_DEFOPNAMES
-
-#include "ldebug.h"
-#include "lobject.h"
-#include "lopcodes.c"
-
 #define UPVALNAME(x) ((f->upvalues[x].name) ? getstr(f->upvalues[x].name) : "-")
 #define VOID(p) ((const void*)(p))
-#define getfuncline(f,pc) luaG_getfuncline((Proto *)f,pc)
+#define eventname(i) (getstr(tmname[i]))
 
 static void PrintString(const TString* ts)
 {
@@ -238,28 +232,28 @@ static void PrintString(const TString* ts)
 	printf("\\\"");
 	break;
    case '\\':
-   	printf("\\\\");
+	printf("\\\\");
 	break;
    case '\a':
-   	printf("\\a");
+	printf("\\a");
 	break;
    case '\b':
-   	printf("\\b");
+	printf("\\b");
 	break;
    case '\f':
-   	printf("\\f");
+	printf("\\f");
 	break;
    case '\n':
-   	printf("\\n");
+	printf("\\n");
 	break;
    case '\r':
-   	printf("\\r");
+	printf("\\r");
 	break;
    case '\t':
-   	printf("\\t");
+	printf("\\t");
 	break;
    case '\v':
-   	printf("\\v");
+	printf("\\v");
 	break;
    default:
 	if (isprint(c)) printf("%c",c); else printf("\\%03d",c);
@@ -269,18 +263,50 @@ static void PrintString(const TString* ts)
  printf("\"");
 }
 
+static void PrintType(const Proto* f, int i)
+{
+ const TValue* o=&f->k[i];
+ switch (ttypetag(o))
+ {
+  case LUA_VNIL:
+	printf("N");
+	break;
+  case LUA_VFALSE:
+  case LUA_VTRUE:
+	printf("B");
+	break;
+  case LUA_VNUMFLT:
+	printf("F");
+	break;
+  case LUA_VNUMINT:
+	printf("I");
+	break;
+  case LUA_VSHRSTR:
+  case LUA_VLNGSTR:
+	printf("S");
+	break;
+  default:				/* cannot happen */
+	printf("?%d",ttypetag(o));
+	break;
+ }
+ printf("\t");
+}
+
 static void PrintConstant(const Proto* f, int i)
 {
  const TValue* o=&f->k[i];
  switch (ttypetag(o))
  {
-  case LUA_TNIL:
+  case LUA_VNIL:
 	printf("nil");
 	break;
-  case LUA_TBOOLEAN:
-	printf(bvalue(o) ? "true" : "false");
+  case LUA_VFALSE:
+	printf("false");
 	break;
-  case LUA_TNUMFLT:
+  case LUA_VTRUE:
+	printf("true");
+	break;
+  case LUA_VNUMFLT:
 	{
 	char buff[100];
 	sprintf(buff,LUA_NUMBER_FMT,fltvalue(o));
@@ -288,18 +314,23 @@ static void PrintConstant(const Proto* f, int i)
 	if (buff[strspn(buff,"-0123456789")]=='\0') printf(".0");
 	break;
 	}
-  case LUA_TNUMINT:
+  case LUA_VNUMINT:
 	printf(LUA_INTEGER_FMT,ivalue(o));
 	break;
-  case LUA_TSHRSTR:
-  case LUA_TLNGSTR:
+  case LUA_VSHRSTR:
+  case LUA_VLNGSTR:
 	PrintString(tsvalue(o));
 	break;
   default:				/* cannot happen */
-	printf("? type=%d",ttypetag(o));
+	printf("?%d",ttypetag(o));
 	break;
  }
 }
+
+#define COMMENT		"\t; "
+#define EXTRAARG	GETARG_Ax(code[pc+1])
+#define EXTRAARGC	(EXTRAARG*(MAXARG_C+1))
+#define ISK		(isk ? "k" : "")
 
 static void PrintCode(const Proto* f)
 {
@@ -318,10 +349,10 @@ static void PrintCode(const Proto* f)
   int sc=GETARG_sC(i);
   int sbx=GETARG_sBx(i);
   int isk=GETARG_k(i);
-  int line=getfuncline(f,pc);
+  int line=luaG_getfuncline(f,pc);
   printf("\t%d\t",pc+1);
   if (line>0) printf("[%d]\t",line); else printf("[-]\t");
-  printf("%-9s\t",luaP_opnames[o]);
+  printf("%-9s\t",opnames[o]);
   switch (o)
   {
    case OP_MOVE:
@@ -335,30 +366,36 @@ static void PrintCode(const Proto* f)
 	break;
    case OP_LOADK:
 	printf("%d %d",a,bx);
-	printf("\t; "); PrintConstant(f,bx);
+	printf(COMMENT); PrintConstant(f,bx);
 	break;
    case OP_LOADKX:
 	printf("%d",a);
+	printf(COMMENT); PrintConstant(f,EXTRAARG);
 	break;
-   case OP_LOADBOOL:
-	printf("%d %d %d",a,b,c);
-	if (c) printf("\t; to %d",pc+2);
+   case OP_LOADFALSE:
+	printf("%d",a);
+	break;
+   case OP_LFALSESKIP:
+	printf("%d",a);
+	break;
+   case OP_LOADTRUE:
+	printf("%d",a);
 	break;
    case OP_LOADNIL:
 	printf("%d %d",a,b);
-	printf("\t; %d out",b+1);
+	printf(COMMENT "%d out",b+1);
 	break;
    case OP_GETUPVAL:
 	printf("%d %d",a,b);
-	printf("\t; %s",UPVALNAME(b));
+	printf(COMMENT "%s",UPVALNAME(b));
 	break;
    case OP_SETUPVAL:
 	printf("%d %d",a,b);
-	printf("\t; %s",UPVALNAME(b));
+	printf(COMMENT "%s",UPVALNAME(b));
 	break;
    case OP_GETTABUP:
 	printf("%d %d %d",a,b,c);
-	printf("\t; %s",UPVALNAME(b));
+	printf(COMMENT "%s",UPVALNAME(b));
 	printf(" "); PrintConstant(f,c);
 	break;
    case OP_GETTABLE:
@@ -369,72 +406,83 @@ static void PrintCode(const Proto* f)
 	break;
    case OP_GETFIELD:
 	printf("%d %d %d",a,b,c);
-	printf("\t; "); PrintConstant(f,c);
+	printf(COMMENT); PrintConstant(f,c);
 	break;
    case OP_SETTABUP:
-	printf("%d %d %d%s",a,b,c, isk ? "k" : "");
-	printf("\t; %s",UPVALNAME(a));
+	printf("%d %d %d%s",a,b,c,ISK);
+	printf(COMMENT "%s",UPVALNAME(a));
 	printf(" "); PrintConstant(f,b);
 	if (isk) { printf(" "); PrintConstant(f,c); }
 	break;
    case OP_SETTABLE:
-	printf("%d %d %d%s",a,b,c, isk ? "k" : "");
-	if (isk) { printf("\t; "); PrintConstant(f,c); }
+	printf("%d %d %d%s",a,b,c,ISK);
+	if (isk) { printf(COMMENT); PrintConstant(f,c); }
 	break;
    case OP_SETI:
-	printf("%d %d %d%s",a,b,c, isk ? "k" : "");
-	if (isk) { printf("\t; "); PrintConstant(f,c); }
+	printf("%d %d %d%s",a,b,c,ISK);
+	if (isk) { printf(COMMENT); PrintConstant(f,c); }
 	break;
    case OP_SETFIELD:
-	printf("%d %d %d%s",a,b,c, isk ? "k" : "");
-	printf("\t; "); PrintConstant(f,b);
+	printf("%d %d %d%s",a,b,c,ISK);
+	printf(COMMENT); PrintConstant(f,b);
 	if (isk) { printf(" "); PrintConstant(f,c); }
 	break;
    case OP_NEWTABLE:
 	printf("%d %d %d",a,b,c);
+	printf(COMMENT "%d",c+EXTRAARGC);
 	break;
    case OP_SELF:
-	printf("%d %d %d%s",a,b,c, isk ? "k" : "");
-	if (isk) { printf("\t; "); PrintConstant(f,c); }
+	printf("%d %d %d%s",a,b,c,ISK);
+	if (isk) { printf(COMMENT); PrintConstant(f,c); }
 	break;
    case OP_ADDI:
 	printf("%d %d %d",a,b,sc);
 	break;
-   case OP_SUBI:
-	printf("%d %d %d",a,b,sc);
+   case OP_ADDK:
+	printf("%d %d %d",a,b,c);
+	printf(COMMENT); PrintConstant(f,c);
 	break;
-   case OP_MULI:
-	printf("%d %d %d",a,b,sc);
+   case OP_SUBK:
+	printf("%d %d %d",a,b,c);
+	printf(COMMENT); PrintConstant(f,c);
 	break;
-   case OP_MODI:
-	printf("%d %d %d",a,b,sc);
+   case OP_MULK:
+	printf("%d %d %d",a,b,c);
+	printf(COMMENT); PrintConstant(f,c);
 	break;
-   case OP_POWI:
-	printf("%d %d %d",a,b,sc);
+   case OP_MODK:
+	printf("%d %d %d",a,b,c);
+	printf(COMMENT); PrintConstant(f,c);
 	break;
-   case OP_DIVI:
-	printf("%d %d %d",a,b,sc);
+   case OP_POWK:
+	printf("%d %d %d",a,b,c);
+	printf(COMMENT); PrintConstant(f,c);
 	break;
-   case OP_IDIVI:
-	printf("%d %d %d",a,b,sc);
+   case OP_DIVK:
+	printf("%d %d %d",a,b,c);
+	printf(COMMENT); PrintConstant(f,c);
+	break;
+   case OP_IDIVK:
+	printf("%d %d %d",a,b,c);
+	printf(COMMENT); PrintConstant(f,c);
 	break;
    case OP_BANDK:
 	printf("%d %d %d",a,b,c);
-	printf("\t; "); PrintConstant(f,c); 
+	printf(COMMENT); PrintConstant(f,c);
 	break;
    case OP_BORK:
 	printf("%d %d %d",a,b,c);
-	printf("\t; "); PrintConstant(f,c); 
+	printf(COMMENT); PrintConstant(f,c);
 	break;
    case OP_BXORK:
 	printf("%d %d %d",a,b,c);
-	printf("\t; "); PrintConstant(f,c); 
+	printf(COMMENT); PrintConstant(f,c);
 	break;
    case OP_SHRI:
-	printf("%d %d %d",a,b,c);
+	printf("%d %d %d",a,b,sc);
 	break;
    case OP_SHLI:
-	printf("%d %d %d",a,b,c);
+	printf("%d %d %d",a,b,sc);
 	break;
    case OP_ADD:
 	printf("%d %d %d",a,b,c);
@@ -472,6 +520,20 @@ static void PrintCode(const Proto* f)
    case OP_SHR:
 	printf("%d %d %d",a,b,c);
 	break;
+   case OP_MMBIN:
+	printf("%d %d %d",a,b,c);
+	printf(COMMENT "%s",eventname(c));
+	break;
+   case OP_MMBINI:
+	printf("%d %d %d %d",a,sb,c,isk);
+	printf(COMMENT "%s",eventname(c));
+	if (isk) printf(" flip");
+	break;
+   case OP_MMBINK:
+	printf("%d %d %d %d",a,b,c,isk);
+	printf(COMMENT "%s ",eventname(c)); PrintConstant(f,b);
+	if (isk) printf(" flip");
+	break;
    case OP_UNM:
 	printf("%d %d",a,b);
 	break;
@@ -490,9 +552,12 @@ static void PrintCode(const Proto* f)
    case OP_CLOSE:
 	printf("%d",a);
 	break;
+   case OP_TBC:
+	printf("%d",a);
+	break;
    case OP_JMP:
 	printf("%d",GETARG_sJ(i));
-	printf("\t; to %d",GETARG_sJ(i)+pc+2);
+	printf(COMMENT "to %d",GETARG_sJ(i)+pc+2);
 	break;
    case OP_EQ:
 	printf("%d %d %d",a,b,isk);
@@ -505,7 +570,7 @@ static void PrintCode(const Proto* f)
 	break;
    case OP_EQK:
 	printf("%d %d %d",a,b,isk);
-	printf("\t; "); PrintConstant(f,b);
+	printf(COMMENT); PrintConstant(f,b);
 	break;
    case OP_EQI:
 	printf("%d %d %d",a,sb,isk);
@@ -530,104 +595,73 @@ static void PrintCode(const Proto* f)
 	break;
    case OP_CALL:
 	printf("%d %d %d",a,b,c);
-	printf("\t; ");
-   	if (b==0) printf("all in "); else printf("%d in ",b-1);
-   	if (c==0) printf("all out"); else printf("%d out",c-1);
+	printf(COMMENT);
+	if (b==0) printf("all in "); else printf("%d in ",b-1);
+	if (c==0) printf("all out"); else printf("%d out",c-1);
 	break;
    case OP_TAILCALL:
 	printf("%d %d %d",a,b,c);
-	printf("\t; %d in",b-1);
+	printf(COMMENT "%d in",b-1);
 	break;
    case OP_RETURN:
 	printf("%d %d %d",a,b,c);
-	printf("\t; ");
-   	if (b==0) printf("all out"); else printf("%d out",b-1);
+	printf(COMMENT);
+	if (b==0) printf("all out"); else printf("%d out",b-1);
 	break;
    case OP_RETURN0:
 	break;
    case OP_RETURN1:
 	printf("%d",a);
 	break;
-   case OP_FORLOOP1:
-	printf("%d %d",a,bx);
-	printf("\t; to %d",pc-bx+2);
-	break;
-   case OP_FORPREP1:
-	printf("%d %d",a,bx);
-	printf("\t; to %d",pc+bx+2);
-	break;
    case OP_FORLOOP:
 	printf("%d %d",a,bx);
-	printf("\t; to %d",pc-bx+2);
+	printf(COMMENT "to %d",pc-bx+2);
 	break;
    case OP_FORPREP:
 	printf("%d %d",a,bx);
-	printf("\t; to %d",pc+bx+2);
+	printf(COMMENT "to %d",pc+bx+2);
+	break;
+   case OP_TFORPREP:
+	printf("%d %d",a,bx);
+	printf(COMMENT "to %d",pc+bx+2);
 	break;
    case OP_TFORCALL:
 	printf("%d %d",a,c);
 	break;
    case OP_TFORLOOP:
 	printf("%d %d",a,bx);
-	printf("\t; to %d",pc-bx+2);
+	printf(COMMENT "to %d",pc-bx+2);
 	break;
    case OP_SETLIST:
 	printf("%d %d %d",a,b,c);
+	if (isk) printf(COMMENT "%d",c+EXTRAARGC);
 	break;
    case OP_CLOSURE:
 	printf("%d %d",a,bx);
-	printf("\t; %p",VOID(f->p[bx]));
+	printf(COMMENT "%p",VOID(f->p[bx]));
 	break;
    case OP_VARARG:
 	printf("%d %d",a,c);
-	printf("\t; ");
-   	if (c==0) printf("all out"); else printf("%d out",c-1);
+	printf(COMMENT);
+	if (c==0) printf("all out"); else printf("%d out",c-1);
 	break;
-   case OP_PREPVARARG:
+   case OP_VARARGPREP:
 	printf("%d",a);
 	break;
    case OP_EXTRAARG:
 	printf("%d",ax);
-	printf("\t; "); PrintConstant(f,ax);
 	break;
+#if 0
+   default:
+	printf("%d %d %d",a,b,c);
+	printf(COMMENT "not handled");
+	break;
+#endif
   }
   printf("\n");
  }
 }
 
-static void riPrintCode(const Proto* p)
-{
- const Instruction* code=p->code;
- int pc,n=p->sizecode;
- for (pc=0; pc<n; pc++)
- {
-  Instruction i = code[pc];
-  OpCode o = GET_OPCODE(i);
-  const char *name = luaP_opnames[o];
-  int line = luaG_getfuncline(p, pc);
-  printf("(%4d) %4d - ", line, pc);
-  switch (getOpMode(o)) {
-    case iABC:
-      printf("%-12s%4d %4d %4d%s", name,
-              GETARG_A(i), GETARG_B(i), GETARG_C(i),
-              GETARG_k(i) ? " (k)" : "");
-      break;
-    case iABx:
-      printf("%-12s%4d %4d", name, GETARG_A(i), GETARG_Bx(i));
-      break;
-    case iAsBx:
-      printf("%-12s%4d %4d", name, GETARG_A(i), GETARG_sBx(i));
-      break;
-    case iAx:
-      printf("%-12s%4d", name, GETARG_Ax(i));
-      break;
-    case isJ:
-      printf("%-12s%4d (%1d)", name, GETARG_sJ(i), !!GETARG_m(i));
-      break;
-  }
- printf("\n");
- }
-}
 
 #define SS(x)	((x==1)?"":"s")
 #define S(x)	(int)(x),SS(x)
@@ -659,7 +693,8 @@ static void PrintDebug(const Proto* f)
  printf("constants (%d) for %p:\n",n,VOID(f));
  for (i=0; i<n; i++)
  {
-  printf("\t%d\t",i+1);
+  printf("\t%d\t",i);
+  PrintType(f,i);
   PrintConstant(f,i);
   printf("\n");
  }
@@ -683,7 +718,6 @@ static void PrintFunction(const Proto* f, int full)
 {
  int i,n=f->sizep;
  PrintHeader(f);
- riPrintCode(f);
  PrintCode(f);
  if (full) PrintDebug(f);
  for (i=0; i<n; i++) PrintFunction(f->p[i],full);

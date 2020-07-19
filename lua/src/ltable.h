@@ -1,5 +1,5 @@
 /*
-** $Id: ltable.h,v 2.28 2018/06/15 14:14:20 roberto Exp $
+** $Id: ltable.h $
 ** Lua tables (hash)
 ** See Copyright Notice in lua.h
 */
@@ -27,7 +27,7 @@
 
 
 /* returns the Node, given the value of a table entry */
-#define nodefromval(v) 	cast(Node *, (v))
+#define nodefromval(v)	cast(Node *, (v))
 
 
 LUAI_FUNC const TValue *luaH_getint (Table *t, lua_Integer key);

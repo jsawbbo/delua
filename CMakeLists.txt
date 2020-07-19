@@ -1,14 +1,17 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.17)
+
+set(CMAKE_MESSAGE_LOG_LEVEL VERBOSE)
 
 # === Project ================================================================
-set(CMAKE_USER_MAKE_RULES_OVERRIDE "DeLuaInitFlags.cmake")
-
+include("DeLuaInitFlags.cmake")
+include(CMyke/Init OPTIONAL)
+message("CMYKE_FOUND=${CMYKE_FOUND}")
 project(DeLua 
-    VERSION 5.4.0.2
+    VERSION 5.4.0.3
     LANGUAGES CXX C)
 
 get_directory_property(DeLua_PARENT_DIR PARENT_DIRECTORY)
-include(CMyke/Paths)
+include(CMyke/Paths OPTIONAL)
 
 # === Version ================================================================
 set(DeLua_VERSION "${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR}.${DeLua_VERSION_PATCH}")
@@ -134,8 +137,8 @@ install(DIRECTORY lua/doc
     COMPONENT "documentation")
 
 # === Package ================================================================
-if(NOT DeLua_PARENT_DIR)
-include(CMyke/Package)
+if(NOT DeLua_PARENT_DIR AND CMYKE_FOUND)
+include(CMyke/Package OPTIONAL)
 
 cmyke_package_setup(
     NAME "delua-${DeLua_RELEASE}"
@@ -143,7 +146,7 @@ cmyke_package_setup(
     VENDOR "Research center caesar"
     SUMMARY "Simple, extensible, embeddable programming language."
     DESCRIPTION 
-"This is Lua 5.3.5, released on 26 Jun 2018.
+"This is Lua 5.4.09, released on 29 Jun 2020.
 
 > Lua is a powerful, efficient, lightweight, embeddable scripting language.  
 > It supports procedural programming, object-oriented programming, functional  
@@ -185,7 +188,7 @@ a C++ version of the libraries."
 		BEGIN development
 			INSTALL NO
 		    DISPLAY_NAME "Development files"
-		    DEPENDS common-development
+		    DEPENDS runtime common-development
 		END
 			
 		BEGIN documentation
@@ -210,31 +213,32 @@ a C++ version of the libraries."
 
 cmyke_package_define(DEB DISTRIBUTION Ubuntu
 	MAINTAINER "Juergen \"George\" Sawinski <juergen.sawinski@gmail.com>"	
-	RECOMMENDS "delua-${DeLua_RELEASE}-doc"
 
 	RELEASE "0"
 	Ubuntu_RELEASE 0
 	
 	COMPONENTS
 		BEGIN runtime 
-			PACKAGE_SUFFIX OFF
+			COMPONENT_SUFFIX OFF
 		END
 			
 		BEGIN common-development 
 			COMPONENT_NAME delua-common
+			COMPONENT_SUFFIX OFF
 			COMPONENT_ARCHITECTURE all
-			COMPONENT_TEMPLATE "@NAME@-@RELEASE@ubuntu@Ubuntu_RELEASE@_@ARCHITECTURE@"
-			PACKAGE_SUFFIX dev
 		END
 			
 		BEGIN development 
-			PACKAGE_SUFFIX dev
+			COMPONENT_SUFFIX dev
 		END
 			
 		BEGIN documentation
-			PACKAGE_SUFFIX doc
+			COMPONENT_SUFFIX doc
 		END
 )
 
 include(CPack)
 endif()
+
+include(CMyke/Finish OPTIONAL)
+

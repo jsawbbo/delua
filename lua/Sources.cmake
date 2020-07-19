@@ -22,6 +22,7 @@ set(LUALIB_INTERNAL_HDRS
     ${DeLua_SOURCE_DIR}/lua/src/lmem.h
     ${DeLua_SOURCE_DIR}/lua/src/lobject.h
     ${DeLua_SOURCE_DIR}/lua/src/lopcodes.h
+    ${DeLua_SOURCE_DIR}/lua/src/lopnames.h
     ${DeLua_SOURCE_DIR}/lua/src/lparser.h
     ${DeLua_SOURCE_DIR}/lua/src/lprefix.h
     ${DeLua_SOURCE_DIR}/lua/src/lstate.h
@@ -79,5 +80,9 @@ set(LUA_SRCS
     ${DeLua_SOURCE_DIR}/lua/src/lua.c)
 
 set(LUAC_SRCS
-    ${DeLua_SOURCE_DIR}/lua/src/ldump.c 
+	${LUALIB_SRCS}
     ${DeLua_SOURCE_DIR}/lua/src/luac.c)
+
+    
+    
+    

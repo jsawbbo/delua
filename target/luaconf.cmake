@@ -3,6 +3,7 @@ option(LUA_32BITS "Enable 32-bit integers and 32-bit floats (default: auto-detec
 option(LUA_USE_C89 "Use ISO-C89 features only (avoiding C99)." ${LUA_USE_C89_INIT})
 
 option(LUA_USE_POSIX "Use Posix features." ${LUA_USE_POSIX_INIT})
+option(LUA_USE_MACOSX "Use Mac OSX features." ${LUA_USE_MACOSX_INIT})
 option(LUA_USE_DLOPEN "Use dlopen (requires dl library, auto-detected)." ${LUA_USE_DLOPEN_INIT})
 option(LUA_USE_READLINE "Use readline features (requires readline library, auto-detected)." ${LUA_USE_READLINE_INIT})
 
