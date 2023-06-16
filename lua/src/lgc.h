@@ -12,16 +12,16 @@
 #include "lstate.h"
 
 /*
-** Collectable objects may have one of three colors: white, which
-** means the object is not marked; gray, which means the
-** object is marked, but its references may be not marked; and
-** black, which means that the object and all its references are marked.
-** The main invariant of the garbage collector, while marking objects,
-** is that a black object can never point to a white one. Moreover,
-** any gray object must be in a "gray list" (gray, grayagain, weak,
-** allweak, ephemeron) so that it can be visited again before finishing
-** the collection cycle. These lists have no meaning when the invariant
-** is not being enforced (e.g., sweep phase).
+** Collectable objects may have one of three colors: white, which means
+** the object is not marked; gray, which means the object is marked, but
+** its references may be not marked; and black, which means that the
+** object and all its references are marked.  The main invariant of the
+** garbage collector, while marking objects, is that a black object can
+** never point to a white one. Moreover, any gray object must be in a
+** "gray list" (gray, grayagain, weak, allweak, ephemeron) so that it
+** can be visited again before finishing the collection cycle. (Open
+** upvalues are an exception to this rule.)  These lists have no meaning
+** when the invariant is not being enforced (e.g., sweep phase).
 */
 
 
@@ -69,13 +69,15 @@
 
 /*
 ** Layout for bit use in 'marked' field. First three bits are
-** used for object "age" in generational mode. Last bit is free
-** to be used by respective objects.
+** used for object "age" in generational mode. Last bit is used
+** by tests.
 */
 #define WHITE0BIT	3  /* object is white (type 0) */
 #define WHITE1BIT	4  /* object is white (type 1) */
 #define BLACKBIT	5  /* object is black */
 #define FINALIZEDBIT	6  /* object has been marked for finalization */
+
+#define TESTBIT		7
 
 
 
@@ -94,7 +96,8 @@
 #define isdead(g,v)	isdeadm(otherwhite(g), (v)->marked)
 
 #define changewhite(x)	((x)->marked ^= WHITEBITS)
-#define gray2black(x)	l_setbit((x)->marked, BLACKBIT)
+#define nw2black(x)  \
+	check_exp(!iswhite(x), l_setbit((x)->marked, BLACKBIT))
 
 #define luaC_white(g)	cast_byte((g)->currentwhite & WHITEBITS)
 
@@ -145,6 +148,16 @@
 */
 #define isdecGCmodegen(g)	(g->gckind == KGC_GEN || g->lastatomic != 0)
 
+
+/*
+** Control when GC is running:
+*/
+#define GCSTPUSR	1  /* bit true when GC stopped by user */
+#define GCSTPGC		2  /* bit true when GC stopped by itself */
+#define GCSTPCLS	4  /* bit true when closing Lua state */
+#define gcrunning(g)	((g)->gcstp == 0)
+
+
 /*
 ** Does one step of collection when debt becomes positive. 'pre'/'pos'
 ** allows some adjustments to be done only when needed. macro
@@ -159,17 +172,18 @@
 #define luaC_checkGC(L)		luaC_condGC(L,(void)0,(void)0)
 
 
-#define luaC_barrier(L,p,v) (  \
-	(iscollectable(v) && isblack(p) && iswhite(gcvalue(v))) ?  \
-	luaC_barrier_(L,obj2gco(p),gcvalue(v)) : cast_void(0))
-
-#define luaC_barrierback(L,p,v) (  \
-	(iscollectable(v) && isblack(p) && iswhite(gcvalue(v))) ? \
-	luaC_barrierback_(L,p) : cast_void(0))
-
 #define luaC_objbarrier(L,p,o) (  \
 	(isblack(p) && iswhite(o)) ? \
 	luaC_barrier_(L,obj2gco(p),obj2gco(o)) : cast_void(0))
+
+#define luaC_barrier(L,p,v) (  \
+	iscollectable(v) ? luaC_objbarrier(L,p,gcvalue(v)) : cast_void(0))
+
+#define luaC_objbarrierback(L,p,o) (  \
+	(isblack(p) && iswhite(o)) ? luaC_barrierback_(L,p) : cast_void(0))
+
+#define luaC_barrierback(L,p,v) (  \
+	iscollectable(v) ? luaC_objbarrierback(L, p, gcvalue(v)) : cast_void(0))
 
 LUAI_FUNC void luaC_fix (lua_State *L, GCObject *o);
 LUAI_FUNC void luaC_freeallobjects (lua_State *L);
@@ -177,6 +191,8 @@ LUAI_FUNC void luaC_step (lua_State *L);
 LUAI_FUNC void luaC_runtilstate (lua_State *L, int statesmask);
 LUAI_FUNC void luaC_fullgc (lua_State *L, int isemergency);
 LUAI_FUNC GCObject *luaC_newobj (lua_State *L, int tt, size_t sz);
+LUAI_FUNC GCObject *luaC_newobjdt (lua_State *L, int tt, size_t sz,
+                                                 size_t offset);
 LUAI_FUNC void luaC_barrier_ (lua_State *L, GCObject *o, GCObject *v);
 LUAI_FUNC void luaC_barrierback_ (lua_State *L, GCObject *o);
 LUAI_FUNC void luaC_checkfinalizer (lua_State *L, GCObject *o, Table *mt);

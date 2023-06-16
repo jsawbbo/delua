@@ -120,7 +120,10 @@ static TString *loadStringN (LoadState *S, Proto *p) {
   }
   else {  /* long string */
     ts = luaS_createlngstrobj(L, size);  /* create string */
+    setsvalue2s(L, L->top.p, ts);  /* anchor it ('loadVector' can GC) */
+    luaD_inctop(L);
     loadVector(S, getstr(ts), size);  /* load directly in final place */
+    L->top.p--;  /* pop string */
   }
   luaC_objbarrier(L, p, ts);
   return ts;
@@ -200,13 +203,20 @@ static void loadProtos (LoadState *S, Proto *f) {
 }
 
 
+/*
+** Load the upvalues for a function. The names must be filled first,
+** because the filling of the other fields can raise read errors and
+** the creation of the error message can call an emergency collection;
+** in that case all prototypes must be consistent for the GC.
+*/
 static void loadUpvalues (LoadState *S, Proto *f) {
   int i, n;
   n = loadInt(S);
   f->upvalues = luaM_newvectorchecked(S->L, n, Upvaldesc);
   f->sizeupvalues = n;
-  for (i = 0; i < n; i++) {
+  for (i = 0; i < n; i++)  /* make array valid for GC */
     f->upvalues[i].name = NULL;
+  for (i = 0; i < n; i++) {  /* following calls can raise errors */
     f->upvalues[i].instack = loadByte(S);
     f->upvalues[i].idx = loadByte(S);
     f->upvalues[i].kind = loadByte(S);
@@ -238,6 +248,8 @@ static void loadDebug (LoadState *S, Proto *f) {
     f->locvars[i].endpc = loadInt(S);
   }
   n = loadInt(S);
+  if (n != 0)  /* does it have debug information? */
+    n = f->sizeupvalues;  /* must be this many */
   for (i = 0; i < n; i++)
     f->upvalues[i].name = loadStringN(S, f);
 }
@@ -311,7 +323,7 @@ LClosure *luaU_undump(lua_State *L, ZIO *Z, const char *name) {
   S.Z = Z;
   checkHeader(&S);
   cl = luaF_newLclosure(L, loadByte(&S));
-  setclLvalue2s(L, L->top, cl);
+  setclLvalue2s(L, L->top.p, cl);
   luaD_inctop(L);
   cl->p = luaF_newproto(L);
   luaC_objbarrier(L, cl, cl->p);

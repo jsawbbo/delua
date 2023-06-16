@@ -1,13 +1,15 @@
 # === Sources ================================================================
-set_source_files_properties(${LUALIB_SRCS} ${LUBLIB_HDRS} 
-    PROPERTIES
-        LANGUAGE CXX)
+set(LUALIB_CXX_SRCS)
+foreach(src ${LUALIB_SRCS}) 
+    get_filename_component(src ${src} NAME)
+    list(APPEND LUALIB_CXX_SRCS "${src}xx")
+endforeach()
 
 # === Targets ================================================================
 set(__lua_targets)
 if(LUA_BUILD_STATIC)
     list(APPEND __lua_targets DeLuaCXXLibStatic)
-    add_library(DeLuaCXXLibStatic STATIC ${LUALIB_SRCS} ${LUALIB_HDRS} ${LUALIB_INTERNAL_HDRS})
+    add_library(DeLuaCXXLibStatic STATIC ${LUALIB_CXX_SRCS} ${LUALIB_HDRS} ${LUALIB_INTERNAL_HDRS})
     set_target_properties(DeLuaCXXLibStatic
         PROPERTIES
             LINKER_LANGUAGE CXX
@@ -23,7 +25,7 @@ endif()
 
 if(LUA_BUILD_SHARED)
     list(APPEND __lua_targets DeLuaCXXLib)
-    add_library(DeLuaCXXLib SHARED ${LUALIB_SRCS} ${LUALIB_HDRS} ${LUALIB_INTERNAL_HDRS})
+    add_library(DeLuaCXXLib SHARED ${LUALIB_CXX_SRCS} ${LUALIB_HDRS} ${LUALIB_INTERNAL_HDRS})
     set_target_properties(DeLuaCXXLib
         PROPERTIES
             LINKER_LANGUAGE CXX

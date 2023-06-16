@@ -1,15 +1,14 @@
 # Delua
 
-This is Lua 5.4.0 (work2), released on 18 Jun 2018. (see file *lua/README*).
+This is Lua 5.4.6, released on 14 May 2023. (see file *lua/README*).
 
 > Lua is a powerful, efficient, lightweight, embeddable scripting language.  
 > It supports procedural programming, object-oriented programming, functional  
 > programming, data-driven programming, and data description.
 
 Delua is the [cmake](https://cmake.org/)'ified [Lua](http://www.lua.org) source. 
-It can be used to build  Lua binaries and  
-packages on all major operating systems, but may be also embedded in other  
-projects.
+It can be used to build  Lua binaries and packages on all major operating 
+systems, but may be also embedded in other projects.
 
 No major code changes have been made to the original Lua sources (except the  
 handling of the search path) and the supplement of exceptions when building  

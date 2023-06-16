@@ -1,16 +1,16 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.22)
 
 set(CMAKE_MESSAGE_LOG_LEVEL TRACE)
 
 # === Project ================================================================
 include("DeLuaInitFlags.cmake")
-include(CMyke/Init OPTIONAL)
+include(My/Init OPTIONAL)
 project(DeLua 
-    VERSION 5.4.0.4
+    VERSION 5.4.6.5
     LANGUAGES CXX C)
 
+include(My/Config OPTIONAL)
 get_directory_property(DeLua_PARENT_DIR PARENT_DIRECTORY)
-include(CMyke/Paths OPTIONAL)
 
 # === Version ================================================================
 set(DeLua_VERSION "${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR}.${DeLua_VERSION_PATCH}")
@@ -33,6 +33,12 @@ endif(NOT DEFINED LIBRARY_OUTPUT_PATH)
 if(NOT DEFINED SCRIPT_OUTPUT_PATH)
     set(SCRIPT_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 endif(NOT DEFINED SCRIPT_OUTPUT_PATH)
+
+# === Compiler ===============================================================
+
+# if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+# 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -x c++")
+# endif()
 
 # === Config =================================================================
 # defaults
@@ -145,7 +151,7 @@ cmyke_package(
     VENDOR "Research center caesar"
     SUMMARY "Simple, extensible, embeddable programming language."
     DESCRIPTION 
-"This is Lua 5.4.0, released on 29 Jun 2020.
+"This is Lua 5.4.6, released on 14 May 2023.
 
 > Lua is a powerful, efficient, lightweight, embeddable scripting language.  
 > It supports procedural programming, object-oriented programming, functional  
@@ -241,5 +247,4 @@ cmyke_package(DEB DISTRIBUTION Ubuntu
 include(CPack)
 endif()
 
-include(CMyke/Finish OPTIONAL)
-
+include(My/Lists OPTIONAL)
