@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 3.22)
 
-set(CMAKE_MESSAGE_LOG_LEVEL TRACE)
+# set(CMAKE_MESSAGE_LOG_LEVEL TRACE)
 
 # === Project ================================================================
 include("DeLuaInitFlags.cmake")
+
+find_package(CMyke)
 include(My/Init OPTIONAL)
 project(DeLua 
-    VERSION 5.4.6.5
+    VERSION 5.4.6.6
     LANGUAGES CXX C)
 
 include(My/Config OPTIONAL)
@@ -142,16 +144,18 @@ install(DIRECTORY lua/doc
     COMPONENT "documentation")
 
 # === Package ================================================================
-if(NOT DeLua_PARENT_DIR AND CMYKE_FOUND)
-include(CMyke/Package OPTIONAL)
+if(NOT DeLua_PARENT_DIR AND CMyke_FOUND)
+include(My/Package)
 
-cmyke_package(
+my_package(
+	ARCHITECTURE all
     NAME "delua-${DeLua_RELEASE}"
     CONTACT "Jürgen 'George' Sawinski <george@caesar.de>"
     VENDOR "Research center caesar"
-    SUMMARY "Simple, extensible, embeddable programming language."
-    DESCRIPTION 
-"This is Lua 5.4.6, released on 14 May 2023.
+    DESCRIPTION {
+		SUMMARY "Simple, extensible, embeddable programming language."
+		FULL "\
+This is Lua 5.4.6, released on 14 May 2023.
 
 > Lua is a powerful, efficient, lightweight, embeddable scripting language.  
 > It supports procedural programming, object-oriented programming, functional  
@@ -164,84 +168,89 @@ also embedded in other projects.
 No major code changes have been made to the original Lua sources (except the  
 handling of the search path) and the supplement of exceptions when building  
 a C++ version of the libraries."
-    LICENSE "MIT"
+	}
+
+    LICENSE "MIT" {
         FILE ${DeLua_SOURCE_DIR}/LICENSE
-        
-    URL
+	}
+
+    URL {
 		HOMEPAGE "https://bitbucket.org/jsaw/delua"
 		ABOUT    "https://www.lua.org/about.html"
 		HELP     "https://www.lua.org/docs.html"
-        
-    ICON         "${DeLua_SOURCE_DIR}/lua/doc/logo.gif"
-    
-    PACKAGE
-	    CATEGORY "Interpreter"
+	}
 
-	COMPONENTS
-		COMPONENT runtime
-			DEFAULT
-			INSTALL YES
-			DISPLAY_NAME "Runtime"
-			BEGIN
-				# sub-component....
-			END
+    # ICON         "${DeLua_SOURCE_DIR}/lua/doc/logo.gif"
+    
+    # PACKAGE {
+	#     CATEGORY "Interpreter"
+	# }
+
+	# COMPONENTS
+	# 	COMPONENT runtime
+	# 		DEFAULT
+	# 		INSTALL YES
+	# 		DISPLAY_NAME "Runtime"
+	# 		BEGIN
+	# 			# sub-component....
+	# 		END
 			
-		COMPONENT common-development
-			INSTALL NO
-		    DISPLAY_NAME "Common development files"
-		    DEPENDS runtime
-			BEGIN
-				GROUP something
-				DISPLAY_NAME Something
-			END
+	# 	COMPONENT common-development
+	# 		INSTALL NO
+	# 	    DISPLAY_NAME "Common development files"
+	# 	    DEPENDS runtime
+	# 		BEGIN
+	# 			GROUP something
+	# 			DISPLAY_NAME Something
+	# 		END
 			
-		COMPONENT development
-			INSTALL NO
-		    DISPLAY_NAME "Development files"
-		    DEPENDS runtime common-development
+	# 	COMPONENT development
+	# 		INSTALL NO
+	# 	    DISPLAY_NAME "Development files"
+	# 	    DEPENDS runtime common-development
 			
-		COMPONENT documentation
-		    INSTALL NO
-		    DISPLAY_NAME "Documentation"
-		    DEPENDS runtime
+	# 	COMPONENT documentation
+	# 	    INSTALL NO
+	# 	    DISPLAY_NAME "Documentation"
+	# 	    DEPENDS runtime
 )
 
-#cmyke_package(NSIS
+#my_package(NSIS
 #)
 #
-#cmyke_package(DMG
+#my_package(DMG
 #)
 #
-#cmyke_package(RPM
+#my_package(RPM
 #)
 
-#cmyke_package(DEB
+#my_package(DEB
 #	RELEASE "0"
 #)
 
-cmyke_package(DEB DISTRIBUTION Ubuntu
+my_package(DEB DISTRIBUTION Ubuntu
 	MAINTAINER "Juergen \"George\" Sawinski <juergen.sawinski@gmail.com>"	
 
-	RELEASE "${DeLua_VERSION_TWEAK}"
-	Ubuntu_RELEASE 0
+	RELEASE "${DeLua_VERSION_TWEAK}ubuntu0"
 	
-	COMPONENTS
-		COMPONENT runtime 
-			SUFFIX OFF
-			RECOMMENDS documentation
+	# COMPONENTS {
+	# 	COMPONENT runtime 
+	# 		SUFFIX OFF
+	# 		RECOMMENDS documentation
 			
-		COMPONENT common-development 
-			NAME delua-common
-			SUFFIX OFF
-			ARCHITECTURE all
+	# 	COMPONENT common-development 
+	# 		NAME delua-common
+	# 		SUFFIX OFF
+	# 		ARCHITECTURE all
 				
-		COMPONENT development 
-			SUFFIX dev
-			DEPENDS common-development
-			RECOMMENDS documentation
+	# 	COMPONENT development 
+	# 		SUFFIX dev
+	# 		DEPENDS common-development
+	# 		RECOMMENDS documentation
 					
-		COMPONENT documentation
-			SUFFIX doc
+	# 	COMPONENT documentation
+	# 		SUFFIX doc
+	# }
 )
 
 include(CPack)
