@@ -184,7 +184,7 @@
 #define LUA_PATH_SEP            ";"
 #define LUA_PATH_MARK           "?"
 #define LUA_EXEC_DIR            "!"
-
+#define LUA_HOME_MARK           "~"
 
 /*
 @@ LUA_PATH_DEFAULT is the default path that Lua uses to look for

@@ -491,11 +491,19 @@ static const char *searchpath (lua_State *L, const char *name,
     name = luaL_gsub(L, name, sep, dirsep);  /* replace it by 'dirsep' */
   luaL_buffinit(L, &buff);
   /* add path to the buffer, replacing marks ('?') with the file name */
-  luaL_addgsub(&buff, path, LUA_PATH_MARK, name);
+  luaL_addgsub(&buff, path, LUA_PATH_MARK, name); 
   luaL_addchar(&buff, '\0');
   pathname = luaL_buffaddr(&buff);  /* writable list of file names */
   endpathname = pathname + luaL_bufflen(&buff) - 1;
   while ((filename = getnextfilename(&pathname, endpathname)) != NULL) {
+    luaL_Buffer homebuff;
+    if (filename[0] == *LUA_HOME_MARK) {
+      luaL_buffinit(L, &homebuff);
+      luaL_addgsub(&buff, filename, LUA_HOME_MARK, getenv("HOME")); /* FIXME */
+      luaL_addchar(&buff, '\0');
+      filename = luaL_buffaddr(&buff);  /* writable list of file names */
+    }
+
     if (readable(filename))  /* does file exist and is readable? */
       return lua_pushstring(L, filename);  /* save and return name */
   }
