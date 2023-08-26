@@ -499,9 +499,9 @@ static const char *searchpath (lua_State *L, const char *name,
     luaL_Buffer homebuff;
     if (filename[0] == *LUA_HOME_MARK) {
       luaL_buffinit(L, &homebuff);
-      luaL_addgsub(&buff, filename, LUA_HOME_MARK, getenv("HOME")); /* FIXME */
-      luaL_addchar(&buff, '\0');
-      filename = luaL_buffaddr(&buff);  /* writable list of file names */
+      luaL_addgsub(&homebuff, filename, LUA_HOME_MARK, getenv("HOME")); /* FIXME */
+      luaL_addchar(&homebuff, '\0');
+      filename = luaL_buffaddr(&homebuff);  /* writable list of file names */
     }
 
     if (readable(filename))  /* does file exist and is readable? */
