@@ -22,5 +22,5 @@ install(FILES ${LUALIB_HDRS} ${LUALIB_CXX_HDRS}
     DESTINATION ${DeLua_HEADER_DIR}/${DeLua_RELEASE} COMPONENT "development")
 
 install(EXPORT DeLuaTargets-${DeLua_RELEASE}
-    DESTINATION ${CMAKE_ROOT}/Modules COMPONENT "development")
+    DESTINATION share/cmake/delua-${DeLua_RELEASE} COMPONENT "development")
 

@@ -10,10 +10,6 @@ Delua is the [cmake](https://cmake.org/)'ified [Lua](http://www.lua.org) source.
 It can be used to build  Lua binaries and packages on all major operating 
 systems, but may be also embedded in other projects.
 
-No major code changes have been made to the original Lua sources (except the  
-handling of the search path) and the supplement of exceptions when building  
-a C++ version of the libraries.
-
 ## Modifications
 
 ### General
@@ -28,8 +24,8 @@ almost untouched. Changes made to the pure Lua sources can be found in the
 
 The default search path includes the `$HOME/.local/` file-system structure on  
 Unixoid systems, `%AppData%\\Roaming\\${LUA_NAME}` on Microsoft Windows®, and,  
-`$HOME/Library` on MacOS. In addition, a leading '~' expands to the `HOME` (environment  
-variable) directory.
+`$HOME/Library` on MacOS. In addition, a leading '~' expands to the `HOME` 
+(environment variable) directory.
 
 #### Extra paths
 
