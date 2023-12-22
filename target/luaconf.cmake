@@ -5,7 +5,11 @@ option(LUA_USE_C89 "Use ISO-C89 features only (avoiding C99)." ${LUA_USE_C89_INI
 option(LUA_USE_POSIX "Use Posix features." ${LUA_USE_POSIX_INIT})
 option(LUA_USE_MACOSX "Use Mac OSX features." ${LUA_USE_MACOSX_INIT})
 option(LUA_USE_DLOPEN "Use dlopen (requires dl library, auto-detected)." ${LUA_USE_DLOPEN_INIT})
-option(LUA_USE_READLINE "Use readline features (requires readline library, auto-detected)." ${LUA_USE_READLINE_INIT})
+
+set(LUA_PATH_SEP ";")
+set(LUA_PATH_MARK "?")
+set(LUA_EXEC_DIR "!")
+set(LUA_HOME_MARK "~")
 
 set(LUA_ROOT "${LUA_ROOT_INIT}" CACHE STRING "Root installation path.")
 
@@ -30,6 +34,9 @@ endif()
 set(LUA_PATH_EXTRA "${LUA_PATH_EXTRA_INIT}" CACHE STRING "Additional module search path." FORCE) 
 set(LUA_CPATH_EXTRA "${LUA_CPATH_EXTRA_INIT}" CACHE STRING "Additional library search path." FORCE) 
 
+# FIXME LUA_PATH_EXTRA_SEP
+# FIXME LUA_CPATH_EXTRA_SEP
+
 if(WINDOWS AND NOT UNIX)
     set(LUA_DIRSEP_INIT "\\")
 else()
@@ -47,3 +54,7 @@ set(LUA_COMPAT_5_3 "${LUA_COMPAT_5_3_INIT}" CACHE BOOL "Retain 5.3 compatibility
 set(LUA_USER_H "${LUA_USER_H_INIT}" CACHE STRING "User header.")
 set(LUA_GLOBAL_USERSTATE "${LUA_GLOBAL_USERSTATE_INIT}" CACHE STRING "User entry in global_State.")
 
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    # FIXME see README: __lua_exec_in_buildpath
+    #                   (see also DeLua_OUTPUT_PATH)
+endif()

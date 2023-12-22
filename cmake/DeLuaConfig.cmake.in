@@ -1,9 +1,0 @@
-# (De-)Lua version 
-
-# (De-)Lua config
-set(DeLua_PREFIX    "@LUA_ROOT@")
-set(DeLua_CPATH_DIR "@DeLua_CPATH_DIR@")
-set(DeLua_PATH_DIR  "@DeLua_PATH_DIR@")
-
-# Targets
-include(DeLuaTargets-${DeLua_FIND_VERSION_MAJOR}.${DeLua_FIND_VERSION_MINOR})

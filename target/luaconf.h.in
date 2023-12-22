@@ -181,10 +181,10 @@
 ** LUA_EXEC_DIR in a Windows path is replaced by the executable's
 ** directory.
 */
-#define LUA_PATH_SEP            ";"
-#define LUA_PATH_MARK           "?"
-#define LUA_EXEC_DIR            "!"
-#define LUA_HOME_MARK           "~"
+#define LUA_PATH_SEP            "@LUA_PATH_SEP@"
+#define LUA_PATH_MARK           "@LUA_PATH_MARK@"
+#define LUA_EXEC_DIR            "@LUA_EXEC_DIR@"
+#define LUA_HOME_MARK           "@LUA_HOME_MARK@"
 
 /*
 @@ LUA_PATH_DEFAULT is the default path that Lua uses to look for
@@ -217,7 +217,7 @@
 
 #if !defined(LUA_PATH_DEFAULT)
 #define LUA_PATH_DEFAULT  \
-               @LUA_PATH_EXTRA@ \
+        @LUA_PATH_EXTRA@ @LUA_PATH_EXTRA_SEP@ \
         LUA_HOME_LDIR"?.lua;"  LUA_HOME_LDIR"?/init.lua;" \
         LUA_HOME_CDIR"?.lua;"  LUA_HOME_CDIR"?/init.lua;" \
                LUA_LDIR"?.lua;"  LUA_LDIR"?\\init.lua;" \
@@ -228,7 +228,7 @@
 
 #if !defined(LUA_CPATH_DEFAULT)
 #define LUA_CPATH_DEFAULT \
-        @LUA_CPATH_EXTRA@ \
+        @LUA_CPATH_EXTRA@ @LUA_CPATH_EXTRA_SEP@ \
         LUA_HOME_CDIR"?.dll;"  LUA_HOME_CDIR"?/loadall.dll;" \
                LUA_CDIR"?.dll;" \
                LUA_CDIR"..\\lib\\lua\\" LUA_VDIR "\\?.dll;" \

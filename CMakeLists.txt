@@ -6,42 +6,43 @@ cmake_minimum_required(VERSION 3.22)
 include(${CMAKE_CURRENT_SOURCE_DIR}/DeLuaInitFlags.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/Version.cmake)
 
-find_package(CMyke)
+find_package(CMyke QUIET)
 include(My/Init OPTIONAL)
 project(DeLua 
-    VERSION 5.4.6.${DeLua_ITERATION}
+    VERSION ${Lua_VERSION}.${DeLua_VERSION_TWEAK}
     LANGUAGES CXX C)
 
 include(My/Config OPTIONAL)
 get_directory_property(DeLua_PARENT_DIR PARENT_DIRECTORY)
 
 # === Version ================================================================
-set(DeLua_VERSION "${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR}.${DeLua_VERSION_PATCH}")
-set(DeLua_RELEASE "${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR}")
-set(DeLua_RELEASE_SUFFIX "${DeLua_VERSION_MAJOR}${DeLua_VERSION_MINOR}")
+set(DeLua_VERSION ${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR}.${DeLua_VERSION_PATCH})
+set(DeLua_RELEASE ${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR})
 
 math(EXPR DeLua_VERSION_NUM "${DeLua_VERSION_MAJOR}*100 + ${DeLua_VERSION_MINOR}")
 
-message(STATUS "DeLua version ${DeLua_VERSION}")
+message(STATUS "Lua version ${Lua_VERSION} [${DeLua_VERSION_TWEAK}]")
 
 # === CMake Paths ============================================================
 list(APPEND CMAKE_MODULE_PATH "${DeLua_SOURCE_DIR}/cmake")
 
-if(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
-    set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-endif(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
-if(NOT DEFINED LIBRARY_OUTPUT_PATH)
-    set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-endif(NOT DEFINED LIBRARY_OUTPUT_PATH)
-if(NOT DEFINED SCRIPT_OUTPUT_PATH)
-    set(SCRIPT_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-endif(NOT DEFINED SCRIPT_OUTPUT_PATH)
-
 # === Compiler ===============================================================
 
-# if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-# 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -x c++")
-# endif()
+# === Dependencies ===========================================================
+
+# readline
+find_library(LUA_READLINE_LIBRARY readline)
+if(LUA_READLINE_LIBRARY MATCHES NOTFOUND)
+	unset(LUA_READLINE_LIBRARY CACHE)
+else()
+	add_definitions(-DLUA_USE_READLINE)
+endif()
+
+# math lib
+find_library(LUA_MATH_LIBRARY m)
+if(NOT LUA_MATH_LIBRARY MATCHES NOTFOUND)
+	link_libraries(${LUA_MATH_LIBRARY})
+endif()
 
 # === Config =================================================================
 # defaults
@@ -59,23 +60,13 @@ endif(UNIX)
 set(LUA_USE_DLOPEN_INIT OFF)
 if(CMAKE_DL_LIBS)
     set(LUA_USE_DLOPEN_INIT ON)
-endif(CMAKE_DL_LIBS)
-
-# readline
-find_library(LUA_READLINE_LIBRARY readline)
-set(LUA_USE_READLINE_INIT OFF)
-if(LUA_READLINE_LIBRARY)
-    set(LUA_USE_READLINE_INIT ON)
-endif(LUA_READLINE_LIBRARY)
-
-# math lib
-find_library(LUA_MATH_LIBRARY m)
+endif()
 
 # paths
 set(LUA_ROOT_INIT "${CMAKE_INSTALL_PREFIX}/")
 
 # build options
-set(LUA_NAME "${LUA_NAME_INIT}" CACHE STRING "The name used for libraries and executables (lib${LUA_NAME} etc.).")
+set(LUA_NAME "${LUA_NAME_INIT}" CACHE STRING "The name used for libraries and executables (lib\${LUA_NAME} etc.).")
 
 set(LUA_LANGUAGE_C "${LUA_LANGUAGE_C_INIT}" CACHE STRING "Compile C library.")
 set(LUA_LANGUAGE_CXX "${LUA_LANGUAGE_CXX_INIT}" CACHE STRING "Compile C++ libraries.")
@@ -105,6 +96,19 @@ delua_path_to_dir(DeLua_PATH_DIR "${LUA_LDIR}")
 delua_path_to_dir(DeLua_CPATH_DIR "${LUA_CDIR}")
 
 # === Build ==================================================================
+# output
+set(DeLua_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+
+if(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
+    set(EXECUTABLE_OUTPUT_PATH ${DeLua_OUTPUT_PATH})
+endif(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
+if(NOT DEFINED LIBRARY_OUTPUT_PATH)
+    set(LIBRARY_OUTPUT_PATH ${DeLua_OUTPUT_PATH})
+endif(NOT DEFINED LIBRARY_OUTPUT_PATH)
+if(NOT DEFINED SCRIPT_OUTPUT_PATH)
+    set(SCRIPT_OUTPUT_PATH ${DeLua_OUTPUT_PATH})
+endif(NOT DEFINED SCRIPT_OUTPUT_PATH)
+
 # include directory
 if(${LUA_NAME} STREQUAL "lua")
 	set(DeLua_HEADER_DIR include)
@@ -151,24 +155,25 @@ include(My/Package)
 my_package(
 	ARCHITECTURE all
     NAME "delua-${DeLua_RELEASE}"
-    CONTACT "Jürgen 'George' Sawinski <george@caesar.de>"
-    VENDOR "Research center caesar"
+    CONTACT "Jürgen 'George' Sawinski <juergen.sawinski@mpinb.mpg.de>"
+    VENDOR "MPI f. Neurobiol. of Behavior — caesar, Bonn, Germany"
     DESCRIPTION {
 		SUMMARY "Simple, extensible, embeddable programming language."
 		FULL "\
-This is Lua 5.4.6, released on 14 May 2023.
+This is Lua ${Lua_VERSION}, released on ${Lua_Date}.
 
 > Lua is a powerful, efficient, lightweight, embeddable scripting language.  
 > It supports procedural programming, object-oriented programming, functional  
 > programming, data-driven programming, and data description.
 
-Delua is the cmake'ified Lua source (http://www.lua.org) source. It can be used 
+Delua is the CMake'ified Lua source (http://www.lua.org) source. It can be used 
 to build Lua binaries and packages on all major operating systems, but may be 
 also embedded in other projects.
 
-No major code changes have been made to the original Lua sources (except the  
-handling of the search path) and the supplement of exceptions when building  
-a C++ version of the libraries."
+Minor adaptions to the original Lua sources (such as handling of the search path) 
+were made, and, a C++ interface (using exceptions) was added. For a full list of
+modifications, see: https://bitbucket.org/jsaw/delua
+"
 	}
 
     LICENSE "MIT" {
@@ -181,7 +186,7 @@ a C++ version of the libraries."
 		HELP     "https://www.lua.org/docs.html"
 	}
 
-    # ICON         "${DeLua_SOURCE_DIR}/lua/doc/logo.gif"
+    ICON         "${DeLua_SOURCE_DIR}/lua/doc/logo.gif"
     
     # PACKAGE {
 	#     CATEGORY "Interpreter"
@@ -258,3 +263,4 @@ include(CPack)
 endif()
 
 include(My/Lists OPTIONAL)
+

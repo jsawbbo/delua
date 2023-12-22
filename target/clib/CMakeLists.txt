@@ -19,7 +19,7 @@ endif()
 if(LUA_BUILD_SHARED)
     list(APPEND __lua_targets DeLuaCLib)
     add_library(DeLuaCLib SHARED ${LUALIB_SRCS} ${LUALIB_HDRS} ${LUALIB_INTERNAL_HDRS})
-    target_link_libraries(DeLuaCLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY})
+    target_link_libraries(DeLuaCLib ${CMAKE_DL_LIBS})
     set_target_properties(DeLuaCLib
         PROPERTIES
             LINKER_LANGUAGE C
@@ -54,7 +54,7 @@ if(LUA_BUILD_INTERPRETER)
         PROPERTIES
             LINKER_LANGUAGE C
             OUTPUT_NAME ${LUA_NAME}-${DeLua_RELEASE})
-    target_link_libraries(LuaInterpreter DeLuaCLib ${LUA_READLINE_LIBRARY} ${LUA_MATH_LIBRARY})
+    target_link_libraries(LuaInterpreter DeLuaCLib ${LUA_READLINE_LIBRARY})
 endif()
 
 if(LUA_BUILD_COMPILER)

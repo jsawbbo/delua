@@ -32,7 +32,7 @@ if(LUA_BUILD_SHARED)
             OUTPUT_NAME ${LUA_NAME}++-${DeLua_RELEASE}
             VERSION ${DeLua_VERSION}
             SOVERSION ${DeLua_VERSION_MAJOR})
-    target_link_libraries(DeLuaCXXLib ${CMAKE_DL_LIBS} ${LUA_MATH_LIBRARY})
+    target_link_libraries(DeLuaCXXLib ${CMAKE_DL_LIBS})
     target_include_directories(DeLuaCXXLib PUBLIC
         $<BUILD_INTERFACE:${luaconf_include_dir}>
         $<BUILD_INTERFACE:${DeLua_SOURCE_DIR}/lua/src>

@@ -36,7 +36,7 @@ Additional default search paths can be provided throught `LUA_PATH_EXTRA` and
 
 When compiled with *CMAKE_BUILD_TYPE* `Debug`, output directories are dynamically  
 added to the script and library search path (see `__lua_exec_in_buildpath` in the  
-generated `luaconf.h` for further details).
+generated `luaconf.h` for further details). FIXME
 
 ### C++
 
