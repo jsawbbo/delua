@@ -35,6 +35,7 @@ find_library(LUA_READLINE_LIBRARY readline)
 if(LUA_READLINE_LIBRARY MATCHES NOTFOUND)
 	unset(LUA_READLINE_LIBRARY CACHE)
 else()
+	# not in config, because only relevant for the interpreter
 	add_definitions(-DLUA_USE_READLINE)
 endif()
 
@@ -110,11 +111,7 @@ if(NOT DEFINED SCRIPT_OUTPUT_PATH)
 endif(NOT DEFINED SCRIPT_OUTPUT_PATH)
 
 # include directory
-if(${LUA_NAME} STREQUAL "lua")
-	set(DeLua_HEADER_DIR include)
-else()
-	set(DeLua_HEADER_DIR include/${LUA_NAME})
-endif()
+set(DeLua_HEADER_DIR include/${LUA_NAME})
 
 # sub-directories
 add_subdirectory(cmake)

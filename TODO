@@ -1,1 +1,1 @@
-FindDeLua should not be version dependent? (what if DeLua installs Lua 5.4 and 5.5???)
+- use "amend" to update README.md from Version.cmake?
