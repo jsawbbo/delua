@@ -7,8 +7,8 @@ This is Lua 5.4.6, released on 14 May 2023. (see file *lua/README*).
 > programming, data-driven programming, and data description.
 
 Delua is the [cmake](https://cmake.org/)'ified [Lua](http://www.lua.org) source. 
-It can be used to build  Lua binaries and packages on all major operating 
-systems, but may be also embedded in other projects.
+It may be used to build Lua binaries and packages on all major operating 
+systems, or, can be embedded in other projects.
 
 ## Modifications
 
