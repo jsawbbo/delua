@@ -14,13 +14,13 @@ This is Lua ${Lua_VERSION}, released on ${Lua_Date}.
 > It supports procedural programming, object-oriented programming, functional  
 > programming, data-driven programming, and data description.
 
-Delua is the CMake'ified version of the Lua (http://www.lua.org) sources. It may 
-be used to build Lua binaries and packages on all major operating systems, or can 
-be embedded in other projects.
+Delua is the CMake'ified version of the Lua (http://www.lua.org) sources. It 
+may be used to build Lua binaries and packages on all major operating systems, 
+or can be embedded in other projects.
 
-Minor adaptions to the original Lua sources (such as handling of the search path) 
-were made, and, a C++ interface (using exceptions) was added. For a full list of
-modifications, see: https://github.com/jsawbbo/delua
+Minor adaptions to the original Lua sources (such as handling of the search 
+path) were made, and, a C++ interface (using exceptions) was added. For a full 
+list of modifications, see: https://github.com/jsawbbo/delua
 "
 	}
 
