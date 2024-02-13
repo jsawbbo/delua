@@ -6,7 +6,9 @@ cmake_minimum_required(VERSION 3.22)
 include(${CMAKE_CURRENT_SOURCE_DIR}/DeLuaInitFlags.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/Version.cmake)
 
-find_package(CMyke QUIET)
+set(MY_INSTALL_STYLE System)
+
+find_package(Myake)
 include(My/Init OPTIONAL)
 project(DeLua 
     VERSION ${Lua_VERSION}.${DeLua_VERSION_TWEAK}
@@ -96,6 +98,13 @@ include(DeLuaPaths)
 delua_path_to_dir(DeLua_PATH_DIR "${LUA_LDIR}")
 delua_path_to_dir(DeLua_CPATH_DIR "${LUA_CDIR}")
 
+# installation paths
+if(UNIX AND NOT WINDOWS)
+    include(GNUInstallDirs)
+    
+    set(CMAKE_INSTALL_DOCDIR ${CMAKE_INSTALL_DATAROOTDIR}/doc/delua-${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR})
+endif()
+
 # === Build ==================================================================
 # output
 set(DeLua_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
@@ -146,7 +155,7 @@ install(DIRECTORY lua/doc
     COMPONENT "documentation")
 
 # === Package ================================================================
-if(NOT DeLua_PARENT_DIR AND CMyke_FOUND)
+if(NOT DeLua_PARENT_DIR AND Myake_FOUND)
 	include(DeLuaPackaging.cmake)
 endif()
 

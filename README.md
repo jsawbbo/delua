@@ -1,6 +1,3 @@
-This project has moved to https://github.com/jsawbbo/delua
-
-
 # Delua
 
 This is Lua 5.4.6, released on 14 May 2023. (see file *lua/README*).
@@ -26,7 +23,7 @@ almost untouched. Changes made to the pure Lua sources can be found in the
 #### Local home directory
 
 The default search path includes the `$HOME/.local/` file-system structure on  
-Unixoid systems, `%AppData%\\Roaming\\${LUA_NAME}` on Microsoft Windows®, and,  
+Unixoid systems, `%AppData%\\Roaming\\${LUA_NAME}` on Microsoft Windowsï¿½, and,  
 `$HOME/Library` on MacOS. In addition, a leading '~' expands to the `HOME` 
 (environment variable) directory.
 
@@ -67,7 +64,7 @@ For further details: [**UTSL**](https://www.urbandictionary.com/define.php?term=
 
 ## Configuration
 
-CMake will figure out system specific settings (such as DLL support on Windows®,  
+CMake will figure out system specific settings (such as DLL support on Windowsï¿½,  
 readline etc. on other systems). Additionally, the following `luaconf.h` flags can  
 be set using CMake:
 

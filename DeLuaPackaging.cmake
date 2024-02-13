@@ -1,14 +1,17 @@
 include(My/Package)
 
 my_package(
-	ARCHITECTURE all
     NAME "delua-${DeLua_RELEASE}"
+	VERSION "${Lua_VERSION}"
+	CATEGORY "Interpreters"
+
     CONTACT "Jürgen 'George' Sawinski <juergen.sawinski@mpinb.mpg.de>"
     VENDOR "MPI f. Neurobiol. of Behavior — caesar, Bonn, Germany"
-    DESCRIPTION {
+	
+	DESCRIPTION {
 		SUMMARY "Simple, extensible, embeddable programming language."
 		FULL "\
-This is Lua ${Lua_VERSION}, released on ${Lua_Date}.
+This is Lua ${Lua_VERSION}, released on ${Lua_DATE}.
 
 > Lua is a powerful, efficient, lightweight, embeddable scripting language.  
 > It supports procedural programming, object-oriented programming, functional  
@@ -34,20 +37,19 @@ list of modifications, see: https://github.com/jsawbbo/delua
 		HELP     "https://www.lua.org/docs.html"
 	}
 
-    ICON         "${DeLua_SOURCE_DIR}/lua/doc/logo.gif"
+    ICON {
+		FILE "${DeLua_SOURCE_DIR}/lua/doc/logo.gif"
+	}         
     
-    # PACKAGE {
-	#     CATEGORY "Interpreter"
-	# }
-
-	# COMPONENTS
-	# 	COMPONENT runtime
+	COMPONENTS {
+	# 	COMPONENT runtime {
 	# 		DEFAULT
 	# 		INSTALL YES
 	# 		DISPLAY_NAME "Runtime"
 	# 		BEGIN
 	# 			# sub-component....
 	# 		END
+	#	}
 			
 	# 	COMPONENT common-development
 	# 		INSTALL NO
@@ -67,6 +69,7 @@ list of modifications, see: https://github.com/jsawbbo/delua
 	# 	    INSTALL NO
 	# 	    DISPLAY_NAME "Documentation"
 	# 	    DEPENDS runtime
+	}
 )
 
 #my_package(NSIS
@@ -78,24 +81,23 @@ list of modifications, see: https://github.com/jsawbbo/delua
 #my_package(RPM
 #)
 
-#my_package(DEB
-#	RELEASE "0"
-#)
+my_package(DEB COMMON)
 
-my_package(DEB DISTRIBUTION Ubuntu
-	MAINTAINER "Juergen \"George\" Sawinski <juergen.sawinski@gmail.com>"	
+my_package(DEB 
+	DISTRIBUTION Ubuntu
+	MAINTAINER "Juergen 'George' Sawinski <juergen.sawinski@mpinb.mpg.de>"	
 
-	RELEASE "${DeLua_VERSION_TWEAK}ubuntu0"
+	RELEASE "${DeLua_VERSION_PATCH}$<CODENAME>${DeLua_VERSION_TWEAK}"
 	
 	# COMPONENTS {
-	# 	COMPONENT runtime 
-	# 		SUFFIX OFF
-	# 		RECOMMENDS documentation
-			
-	# 	COMPONENT common-development 
+	# 	COMPONENT common
 	# 		NAME delua-common
 	# 		SUFFIX OFF
 	# 		ARCHITECTURE all
+
+	# 	COMPONENT runtime 
+	# 		SUFFIX OFF
+	# 		RECOMMENDS documentation		
 				
 	# 	COMPONENT development 
 	# 		SUFFIX dev
@@ -106,5 +108,3 @@ my_package(DEB DISTRIBUTION Ubuntu
 	# 		SUFFIX doc
 	# }
 )
-
-include(CPack)
