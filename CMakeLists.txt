@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.22)
 
-# set(CMAKE_MESSAGE_LOG_LEVEL TRACE)
-
 # === Project ================================================================
 include(${CMAKE_CURRENT_SOURCE_DIR}/DeLuaInitFlags.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/Version.cmake)
 
 set(MY_INSTALL_STYLE System)
 
-find_package(Myake)
+include(.myake/devel.cmake OPTIONAL)
+
+find_package(Myake QUIET)
 include(My/Init OPTIONAL)
 project(DeLua 
     VERSION ${Lua_VERSION}.${DeLua_VERSION_TWEAK}

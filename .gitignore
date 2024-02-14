@@ -76,4 +76,4 @@ build/
 # Developer attic...
 __attic__/
 .cache/
-.cmyke/
+.myake/
