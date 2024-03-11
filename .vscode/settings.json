@@ -2,5 +2,11 @@
     "cmake.configureSettings": { 
         "MY_INSTALL_STYLE" : "User",
         "CMAKE_INSTALL_PREFIX" : "/home/sawinski/.local"
+    },
+    "files.associations": {
+        "*.mdx": "markdown",
+        "luaconf.h": "c",
+        "chrono": "cpp",
+        "cmath": "cpp"
     }
 }

@@ -1,5 +1,5 @@
 # === Sources ================================================================
-set(LUALIB_CXX_SRCS)
+set(LUALIB_CXX_SRCS delua.cxx)
 foreach(src ${LUALIB_SRCS}) 
     get_filename_component(src ${src} NAME)
     list(APPEND LUALIB_CXX_SRCS "${src}xx")
