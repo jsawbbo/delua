@@ -9,4 +9,5 @@ set(DeLua_CPATH_DIR "@DeLua_CPATH_DIR@")
 set(DeLua_PATH_DIR  "@DeLua_PATH_DIR@")
 
 # Targets
+list(APPEND CMAKE_MODULE_PATH "@CMAKE_INSTALL_PREFIX@/share/cmake/delua-@DeLua_RELEASE@")
 include(DeLuaTargets-${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR})

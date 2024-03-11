@@ -1,2 +1,6 @@
 {
+    "cmake.configureSettings": { 
+        "MY_INSTALL_STYLE" : "User",
+        "CMAKE_INSTALL_PREFIX" : "/home/sawinski/.local"
+    }
 }
