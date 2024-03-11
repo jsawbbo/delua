@@ -9,12 +9,10 @@ set(MY_INSTALL_STYLE System)
 include(.myake/devel.cmake OPTIONAL)
 
 find_package(Myake QUIET)
-include(My/Init OPTIONAL)
 project(DeLua 
     VERSION ${Lua_VERSION}.${DeLua_VERSION_TWEAK}
     LANGUAGES CXX C)
 
-include(My/Config OPTIONAL)
 get_directory_property(DeLua_PARENT_DIR PARENT_DIRECTORY)
 
 # === Version ================================================================

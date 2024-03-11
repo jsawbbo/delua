@@ -27,7 +27,8 @@ list of modifications, see: https://github.com/jsawbbo/delua
 "
     }
 
-    LICENSE "MIT" {
+    LICENSE {
+		TAG "MIT" 
         FILE ${DeLua_SOURCE_DIR}/LICENSE
     }
 
