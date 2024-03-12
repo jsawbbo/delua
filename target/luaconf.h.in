@@ -883,8 +883,7 @@ public:
             throw; \
     }
 
-#define luai_jmpbuf \
-    void /* dummy variable */
+#define luai_jmpbuf int /* dummy variable */
 
 #endif /* DELUA_LANGUAGE_CXX */
  

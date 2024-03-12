@@ -23,24 +23,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef DELUA_HPP
 #define DELUA_HPP
 
-#ifndef DELUA_LANGUAGE_CXX
-#define DELUA_LANGUAGE_CXX
-#endif
-
-#if !defined(DELUA_LANGUAGE_CXX)
-extern "C"
-{
-#endif
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
-#if !defined(DELUA_LANGUAGE_CXX)
-}
-#endif
 
 namespace lua
 {
-    /** A Lua exception (C++ only).
+    /** Lua error (C++ only).
      * */
     using exception = lua_Exception;
 
@@ -50,11 +39,17 @@ namespace lua
 
     using cfunction = lua_CFunction; ///< Function type.
 
-    // lua_KContext;
-    // lua_KFunction;
+    namespace continuation {
+        using context = lua_KContext; ///< Context for a continuation function.
+        using function = lua_KFunction; ///< Continuation function type.
+    }
+
+    using warn_function = lua_WarnFunction; ///< Warning handler function type.
 
     using reader = lua_Reader; ///< Function type for reading data (e.g. from a stream).
     using writer = lua_Writer; ///< Function type for writing data (e.g. to a stream).
+
+    using allocf = lua_Alloc; ///< Allocator function type.
 
     /** Multiple-return value tag.
      * */
@@ -110,9 +105,8 @@ namespace lua
         using count_type = int; ///< Value count type.
         using size_type = size_t;
 
-        using allocf = lua_Alloc; ///< Allocator function.
-
         using pointer = void *;   ///< Memory pointer.
+        using const_pointer = const void *;   ///< Memory pointer.
         using userdata = pointer; ///< User-data pointer.
 
     public:
@@ -204,7 +198,7 @@ namespace lua
          * */
         status closethread(state from = nullptr)
         {
-            return static_cast<status>(lua_closethread(L, from));
+            return static_cast<lua::status>(lua_closethread(L, from));
         }
 
         /** Comparison operation.
@@ -425,7 +419,7 @@ namespace lua
          * */
         status load(reader rd, pointer data, const char *chunkname, const char *mode)
         {
-            return static_cast<status>(lua_load(L, rd, data, chunkname, mode));
+            return static_cast<lua::status>(lua_load(L, rd, data, chunkname, mode));
         }
 
         /** Create an empty table.
@@ -486,7 +480,7 @@ namespace lua
          * */
         status pcall(count_type nargs, count_type nresults, index_type msgh = 0)
         {
-            return static_cast<status>(L, nargs, nresults, msgh);
+            return static_cast<lua::status>(L, nargs, nresults, msgh);
         }
 
         // FIXME pcallk
@@ -592,7 +586,7 @@ namespace lua
          * */
         bool pushthtread(state L)
         {
-            lua_pushthread(L);
+            return lua_pushthread(L);
         }
 
         /** Push a copy onto the stack.
@@ -603,49 +597,227 @@ namespace lua
             lua_pushvalue(L, idx);
         }
 
-        // int lua_rawequal (lua_State *L, int index1, int index2);
-        // int lua_rawget (lua_State *L, int index);
-        // int lua_rawgeti (lua_State *L, int index, lua_Integer n);
-        // int lua_rawgetp (lua_State *L, int index, const void *p);
-        // lua_Unsigned lua_rawlen (lua_State *L, int index);
-        // void lua_rawset (lua_State *L, int index);
-        // void lua_rawseti (lua_State *L, int index, lua_Integer i);
-        // void lua_rawsetp (lua_State *L, int index, const void *p);
+        /** Check for value equality avoiding meta-methods. 
+         * */
+        bool rawequal(index_type idx1, index_type idx2) {
+            return lua_rawequal(L, idx1, idx2);
+        }
 
-        // void lua_register (lua_State *L, const char *name, lua_CFunction f);
-        // void lua_remove (lua_State *L, int index);
-        // void lua_replace (lua_State *L, int index);
-        // int lua_resetthread (lua_State *L);
+        /** As gettable() but avoiding meta-methods.
+         * */
+        lua::type rawget(index_type idx) {
+            return static_cast<lua::type>(lua_rawget(L, idx));
+        }
 
-        // int lua_resume (lua_State *L, lua_State *from, int nargs,
-        //                   int *nresults);
+        /** As geti() but avoiding meta-methods.
+         * */
+        lua::type rawgeti(index_type idx, integer n) {
+            return static_cast<lua::type>(lua_rawgeti(L, idx, n));
+        }
 
-        // void lua_rotate (lua_State *L, int idx, int n);
-        // void lua_setallocf (lua_State *L, lua_Alloc f, void *ud);
+        /** FIXME
+         * */
+        lua::type rawgetp(index_type idx, const userdata p) {
+            return static_cast<lua::type>(lua_rawgetp(L, idx, p));
+        }
 
-        // void lua_setfield (lua_State *L, int index, const char *k);
-        // void lua_setglobal (lua_State *L, const char *name);
-        // void lua_seti (lua_State *L, int index, lua_Integer n);
-        // int lua_setiuservalue (lua_State *L, int index, int n);
-        // int lua_setmetatable (lua_State *L, int index);
+        /** Get length of value at stack index @a idx without invoking meta-methods. 
+         * */
+        natural rawlen(index_type idx) {
+            return lua_rawlen(L, idx);
+        }
 
-        // void lua_settable (lua_State *L, int index);
-        // void lua_settop (lua_State *L, int index);
-        // void lua_setwarnf (lua_State *L, lua_WarnFunction f, void *ud);
-        // int lua_status (lua_State *L);
-        // size_t lua_stringtonumber (lua_State *L, const char *s);
-        // int lua_toboolean (lua_State *L, int index);
-        // lua_CFunction lua_tocfunction (lua_State *L, int index);
-        // void lua_toclose (lua_State *L, int index);
-        // lua_Integer lua_tointeger (lua_State *L, int index);
-        // lua_Integer lua_tointegerx (lua_State *L, int index, int *isnum);
-        // const char *lua_tolstring (lua_State *L, int index, size_t *len);
-        // lua_Number lua_tonumber (lua_State *L, int index);
-        // lua_Number lua_tonumberx (lua_State *L, int index, int *isnum);
-        // const void *lua_topointer (lua_State *L, int index);
-        // const char *lua_tostring (lua_State *L, int index);
-        // lua_State *lua_tothread (lua_State *L, int index);
-        // void *lua_touserdata (lua_State *L, int index);
+        /** As settable() but without invoking meta-methods. 
+         * */
+        void rawset(index_type idx) {
+            lua_rawset(L, idx);
+        }
+
+        /** As seti() but without invoking meta-methods. 
+         * */
+        void rawseti(index_type idx, integer i) {
+            lua_rawseti(L, idx, i);
+        }
+
+        /** FIXME
+         * */
+        void rawsetp(index_type idx, const userdata p) {
+            lua_rawsetp(L, idx, p);
+        }
+
+        /** Register a global function.
+         * @param name Function name (in global table).
+         * @param f The function. 
+         * */
+        void do_register(const char *name, cfunction f) {
+            lua_register(L, name, f);
+        }
+
+        /** Removes the element at given index.
+         * */
+        void remove(index_type idx) {
+            lua_remove(L, idx);
+        }
+
+        /** Move top element to given valid stack index.
+         * */
+        void replace(index_type idx) {
+            lua_replace(L, idx);
+        }
+
+        /** Start and resume coroutine in given thread.
+         * */
+        status resume(state thr, count_type nargs, count_type &nresults) {
+            return static_cast<lua::status>(lua_resume(thr, L, nargs, &nresults));
+        }
+
+        /** Rotate stack elements between the valid index @a idx and the top of the stack. 
+         * */
+        void rotate(index_type idx, count_type n) {
+            lua_rotate(L, idx, n);
+        }
+
+        /** Set memory allocator function.
+         * */
+        void setallocf(allocf fn, userdata ud) {
+            lua_setallocf(L, fn, ud);
+        }
+
+        /** FIXME
+         * */
+        void setfield(index_type idx, const char *k) {
+            lua_setfield(L, idx, k);
+        }
+
+        /** FIXME
+         * */
+        void setglobal(const char *name) {
+            lua_setglobal(L, name);
+        }
+
+        /** FIXME
+         * */
+        void seti(index_type idx, integer n) {
+            lua_seti(L, idx, n);
+        }
+
+        /** FIXME
+         * */
+        bool setiuservalue(index_type idx, integer n) {
+            return lua_setiuservalue(L, idx, n);
+        }
+
+        /** FIXME
+         * */
+        void setmetatable(index_type idx) {
+            (void) lua_setmetatable(L, idx);
+        }
+
+        /** FIXME
+         * */
+        void settable(index_type idx) {
+            lua_settable(L, idx);
+        }
+
+        /** FIXME
+         * */
+        void settop(index_type idx) {
+            lua_settop(L, idx);
+        }
+
+        /** FIXME
+         * */
+        void setwarnf(warn_function f, userdata ud) {
+            lua_setwarnf(L, f, ud);
+        }
+
+        /** FIXME
+         * */
+        status getstatus() {
+            return static_cast<lua::status>(lua_status(L));
+        }
+
+        operator lua::status() const {
+            return static_cast<lua::status>(lua_status(L));
+        }
+
+        /** Converts the zero-terminated string s to a number, pushes that number into the stack. 
+         * */
+        size_type stringtonumber(const char *s) {
+            return lua_stringtonumber(L, s);
+        }
+
+        /** FIXME
+         * */
+        bool toboolean(index_type idx) {
+            return lua_toboolean(L, idx);
+        }
+
+        /** FIXME
+         * */
+        cfunction tocfunction(index_type idx) {
+            return lua_tocfunction(L, idx);
+        }
+
+        /** FIXME
+         * */
+        void toclose(index_type idx) {
+            return lua_toclose(L, idx);
+        }
+
+        /** FIXME
+         * */
+        integer tointeger(index_type idx) {
+            return lua_tointeger(L, idx);
+        }
+
+        /** FIXME
+         * */
+        integer tointeger(index_type idx, int &success) {
+            return lua_tointegerx(L, idx, &success);
+        }
+
+        /** FIXME
+         * */
+        const char *tostring(index_type idx, size_type &len) {
+            return lua_tolstring(L, idx, &len);
+        }
+
+        /** FIXME
+         * */
+        number tonumber(index_type idx) {
+            return lua_tonumber(L, idx);
+        }
+
+        /** FIXME
+         * */
+        number tonumber(index_type idx, int &success) {
+            return lua_tonumberx(L, idx, &success);
+        }
+
+        /** FIXME
+         * */
+        const_pointer topointer(index_type idx) {
+            return lua_topointer(L, idx);
+        }
+
+        /** FIXME
+         * */
+        const char *tostring(index_type idx) {
+            return lua_tostring(L, idx);
+        }
+
+        /** FIXME
+         * */
+        state tothread(index_type idx) {
+            return lua_tothread(L, idx);
+        }
+
+        /** FIXME
+         * */
+        userdata touserdata(index_type idx) {
+            return lua_touserdata(L, idx);
+        }
 
         /** Get the type of a value on the stack at index @a idx.
          * */
