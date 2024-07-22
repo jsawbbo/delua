@@ -23,7 +23,7 @@ almost untouched. Changes made to the pure Lua sources can be found in the
 #### Local home directory
 
 The default search path includes the `$HOME/.local/` file-system structure on  
-Unixoid systems, `%AppData%\\Roaming\\${LUA_NAME}` on Microsoft Windows�, and,  
+Unixoid systems, `%AppData%\\Roaming\\${LUA_NAME}` on Microsoft Windows®, and,  
 `$HOME/Library` on MacOS. In addition, a leading '~' expands to the `HOME` 
 (environment variable) directory.
 
