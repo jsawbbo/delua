@@ -25,15 +25,6 @@
 
 
 /*
-** LUA_IGMARK is a mark to ignore all before it when building the
-** luaopen_ function name.
-*/
-#if !defined (LUA_IGMARK)
-#define LUA_IGMARK		"-"
-#endif
-
-
-/*
 ** LUA_CSUBSEP is the character that replaces dots in submodule names
 ** when searching for a C loader.
 ** LUA_LSUBSEP is the character that replaces dots in submodule names
@@ -491,19 +482,11 @@ static const char *searchpath (lua_State *L, const char *name,
     name = luaL_gsub(L, name, sep, dirsep);  /* replace it by 'dirsep' */
   luaL_buffinit(L, &buff);
   /* add path to the buffer, replacing marks ('?') with the file name */
-  luaL_addgsub(&buff, path, LUA_PATH_MARK, name); 
+  luaL_addgsub(&buff, path, LUA_PATH_MARK, name);
   luaL_addchar(&buff, '\0');
   pathname = luaL_buffaddr(&buff);  /* writable list of file names */
   endpathname = pathname + luaL_bufflen(&buff) - 1;
   while ((filename = getnextfilename(&pathname, endpathname)) != NULL) {
-    luaL_Buffer homebuff;
-    if (filename[0] == *LUA_HOME_MARK) {
-      luaL_buffinit(L, &homebuff);
-      luaL_addgsub(&homebuff, filename, LUA_HOME_MARK, getenv("HOME")); /* FIXME */
-      luaL_addchar(&homebuff, '\0');
-      filename = luaL_buffaddr(&homebuff);  /* writable list of file names */
-    }
-
     if (readable(filename))  /* does file exist and is readable? */
       return lua_pushstring(L, filename);  /* save and return name */
   }
