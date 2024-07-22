@@ -1,6 +1,6 @@
 # Delua
 
-This is Lua 5.4.6, released on 14 May 2023. (see file *lua/README*).
+This is Lua 5.4.7, released on 25 Jun 2024. (see file *lua/README*).
 
 > Lua is a powerful, efficient, lightweight, embeddable scripting language.  
 > It supports procedural programming, object-oriented programming, functional  
