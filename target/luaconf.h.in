@@ -848,7 +848,7 @@
 #cmakedefine LUA_USER_H @LUA_USER_H@
  
 /*
-@@ LUA_GLOBAL_USERSTATE FIXME currently unsupported, see pathes/userstate.diff 
+@@ LUA_GLOBAL_USERSTATE FIXME currently unsupported, see patches/userstate.diff 
 */
 #cmakedefine LUA_GLOBAL_USERSTATE @LUA_GLOBAL_USERSTATE@
  

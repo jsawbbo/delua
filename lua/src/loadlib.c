@@ -487,7 +487,20 @@ static const char *searchpath (lua_State *L, const char *name,
   pathname = luaL_buffaddr(&buff);  /* writable list of file names */
   endpathname = pathname + luaL_bufflen(&buff) - 1;
   while ((filename = getnextfilename(&pathname, endpathname)) != NULL) {
-    if (readable(filename))  /* does file exist and is readable? */
+    if (*filename == *LUA_HOME_MARK) { /* home directory expansion */
+      luaL_Buffer homepath;
+      luaL_buffinit(L, &homepath);
+      luaL_addstring(&homepath, getenv("HOME"));
+      luaL_addstring(&homepath, filename+1);
+      luaL_addchar(&homepath, '\0');
+
+      filename = luaL_buffaddr(&homepath);
+      if (readable(filename)) {
+        luaL_pushresult(&homepath);
+        return lua_tolstring(L, -1, NULL);
+      }
+    }
+    else if (readable(filename))  /* does file exist and is readable? */
       return lua_pushstring(L, filename);  /* save and return name */
   }
   luaL_pushresult(&buff);  /* push path to create error message */

@@ -1,21 +1,26 @@
 diff --git a/lua/src/loadlib.c b/lua/src/loadlib.c
-index 45f44d3..cda5f8a 100644
+index 6d289fc..13861b5 100644
 --- a/lua/src/loadlib.c
 +++ b/lua/src/loadlib.c
-@@ -427,7 +427,15 @@ static const char *pushnexttemplate (lua_State *L, const char *path) {
-   if (*path == '\0') return NULL;  /* no more templates */
-   l = strchr(path, *LUA_PATH_SEP);  /* find next separator */
-   if (l == NULL) l = path + strlen(path);
--  lua_pushlstring(L, path, l - path);  /* template */
-+  if (*path == '~') {
-+    luaL_Buffer hpath;
-+    luaL_buffinit(L, &hpath);
-+    luaL_addstring(&hpath, getenv("HOME"));
-+    luaL_addlstring(&hpath, path+1, l - path-1);  /* template */
-+    luaL_pushresult(&hpath);
-+  }
-+  else
-+    lua_pushlstring(L, path, l - path);  /* template */
-   return l;
- }
- 
+@@ -487,7 +487,20 @@ static const char *searchpath (lua_State *L, const char *name,
+   pathname = luaL_buffaddr(&buff);  /* writable list of file names */
+   endpathname = pathname + luaL_bufflen(&buff) - 1;
+   while ((filename = getnextfilename(&pathname, endpathname)) != NULL) {
+-    if (readable(filename))  /* does file exist and is readable? */
++    if (*filename == *LUA_HOME_MARK) { /* home directory expansion */
++      luaL_Buffer homepath;
++      luaL_buffinit(L, &homepath);
++      luaL_addstring(&homepath, getenv("HOME"));
++      luaL_addstring(&homepath, filename+1);
++      luaL_addchar(&homepath, '\0');
++
++      filename = luaL_buffaddr(&homepath);
++      if (readable(filename)) {
++        luaL_pushresult(&homepath);
++        return lua_tolstring(L, -1, NULL);
++      }
++    }
++    else if (readable(filename))  /* does file exist and is readable? */
+       return lua_pushstring(L, filename);  /* save and return name */
+   }
+   luaL_pushresult(&buff);  /* push path to create error message */
