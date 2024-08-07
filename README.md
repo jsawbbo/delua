@@ -18,6 +18,10 @@ The Lua sources, except `luaconf.h` - which is now generated using CMake, are
 _almost_ untouched. Changes made to the pure Lua sources can be found in the  
 `patches` sub-directory.
 
+In addition, delua provides a 'pkg' module that allows installation of additional
+modules (see [delua-packages](https://github.com/jsawbbo/delua-packages/) for 
+further details).
+
 ### Search paths
 
 #### Local home directory

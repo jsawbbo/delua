@@ -123,6 +123,7 @@ set(DeLua_HEADER_DIR include/${LUA_NAME})
 # sub-directories
 add_subdirectory(cmake)
 add_subdirectory(target)
+add_subdirectory(modules)
 
 # === Embedded ===============================================================
 if(DeLua_PARENT_DIR)
