@@ -22,6 +22,10 @@ In addition, delua provides a 'pkg' module that allows installation of additiona
 modules (see [delua-packages](https://github.com/jsawbbo/delua-packages/) for 
 further details).
 
+### History
+
+The REPL history is stored in '.lua-history' in the user's home folder.
+
 ### Search paths
 
 #### Local home directory
