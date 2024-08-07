@@ -32,12 +32,6 @@ the `HOME` (environment variable) directory.
 Additional default search paths can be provided throught `LUA_PATH_EXTRA` and  
 `LUA_CPATH_EXTRA` in the CMake configuration. 
 
-### In-build testing
-
-When compiled with *CMAKE_BUILD_TYPE* `Debug`, output directories are dynamically  
-added to the script and library search path (see `__lua_exec_in_buildpath` in the  
-generated `luaconf.h` for further details). FIXME
-
 ### C++
 
 C++ libraries can be build using the `LUA_LANGUAGE_CXX` configuration option. The  

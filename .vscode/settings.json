@@ -7,6 +7,7 @@
         "*.mdx": "markdown",
         "luaconf.h": "c",
         "chrono": "cpp",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "*.in": "c"
     }
 }
