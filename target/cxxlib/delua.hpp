@@ -768,7 +768,7 @@ namespace lua
     status
     pcall (count_type nargs, count_type nresults, index_type msgh = 0)
     {
-      return static_cast<lua::status> (L, nargs, nresults, msgh);
+      return static_cast<lua::status>(lua_pcall(L, nargs, nresults, msgh));
     }
 
     // FIXME pcallk

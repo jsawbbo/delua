@@ -24,7 +24,8 @@ further details).
 
 ### History
 
-The REPL history is stored in '.lua-history' in the user's home folder.
+The REPL history, if the underlying operating system supports "readline" is 
+stored in '.lua-history' in the user's home folder.
 
 ### Search paths
 
@@ -42,8 +43,8 @@ Additional default search paths can be provided throught `LUA_PATH_EXTRA` and
 
 ### C++
 
-C++ libraries can be build using the `LUA_LANGUAGE_CXX` configuration option. The  
-libraries are suffixed with "++" compared to their standard C versions. 
+C++ libraries can be build using the `LUA_LANGUAGE_CXX` configuration option. 
+The libraries are suffixed with "++" compared to their standard C versions. 
 
 Additionally, `lua_Exception` was added to the generated `luaconf.h` header.
 

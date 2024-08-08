@@ -1,6 +1,0 @@
-﻿---
-BasedOnStyle: GNU
-ColumnLimit: 132
----
-Language: Cpp
-NamespaceIndentation: All

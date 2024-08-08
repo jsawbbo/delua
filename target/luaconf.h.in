@@ -60,16 +60,6 @@
 #cmakedefine LUA_USE_POSIX
 
 /*
-** Enable DLL support (on Windows).
-*/
-#cmakedefine LUA_DL_DLL
- 
-/*
-** LUA_USE_POSIX Use posix features.
-*/
-#cmakedefine LUA_USE_POSIX
-
-/*
 ** LUA_USE_MACOSX Use Mac OS-X features.
 */
 #cmakedefine LUA_USE_MACOSX
@@ -225,7 +215,7 @@
 
 #if !defined(LUA_PATH_DEFAULT)
 #define LUA_PATH_DEFAULT  \
-        @LUA_PATH_EXTRA@\
+        @LUA_PATH_EXTRA@ \
         LUA_HOME_LDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP  LUA_HOME_LDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
         LUA_HOME_CDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP  LUA_HOME_CDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
                LUA_LDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP  LUA_LDIR LUA_PATH_MARK "\\init.lua" LUA_PATH_SEP \
@@ -239,8 +229,8 @@
         @LUA_CPATH_EXTRA@ \
         LUA_HOME_CDIR LUA_PATH_MARK ".dll" LUA_PATH_SEP  LUA_HOME_CDIR LUA_PATH_MARK "/loadall.dll" LUA_PATH_SEP \
                LUA_CDIR LUA_PATH_MARK ".dll" LUA_PATH_SEP \
-               LUA_CDIR"..\\lib\\lua\\" LUA_VDIR "\\" LUA_PATH_MARK ".dll" LUA_PATH_SEP \
-               LUA_CDIR"loadall.dll" LUA_PATH_SEP \
+               LUA_CDIR "..\\lib\\lua\\" LUA_VDIR "\\" LUA_PATH_MARK ".dll" LUA_PATH_SEP \
+               LUA_CDIR "loadall.dll" LUA_PATH_SEP \
                ".\\" LUA_PATH_MARK ".dll"
 #endif
 
@@ -267,8 +257,8 @@
 #if !defined(LUA_CPATH_DEFAULT)
 #define LUA_CPATH_DEFAULT \
         @LUA_CPATH_EXTRA@ \
-        LUA_HOME_CDIR LUA_PATH_MARK ".so" LUA_PATH_SEP LUA_HOME_CDIR"loadall.so" LUA_PATH_SEP \
-        LUA_CDIR LUA_PATH_MARK ".so" LUA_PATH_SEP LUA_CDIR"loadall.so" LUA_PATH_SEP \
+        LUA_HOME_CDIR LUA_PATH_MARK ".so" LUA_PATH_SEP LUA_HOME_CDIR "loadall.so" LUA_PATH_SEP \
+        LUA_CDIR LUA_PATH_MARK ".so" LUA_PATH_SEP LUA_CDIR "loadall.so" LUA_PATH_SEP \
                "./" LUA_PATH_MARK ".so"
 #endif
 

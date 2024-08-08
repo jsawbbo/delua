@@ -8,6 +8,10 @@
         "luaconf.h": "c",
         "chrono": "cpp",
         "cmath": "cpp",
-        "*.in": "c"
+        "*.in": "c",
+        "random": "c",
+        "queue": "c",
+        "stack": "c",
+        "lua.h": "c"
     }
 }

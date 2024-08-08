@@ -26,6 +26,18 @@ message(STATUS "Lua version ${Lua_VERSION} [${DeLua_VERSION_TWEAK}]")
 # === CMake Paths ============================================================
 list(APPEND CMAKE_MODULE_PATH "${DeLua_SOURCE_DIR}/cmake")
 
+set(DeLua_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+
+if(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
+    set(EXECUTABLE_OUTPUT_PATH ${DeLua_OUTPUT_PATH})
+endif(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
+if(NOT DEFINED LIBRARY_OUTPUT_PATH)
+    set(LIBRARY_OUTPUT_PATH ${DeLua_OUTPUT_PATH})
+endif(NOT DEFINED LIBRARY_OUTPUT_PATH)
+if(NOT DEFINED SCRIPT_OUTPUT_PATH)
+    set(SCRIPT_OUTPUT_PATH ${DeLua_OUTPUT_PATH})
+endif(NOT DEFINED SCRIPT_OUTPUT_PATH)
+
 # === Compiler ===============================================================
 
 # === Dependencies ===========================================================
@@ -104,26 +116,13 @@ if(UNIX AND NOT WINDOWS)
 endif()
 
 # === Build ==================================================================
-# output
-set(DeLua_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-
-if(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
-    set(EXECUTABLE_OUTPUT_PATH ${DeLua_OUTPUT_PATH})
-endif(NOT DEFINED EXECUTABLE_OUTPUT_PATH)
-if(NOT DEFINED LIBRARY_OUTPUT_PATH)
-    set(LIBRARY_OUTPUT_PATH ${DeLua_OUTPUT_PATH})
-endif(NOT DEFINED LIBRARY_OUTPUT_PATH)
-if(NOT DEFINED SCRIPT_OUTPUT_PATH)
-    set(SCRIPT_OUTPUT_PATH ${DeLua_OUTPUT_PATH})
-endif(NOT DEFINED SCRIPT_OUTPUT_PATH)
-
 # include directory
 set(DeLua_HEADER_DIR include/${LUA_NAME})
 
 # sub-directories
 add_subdirectory(cmake)
 add_subdirectory(target)
-add_subdirectory(modules)
+add_subdirectory(pam)
 
 # === Embedded ===============================================================
 if(DeLua_PARENT_DIR)
