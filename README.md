@@ -18,10 +18,11 @@ The Lua sources, except `luaconf.h` - which is now generated using CMake, are
 _almost_ untouched. Changes made to the pure Lua sources can be found in the  
 `patches` sub-directory.
 
-### History
+### Readline
 
 The REPL history, if the underlying operating system supports "readline" is 
-stored in '.lua-history' in the user's home folder.
+stored in '.lua-history' in the user's home folder. As well, a rudimentary form
+of tab-completion was added.
 
 ### Search paths
 

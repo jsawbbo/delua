@@ -48,7 +48,7 @@ if(LUA_READLINE_LIBRARY MATCHES NOTFOUND)
 	unset(LUA_READLINE_LIBRARY CACHE)
 else()
 	# not in config, because only relevant for the interpreter
-	add_definitions(-DLUA_USE_READLINE)
+	add_definitions(-DLUA_USE_READLINE -DLUA_USE_TABCOMPLETION)
 endif()
 
 # math lib
