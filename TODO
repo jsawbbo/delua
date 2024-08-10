@@ -1,6 +1,8 @@
 - use "amend" to update README.md from Version.cmake?
 - use "amend" to update LICENSE file
-- "__lua_exec_in_buildpath" is stated in the README...
 - see llimits.h: 
     * lua_lock/lua_unlock
     * luai_userstateopen etc.
+- add tab completion (readline is used anyway)
+- generate LUA_(C)PATH_DEFAULT completly with CMake
+- check paths on Windows and MacOSX

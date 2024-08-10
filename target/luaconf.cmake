@@ -48,6 +48,14 @@ else()
 endif()
 set(LUA_DIRSEP "${LUA_DIRSEP_INIT}" CACHE STRING "Directory separator (for submodules).")
 
+if(WINDOWS AND NOT UNIX)
+    set(LUA_CACHEDIR "~/AppData/Local/${LUA_NAME}/Cache/${LUA_VDIR}")
+elseif(APPLE)
+    set(LUA_CACHEDIR "~/Library/Caches/${LUA_NAME}/${LUA_VDIR}")
+elseif(UNIX) 
+    set(LUA_CACHEDIR "~/.cache/${LUA_NAME}/${LUA_VDIR}")
+endif()
+
 # FIXME 
 # COMPAT_5_2 etc.
 # LUA_NOCVTN2S/LUA_NOCVTS2N 
