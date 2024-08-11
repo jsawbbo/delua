@@ -29,7 +29,9 @@
 
 #endif /* } */
 
-static int isadmin(lua_State *L) { return 1; }
+static int isadmin(lua_State *L) { 
+  return 1; 
+}
 
 static int cachedir(lua_State *L) {
   luaL_Buffer path;
@@ -63,11 +65,16 @@ luaL_Reg pamfn[] = {{"isadmin", isadmin},
 LUAMOD_API int luaopen_pam(lua_State *L) {
   lua_getglobal(L, "package");
 
-  luaL_setfuncs(L, pamfn, 0);
-
   lua_pushliteral(L, "_PAM_VERSION");
   lua_pushliteral(L, PAM_VERSION_S);
   lua_settable(L, -3);
+
+  lua_newtable(L);
+  lua_pushliteral(L, "build");
+  lua_pushvalue(L, -2);
+  lua_settable(L, -4);
+
+  luaL_setfuncs(L, pamfn, 0);
 
   return 1;
 }

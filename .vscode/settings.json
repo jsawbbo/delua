@@ -12,6 +12,7 @@
         "random": "c",
         "queue": "c",
         "stack": "c",
-        "lua.h": "c"
+        "lua.h": "c",
+        "lauxlib.h": "c"
     }
 }

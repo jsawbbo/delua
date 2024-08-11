@@ -34,7 +34,7 @@ endif()
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
     # FIXME warn, that these are overridden in Debug build:
     set(LUA_DLL_EXTENSION ".so") # FIXME 
-    set(LUA_PATH_EXTRA_INIT "\"${DeLua_SOURCE_DIR}/\" LUA_PATH_MARK \".lua\" LUA_PATH_SEP \"${DeLua_SOURCE_DIR}/\" LUA_PATH_MARK \"/init.lua\" LUA_PATH_SEP")
+    set(LUA_PATH_EXTRA_INIT "\"${DeLua_SOURCE_DIR}/modules/\" LUA_PATH_MARK \".lua\" LUA_PATH_SEP \"${DeLua_SOURCE_DIR}/modules/\" LUA_PATH_MARK \"/init.lua\" LUA_PATH_SEP")
     set(LUA_CPATH_EXTRA_INIT "\"${DeLua_OUTPUT_PATH}/\" LUA_PATH_MARK \"${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \"${DeLua_OUTPUT_PATH}/\" LUA_PATH_MARK \"/loadall.${LUA_DLL_EXTENSION}\" LUA_PATH_SEP")
 endif()
 

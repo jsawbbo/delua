@@ -51,9 +51,9 @@ else()
 endif()
 
 if(NOT DEFINED LUA_USE_TABCOMPLETION_INIT)
-    set(LUA_USE_TABCOMPLETION_INIT ON)
+    set(LUA_USE_TABCOMPLETION_INIT 1)
 endif()
-set(LUA_USE_TABCOMPLETION ${LUA_USE_TABCOMPLETION_INIT} CACHE BOOL "Use simple tab-completion when the readline library is available.")
+set(LUA_USE_TABCOMPLETION ${LUA_USE_TABCOMPLETION_INIT} CACHE STRING "Use simple tab-completion when the readline library is available.")
 add_definitions(-DLUA_USE_TABCOMPLETION=${LUA_USE_TABCOMPLETION})
 
 # math lib
@@ -127,7 +127,7 @@ set(DeLua_HEADER_DIR include/${LUA_NAME})
 # sub-directories
 add_subdirectory(cmake)
 add_subdirectory(target)
-add_subdirectory(pam)
+add_subdirectory(modules)
 
 # === Embedded ===============================================================
 if(DeLua_PARENT_DIR)
