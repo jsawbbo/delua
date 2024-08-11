@@ -98,13 +98,13 @@
 */
 
 /* predefined options for LUA_INT_TYPE */
-#define LUA_INT_INT		1
+#define LUA_INT_INT		    1
 #define LUA_INT_LONG		2
 #define LUA_INT_LONGLONG	3
 
 /* predefined options for LUA_FLOAT_TYPE */
-#define LUA_FLOAT_FLOAT		1
-#define LUA_FLOAT_DOUBLE	2
+#define LUA_FLOAT_FLOAT		    1
+#define LUA_FLOAT_DOUBLE	    2
 #define LUA_FLOAT_LONGDOUBLE	3
 
 
@@ -845,7 +845,7 @@
 #cmakedefine LUA_USER_H @LUA_USER_H@
  
 /*
-@@ LUA_GLOBAL_USERSTATE FIXME currently unsupported, see patches/userstate.diff 
+@@ LUA_GLOBAL_USERSTATE FIXME currently unsupported
 */
 #cmakedefine LUA_GLOBAL_USERSTATE @LUA_GLOBAL_USERSTATE@
  

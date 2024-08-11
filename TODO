@@ -6,3 +6,6 @@
 - add tab completion (readline is used anyway)
 - generate LUA_(C)PATH_DEFAULT completly with CMake
 - check paths on Windows and MacOSX
+- change .lua-history to ${COMMON_CONFIG_PATH}/history
+  (where COMMON_CONFIG_PATH is sth. also used for the cache directory)
+- see LUA_GLOBAL_USERSTATE in luaconf.h.in

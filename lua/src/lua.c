@@ -19,8 +19,8 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-#if !defined(LUA_PROGNAME)
-#define LUA_PROGNAME "lua"
+#if !defined(LUA_NAME)
+#define LUA_NAME "lua"
 #endif
 
 #if !defined(LUA_INIT_VAR)
@@ -29,9 +29,13 @@
 
 #define LUA_INITVARVERSION LUA_INIT_VAR LUA_VERSUFFIX
 
+#if !defined(LUA_USE_TABCOMPLETION)
+#define LUA_USE_TABCOMPLETION 0
+#endif
+
 static lua_State *globalL = NULL;
 
-static const char *progname = LUA_PROGNAME;
+static const char *progname = LUA_NAME;
 
 #if defined(LUA_USE_POSIX) /* { */
 
@@ -513,7 +517,7 @@ static char **completion(const char *text, int start, int end) {
 static void lua_initreadline(lua_State *L) {
   rl_lua = L;
   rl_readline_name = "lua";
-#if defined(LUA_USE_TABCOMPLETION)
+#if LUA_USE_TABCOMPLETION
   rl_attempted_completion_function = completion;
 #endif
 }

@@ -42,14 +42,19 @@ endif(NOT DEFINED SCRIPT_OUTPUT_PATH)
 
 # === Dependencies ===========================================================
 
-# readline
+# readline (not in config, because only relevant for the interpreter)
 find_library(LUA_READLINE_LIBRARY readline)
 if(LUA_READLINE_LIBRARY MATCHES NOTFOUND)
 	unset(LUA_READLINE_LIBRARY CACHE)
 else()
-	# not in config, because only relevant for the interpreter
-	add_definitions(-DLUA_USE_READLINE -DLUA_USE_TABCOMPLETION)
+	add_definitions(-DLUA_USE_READLINE)
 endif()
+
+if(NOT DEFINED LUA_USE_TABCOMPLETION_INIT)
+    set(LUA_USE_TABCOMPLETION_INIT ON)
+endif()
+set(LUA_USE_TABCOMPLETION ${LUA_USE_TABCOMPLETION_INIT} CACHE BOOL "Use simple tab-completion when the readline library is available.")
+add_definitions(-DLUA_USE_TABCOMPLETION=${LUA_USE_TABCOMPLETION})
 
 # math lib
 find_library(LUA_MATH_LIBRARY m)
