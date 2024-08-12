@@ -12,12 +12,19 @@ static void pushexpanded(lua_State *L, const char *filename) {
     lua_pushstring(L, filename);
 }
 
+#if defined(LUA_USE_WINDOWS)
+static int runasadmin() { return 0; }
+#elif defined(LUA_USE_POSIX)
+#include <sys/types.h>
+#include <unistd.h>
+
+static int runasadmin() { return getuid() == 0; }
+#else
+static int runasadmin() { return 0; }
+#endif
+
 static int isadmin(lua_State *L) {
-  int admin = 0;
-
-  // FIXME
-
-  lua_pushboolean(L, admin);
+  lua_pushboolean(L, runasadmin());
   return 1;
 }
 
@@ -54,16 +61,21 @@ luaL_Reg pamfn[] = {{"isadmin", isadmin},         //
                     {"interactive", interactive}, //
                     {NULL, NULL}};
 
-struct Path {
+struct Directory {
   const char *name;
-  const char *directory;
+  const char *path;
 };
 
-struct Path builddirs[] = {
-    {"progdir", LUA_PROGDIR},                                          //
+struct Directory builddirs[] = {
+    {"prog", LUA_PROGDIR},                                             //
+    {"progvdir", LUA_PROGDIR LUA_DIRSEP LUA_VDIR},                     //
     {"history", LUA_PROGDIR LUA_DIRSEP LUA_VDIR LUA_DIRSEP "history"}, //
-    {"cachedir", LUA_PROGDIR LUA_DIRSEP "cache" LUA_DIRSEP LUA_VDIR},  //
+    {"cache", LUA_PROGDIR LUA_DIRSEP "cache" LUA_DIRSEP LUA_VDIR},     //
+    {"ldir", LUA_HOME_LDIR},                                           //
+    {"cdir", LUA_HOME_CDIR},                                           //
     {NULL, NULL}};
+
+int buildref = LUA_NOREF;
 
 LUAMOD_API int luaopen_pam(lua_State *L) {
   lua_getglobal(L, "package");
@@ -73,17 +85,33 @@ LUAMOD_API int luaopen_pam(lua_State *L) {
   lua_settable(L, -3);
 
   lua_newtable(L);
+#if defined(DEBUG)
   lua_pushliteral(L, "build");
   lua_pushvalue(L, -2);
   lua_settable(L, -4);
+#endif
   for (int i = 0; builddirs[i].name; i = i + 1) {
     lua_pushstring(L, builddirs[i].name);
-    pushexpanded(L, builddirs[i].directory);
+    pushexpanded(L, builddirs[i].path);
     lua_settable(L, -3);
   }
-  lua_pop(L, 1);
+  if (runasadmin()) {
+    lua_pushliteral(L, "ldir");
+    lua_pushliteral(L, LUA_LDIR);
+    lua_settable(L, -3);
+    lua_pushliteral(L, "cdir");
+    lua_pushliteral(L, LUA_CDIR);
+    lua_settable(L, -3);
+  }
+  buildref = luaL_ref(L, LUA_REGISTRYINDEX);
 
   luaL_setfuncs(L, pamfn, 0);
+
+  lua_getglobal(L, "require");
+  lua_pushvalue(L, -1);
+  lua_pushliteral(L, "pam.util");
+  lua_call(L, 1, 0);
+  lua_pop(L, 1);
 
   return 1;
 }

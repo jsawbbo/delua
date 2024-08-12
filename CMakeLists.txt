@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 # === Project ================================================================
-include(${CMAKE_CURRENT_SOURCE_DIR}/DeLuaInitFlags.cmake)
+set(CMAKE_USER_MAKE_RULES_OVERRIDE "DeLuaInitFlags.cmake")
 include(${CMAKE_CURRENT_SOURCE_DIR}/Version.cmake)
 
 set(MY_INSTALL_STYLE System)

@@ -21,8 +21,6 @@
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
 
-local pkg = require 'pkg.module'
-
 local pathsep = package.config:sub(3,3)
 local pathmark = package.config:sub(5,5)
 
@@ -41,6 +39,6 @@ local function addcpath(...)
 end
 
 --
-pkg.addpath = addpath
-pkg.addcpath = addcpath
-return pkg
+package.addpath = addpath
+package.addcpath = addcpath
+return package
