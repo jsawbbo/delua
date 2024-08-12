@@ -5,6 +5,23 @@
 
 #include <stdlib.h>
 
+LUA_API int lua_expandhome(lua_State *L, const char *filename);
+
+static void pushexpanded(lua_State *L, const char *filename) {
+  if (!lua_expandhome(L, filename))
+    lua_pushstring(L, filename);
+}
+
+static int isadmin(lua_State *L) {
+  int admin = 0;
+
+  // FIXME
+
+  lua_pushboolean(L, admin);
+  return 1;
+}
+
+static int interactive(lua_State *L) {
 /* from lua.c: */
 #if !defined(lua_stdin_is_tty) /* { */
 
@@ -29,38 +46,23 @@
 
 #endif /* } */
 
-static int isadmin(lua_State *L) { 
-  return 1; 
-}
-
-static int cachedir(lua_State *L) {
-  luaL_Buffer path;
-  luaL_buffinit(L, &path);
-
-  if (*LUA_CACHEDIR == *LUA_HOME_MARK) {
-#if defined(LUA_USE_WINDOWS)
-    luaL_addstring(&path, getenv("USERPROFILE"));
-#else
-    luaL_addstring(&path, getenv("HOME"));
-#endif
-    luaL_addstring(&path, &LUA_CACHEDIR[1]);
-  } else {
-    luaL_addstring(&path, LUA_CACHEDIR);
-  }
-
-  luaL_pushresult(&path);
-  return 1;
-}
-
-static int interactive(lua_State *L) {
   lua_pushboolean(L, lua_stdin_is_tty());
   return 1;
 }
 
-luaL_Reg pamfn[] = {{"isadmin", isadmin},
-                    {"cachedir", cachedir},
-                    {"interactive", interactive},
+luaL_Reg pamfn[] = {{"isadmin", isadmin},         //
+                    {"interactive", interactive}, //
                     {NULL, NULL}};
+
+struct Path {
+  const char *name;
+  const char *directory;
+};
+
+struct Path builddirs[] = {{"progdir", LUA_PROGDIR},                     //
+                           {"history", LUA_PROGDIR "/history"},          //
+                           {"cachedir", LUA_PROGDIR "/cache/" LUA_VDIR}, //
+                           {NULL, NULL}};
 
 LUAMOD_API int luaopen_pam(lua_State *L) {
   lua_getglobal(L, "package");
@@ -73,6 +75,12 @@ LUAMOD_API int luaopen_pam(lua_State *L) {
   lua_pushliteral(L, "build");
   lua_pushvalue(L, -2);
   lua_settable(L, -4);
+  for (int i = 0; builddirs[i].name; i = i + 1) {
+    lua_pushstring(L, builddirs[i].name);
+    pushexpanded(L, builddirs[i].directory);
+    lua_settable(L, -3);
+  }
+  lua_pop(L, 1);
 
   luaL_setfuncs(L, pamfn, 0);
 

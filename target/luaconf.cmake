@@ -32,10 +32,19 @@ else()
 endif()
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-    # FIXME warn, that these are overridden in Debug build:
-    set(LUA_DLL_EXTENSION ".so") # FIXME 
-    set(LUA_PATH_EXTRA_INIT "\"${DeLua_SOURCE_DIR}/modules/\" LUA_PATH_MARK \".lua\" LUA_PATH_SEP \"${DeLua_SOURCE_DIR}/modules/\" LUA_PATH_MARK \"/init.lua\" LUA_PATH_SEP")
-    set(LUA_CPATH_EXTRA_INIT "\"${DeLua_OUTPUT_PATH}/\" LUA_PATH_MARK \"${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \"${DeLua_OUTPUT_PATH}/\" LUA_PATH_MARK \"/loadall.${LUA_DLL_EXTENSION}\" LUA_PATH_SEP")
+    set(LUA_DLL_EXTENSION "${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    set(LUA_PATH_EXTRA_INIT_DEBUG "\"${DeLua_SOURCE_DIR}/modules/\" LUA_PATH_MARK \".lua\" LUA_PATH_SEP \"${DeLua_SOURCE_DIR}/modules/\" LUA_PATH_MARK \"/init.lua\" LUA_PATH_SEP")
+    if(DEFINED LUA_PATH_EXTRA_INIT)
+        set(LUA_PATH_EXTRA_INIT "${LUA_PATH_EXTRA_INIT_DEBUG} LUA_PATH_SEP ${LUA_PATH_EXTRA_INIT}")
+    else()
+        set(LUA_PATH_EXTRA_INIT "${LUA_PATH_EXTRA_INIT_DEBUG}")
+    endif()
+    set(LUA_CPATH_EXTRA_INIT_DEBUG "\"${DeLua_OUTPUT_PATH}/\" LUA_PATH_MARK \"${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \"${DeLua_OUTPUT_PATH}/\" LUA_PATH_MARK \"/loadall.${LUA_DLL_EXTENSION}\" LUA_PATH_SEP")
+    if(DEFINED LUA_CPATH_EXTRA_INIT)
+        set(LUA_CPATH_EXTRA_INIT "${LUA_CPATH_EXTRA_INIT_DEBUG} LUA_PATH_SEP ${LUA_CPATH_EXTRA_INIT}")
+    else()
+        set(LUA_CPATH_EXTRA_INIT "${LUA_CPATH_EXTRA_INIT_DEBUG}")
+    endif()
 endif()
 
 set(LUA_PATH_EXTRA "${LUA_PATH_EXTRA_INIT}" CACHE STRING "Additional module search path." FORCE) 
@@ -49,11 +58,11 @@ endif()
 set(LUA_DIRSEP "${LUA_DIRSEP_INIT}" CACHE STRING "Directory separator (for submodules).")
 
 if(WINDOWS AND NOT UNIX)
-    set(LUA_CACHEDIR "~/AppData/Local/${LUA_NAME}/Cache/${LUA_VDIR}")
+    set(LUA_PROGDIR "~/AppData/Local/${LUA_NAME}")
 elseif(APPLE)
-    set(LUA_CACHEDIR "~/Library/Caches/${LUA_NAME}/${LUA_VDIR}")
+    set(LUA_PROGDIR "~/Library/Caches/${LUA_NAME}")
 elseif(UNIX) 
-    set(LUA_CACHEDIR "~/.cache/${LUA_NAME}/${LUA_VDIR}")
+    set(LUA_PROGDIR "~/.${LUA_NAME}")
 endif()
 
 # FIXME 

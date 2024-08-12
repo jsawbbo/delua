@@ -274,10 +274,9 @@
 #define LUA_DIRSEP      "@LUA_DIRSEP@"
 
 /*
-@@LUA_CACHEDIR is the default cache directory.
-** The cache directory is system dependent.
+@@LUA_PROGDIR is the program directory in the users home folder.
 */
-#define LUA_CACHEDIR    "@LUA_CACHEDIR@"
+#define LUA_PROGDIR    "@LUA_PROGDIR@"
 
 /* }================================================================== */
 
