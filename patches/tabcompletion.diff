@@ -1,0 +1,112 @@
+diff --git a/lua/src/lua.c b/lua/src/lua.c
+index 43aa4c9..936abd0 100644
+--- a/lua/src/lua.c
++++ b/lua/src/lua.c
+@@ -442,7 +442,106 @@ static int handle_luainit (lua_State *L) {
+ 
+ #include <readline/readline.h>
+ #include <readline/history.h>
+-#define lua_initreadline(L)	((void)L, rl_readline_name="lua")
++
++static lua_State *rl_lua = NULL;
++
++static const char *findsep(const char *text, int maxlen) {
++  int i = 0;
++  while (text[i] && (i < maxlen)) {
++    if ((text[i] == '.') || (text[i] == ':'))
++      return text + i;
++    i = i + 1;
++  }
++  return NULL;
++}
++
++static const char *findrsep(const char *text) {
++  int i = strlen(text);
++  while (i > 0) {
++    if ((text[i - 1] == '.') || (text[i - 1] == ':'))
++      return text + i - 1;
++    i = i - 1;
++  }
++  return NULL;
++}
++
++static char *generator(const char *text, int state) {
++  static const char *match;
++  static size_t nmatch;
++  static int top;
++
++  if (state == 0) {
++    top = lua_gettop(rl_lua);
++    lua_getglobal(rl_lua, "_G");
++
++    match = findrsep(text);
++    if (!match)
++      match = text;
++    else
++      match = match + 1;
++    nmatch = strlen(match);
++
++    const char *begin = text;
++    while (begin < match) {
++      const char *next = findsep(begin, match - 1 - begin);
++      if (!next)
++        next = match - 1;
++
++      lua_pushlstring(rl_lua, begin, next - begin);
++      if (lua_gettable(rl_lua, -2) != LUA_TTABLE)
++        goto invalid_completion;
++
++      begin = next + 1;
++    }
++
++    lua_pushnil(rl_lua);
++  }
++
++next_entry:
++  if (lua_next(rl_lua, -2)) {
++    switch (lua_type(rl_lua, -2)) {
++    case LUA_TSTRING: {
++      const char *k = lua_tostring(rl_lua, -2);
++      lua_pop(rl_lua, 1);
++      if (0 == memcmp(k, match, nmatch)) {
++        luaL_Buffer B;
++        luaL_buffinit(rl_lua, &B);
++        luaL_addlstring(&B, text, match - text);
++        luaL_addstring(&B, k);
++        luaL_pushresult(&B);
++
++        char *res = strdup(lua_tostring(rl_lua, -1));
++        lua_pop(rl_lua, 1);
++        return res;
++      }
++      goto next_entry;
++    }
++    default:
++      lua_pop(rl_lua, 1);
++      goto next_entry;
++    }
++  }
++
++invalid_completion:
++  lua_settop(rl_lua, top);
++  return NULL;
++}
++
++static char **completion(const char *text, int start, int end) {
++  rl_attempted_completion_over = 1;
++  rl_completion_append_character = '\0';
++  // rl_completion_display_matches_hook = FIXME
++  return rl_completion_matches(text, generator);
++}
++
++static void lua_initreadline(lua_State *L) {
++  rl_lua = L;
++  rl_readline_name = "lua";
++#if defined(LUA_USE_TABCOMPLETION)
++  rl_attempted_completion_function = completion;
++#endif
++}
++
+ #define lua_readline(L,b,p)	((void)L, ((b)=readline(p)) != NULL)
+ #define lua_saveline(L,line)	((void)L, add_history(line))
+ #define lua_freeline(L,b)	((void)L, free(b))

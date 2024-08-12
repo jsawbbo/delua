@@ -59,10 +59,11 @@ struct Path {
   const char *directory;
 };
 
-struct Path builddirs[] = {{"progdir", LUA_PROGDIR},                     //
-                           {"history", LUA_PROGDIR "/history"},          //
-                           {"cachedir", LUA_PROGDIR "/cache/" LUA_VDIR}, //
-                           {NULL, NULL}};
+struct Path builddirs[] = {
+    {"progdir", LUA_PROGDIR},                                          //
+    {"history", LUA_PROGDIR LUA_DIRSEP LUA_VDIR LUA_DIRSEP "history"}, //
+    {"cachedir", LUA_PROGDIR LUA_DIRSEP "cache" LUA_DIRSEP LUA_VDIR},  //
+    {NULL, NULL}};
 
 LUAMOD_API int luaopen_pam(lua_State *L) {
   lua_getglobal(L, "package");
