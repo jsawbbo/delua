@@ -63,7 +63,7 @@ if(LUA_BUILD_COMPILER)
         PROPERTIES
             LINKER_LANGUAGE C
             OUTPUT_NAME ${LUA_NAME}c-${DeLua_RELEASE})
-    target_link_libraries(LuaCompiler DeLuaCLib ${LUA_MATH_LIBRARY})
+    target_link_libraries(LuaCompiler DeLuaCLib)
 endif()
 
 # === Installation ===========================================================

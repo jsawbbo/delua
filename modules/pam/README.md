@@ -14,9 +14,6 @@ table. For example, to install a package (in the REPL), type: `package.add "pam"
 
 ### `_PAM_VERSION`
 
-### `interactive()`
-
-### `cachedir()`
-
+TODO ...
 
 
