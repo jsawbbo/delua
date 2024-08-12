@@ -4,3 +4,4 @@
     * luai_userstateopen etc.
 - generate LUA_(C)PATH_DEFAULT completly with CMake
 - check paths on Windows and MacOSX
+- in lua.c, make parameter for stifle_history an environment variable

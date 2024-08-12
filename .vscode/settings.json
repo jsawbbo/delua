@@ -13,6 +13,7 @@
         "queue": "c",
         "stack": "c",
         "lua.h": "c",
-        "lauxlib.h": "c"
+        "lauxlib.h": "c",
+        "stdlib.h": "c"
     }
 }
