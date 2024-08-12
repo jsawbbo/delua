@@ -18,11 +18,17 @@ The Lua sources, except `luaconf.h` - which is now generated using CMake, are
 _almost_ untouched. Changes made to the pure Lua sources can be found in the  
 `patches` sub-directory.
 
+### Program directory
+
+A "program directory" has been supplemented (see `LUA_PROGDIR` in `luaconf.h`).
+This directory (see also `LUA_VDIR`) is used to store, for example, the REPL
+history.
+
 ### Readline
 
 The REPL history, if the underlying operating system supports "readline" is 
-stored in '.lua-history' in the user's home folder. As well, a rudimentary form
-of tab-completion was added.
+stored in a history file in the program/version folder. As well, a rudimentary 
+form of tab-completion for table elements is supported.
 
 ### Search paths
 
@@ -64,6 +70,8 @@ TODO
 TODO
 
 ### Classes
+
+TODO
 
 ## Build options
 
