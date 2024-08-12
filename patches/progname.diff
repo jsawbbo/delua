@@ -1,0 +1,13 @@
+diff --git a/lua/src/lua.c b/lua/src/lua.c
+index 6da331f..54330ca 100644
+--- a/lua/src/lua.c
++++ b/lua/src/lua.c
+@@ -22,7 +22,7 @@
+ 
+ 
+ #if !defined(LUA_PROGNAME)
+-#define LUA_PROGNAME		"lua"
++#define LUA_PROGNAME		LUA_NAME
+ #endif
+ 
+ #if !defined(LUA_INIT_VAR)

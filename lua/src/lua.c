@@ -22,7 +22,7 @@
 
 
 #if !defined(LUA_PROGNAME)
-#define LUA_PROGNAME		"lua"
+#define LUA_PROGNAME		LUA_NAME
 #endif
 
 #if !defined(LUA_INIT_VAR)
