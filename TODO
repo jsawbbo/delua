@@ -1,9 +1,6 @@
-- use "amend" to update README.md from Version.cmake?
-- use "amend" to update LICENSE file
 - see llimits.h: 
     * lua_lock/lua_unlock
     * luai_userstateopen etc.
-- add tab completion (readline is used anyway)
 - generate LUA_(C)PATH_DEFAULT completly with CMake
 - check paths on Windows and MacOSX
 - change .lua-history to ${COMMON_CONFIG_PATH}/history
