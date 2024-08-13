@@ -442,133 +442,10 @@ static int handle_luainit (lua_State *L) {
 
 #include <readline/readline.h>
 #include <readline/history.h>
-
-static lua_State *rl_lua = NULL;
-
-static const char *findsep(const char *text, int maxlen) {
-  int i = 0;
-  while (text[i] && (i < maxlen)) {
-    if ((text[i] == '.') || (text[i] == ':'))
-      return text + i;
-    i = i + 1;
-  }
-  return NULL;
-}
-
-static const char *findrsep(const char *text) {
-  int i = strlen(text);
-  while (i > 0) {
-    if ((text[i - 1] == '.') || (text[i - 1] == ':'))
-      return text + i - 1;
-    i = i - 1;
-  }
-  return NULL;
-}
-
-static char *generator(const char *text, int state) {
-  static const char *match;
-  static size_t nmatch;
-  static int top;
-
-  if (state == 0) {
-    top = lua_gettop(rl_lua);
-    lua_getglobal(rl_lua, "_G");
-
-    match = findrsep(text);
-    if (!match)
-      match = text;
-    else
-      match = match + 1;
-    nmatch = strlen(match);
-
-    const char *begin = text;
-    while (begin < match) {
-      const char *next = findsep(begin, match - 1 - begin);
-      if (!next)
-        next = match - 1;
-
-      lua_pushlstring(rl_lua, begin, next - begin);
-      if (lua_gettable(rl_lua, -2) != LUA_TTABLE)
-        goto invalid_completion;
-
-      begin = next + 1;
-    }
-
-    lua_pushnil(rl_lua);
-  }
-
-next_entry:
-  if (lua_next(rl_lua, -2)) {
-    switch (lua_type(rl_lua, -2)) {
-    case LUA_TSTRING: {
-      const char *k = lua_tostring(rl_lua, -2);
-      lua_pop(rl_lua, 1);
-      if (0 == memcmp(k, match, nmatch)) {
-        luaL_Buffer B;
-        luaL_buffinit(rl_lua, &B);
-        luaL_addlstring(&B, text, match - text);
-        luaL_addstring(&B, k);
-        luaL_pushresult(&B);
-
-        char *res = strdup(lua_tostring(rl_lua, -1));
-        lua_pop(rl_lua, 1);
-        return res;
-      }
-      goto next_entry;
-    }
-    default:
-      lua_pop(rl_lua, 1);
-      goto next_entry;
-    }
-  }
-
-invalid_completion:
-  lua_settop(rl_lua, top);
-  return NULL;
-}
-
-static char **completion(const char *text, int start, int end) {
-  rl_attempted_completion_over = 1;
-  rl_completion_append_character = '\0';
-  // rl_completion_display_matches_hook = FIXME
-  return rl_completion_matches(text, generator);
-}
-
-static void lua_initreadline(lua_State *L) {
-  rl_lua = L;
-  rl_readline_name = "lua";
-#if defined(LUA_USE_TABCOMPLETION)
-  rl_attempted_completion_function = completion;
-#endif
-}
-
+#define lua_initreadline(L)	((void)L, rl_readline_name="lua")
 #define lua_readline(L,b,p)	((void)L, ((b)=readline(p)) != NULL)
 #define lua_saveline(L,line)	((void)L, add_history(line))
 #define lua_freeline(L,b)	((void)L, free(b))
-
-#include <sys/stat.h>
-#include <sys/types.h>
-
-LUA_API int lua_expandhome(lua_State *L, const char *filename);
-
-#define LUA_HISTORY_FILE LUA_PROGDIR LUA_DIRSEP LUA_VDIR LUA_DIRSEP "history"
-
-void lua_readhistory(lua_State *L) {
-  if (!lua_expandhome(L, LUA_HISTORY_FILE))
-    lua_pushliteral(L, LUA_HISTORY_FILE);
-
-  read_history(lua_tostring(L, -1));
-  lua_pop(L, 1);
-}
-
-void lua_writehistory(lua_State *L) {
-  if (!lua_expandhome(L, LUA_HISTORY_FILE))
-    lua_pushliteral(L, LUA_HISTORY_FILE);
-
-  stifle_history(1024);
-  write_history(lua_tostring(L, -1));
-  lua_pop(L, 1);
-}
 
 #else				/* }{ */
 
@@ -578,8 +455,6 @@ void lua_writehistory(lua_State *L) {
         fgets(b, LUA_MAXINPUT, stdin) != NULL)  /* get line */
 #define lua_saveline(L,line)	{ (void)L; (void)line; }
 #define lua_freeline(L,b)	{ (void)L; (void)b; }
-#define lua_readhistory(L) ((void)L)
-#define lua_writehistory(L) ((void)L)
 
 #endif				/* } */
 
@@ -784,9 +659,7 @@ static int pmain (lua_State *L) {
   else if (script < 1 && !(args & (has_e | has_v))) { /* no active option? */
     if (lua_stdin_is_tty()) {  /* running in interactive mode? */
       print_version();
-      lua_readhistory(L);  /* read history */
       doREPL(L);  /* do read-eval-print loop */
-      lua_writehistory(L); /* write history */
     }
     else dofile(L, NULL);  /* executes stdin as a file */
   }
