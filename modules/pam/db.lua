@@ -22,7 +22,6 @@
 --
 local pam = require 'pamlib'
 
-local config = pam.config
 local workdir = pam.workdir
 local sformat = string.format
 local osexec = os.execute
@@ -30,27 +29,32 @@ local function run(fmt, ...)
     return osexec(sformat(fmt, ...))
 end
 
+local config = pam.config
+local dirsep = config("dirsep")
+local vdir = config("vdir")
+local progdir = config("progdir")
+local vprogdir = progdir .. dirsep .. vdir
+
 local function init(url, opts)
     url = url or "https://github.com/jsawbbo/delua-packages.git"
     opts = opts or {}
     opts.depth = opts.depth or 1
-    opts.branch = opts.branch or "v" .. config('version')
+    opts.branch = opts.branch or "v" .. config('vdir')
     opts.extra = opts.extra or ""
-    run("git clone --depth=%d --single-branch --branch=%s %s %s %s", opts.depth, opts.branch, opts.extra, url,
-        config("packages"))
+    run("git clone --depth=%d --single-branch --branch=%s %s %s %s/", opts.depth, opts.branch, opts.extra, url, vprogdir)
 end
-db.clone = clone
+pam.init = init
 
 local function update(url, opts)
     url = url or "https://github.com/jsawbbo/delua-packages.git"
     opts = opts or {}
     opts.depth = opts.depth or 1
-    opts.branch = opts.branch or "v" .. config('version')
+    opts.branch = opts.branch or "v" .. config('vdir')
 
-    local cwd = workdir(config("packages"))
-    run("git pull --porcelain --depth=%d --rebase=true", opts.depth)
+    local cwd = workdir(vprogdir)
+    -- run("git pull --porcelain --depth=%d --rebase=true", opts.depth)
     workdir(cwd)
 end
-db.fetch = fetch
+pam.update = update
 
-return db
+return pam

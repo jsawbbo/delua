@@ -74,6 +74,7 @@ struct Directory {
 };
 
 struct Directory pampaths[] = {{"vdir", LUA_VDIR},          //
+                               {"dirsep", LUA_DIRSEP},      //
                                {"progdir", LUA_PROGDIR},    //
                                {"root", LUA_ROOT},          //
                                {"ldir", LUA_LDIR},          //
