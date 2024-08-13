@@ -122,6 +122,8 @@ if(UNIX AND NOT WINDOWS)
     set(CMAKE_INSTALL_DOCDIR ${CMAKE_INSTALL_DATAROOTDIR}/doc/delua-${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR})
 endif()
 
+list(APPEND CMAKE_INSTALL_RPATH ${LUA_ROOT}${CMAKE_INSTALL_LIBDIR})
+
 # === Build ==================================================================
 # include directory
 set(DeLua_HEADER_DIR include/${LUA_PROGNAME})

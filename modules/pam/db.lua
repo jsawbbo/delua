@@ -22,45 +22,91 @@
 --
 local pam = require 'pamlib'
 
-local workdir = pam.workdir
 local sformat = string.format
 local osexec = os.execute
 local function run(fmt, ...)
     return osexec(sformat(fmt, ...))
 end
+local tinsert = table.insert
+local tsort = table.sort
+local printf = function(fmt, ...)
+    print(sformat(fmt, ...))
+end
 
+local workdir = pam.workdir
 local config = pam.config
 local dirsep = config("dirsep")
 local vdir = config("vdir")
 local progdir = config("progdir")
 local vprogdir = progdir .. dirsep .. vdir
 local dbdir = vprogdir .. dirsep .. 'db'
+local dbconfig = dbdir .. dirsep .. 'config'
 
-local function init(url, opts)
+local db = {}
+
+local function readdbconfig()
+    local f = io.open(dbconfig, "r")
+    if f then
+        for path in f:lines() do
+            tinsert(db, path)
+            db[path] = true
+        end
+        f:close()
+    end
+end
+
+local function updatedbconfig()
+    local f = io.open(dbconfig, "w+")
+    tsort(db)
+    for _, path in ipairs(db) do
+        f:write(path, "\n")
+    end
+    f:close()
+end
+
+local function insertdbconfig(path)
+    if not db[path] then
+        tinsert(db, path)
+        db[path] = true
+
+        updatedbconfig()
+    end
+end
+
+readdbconfig()
+
+local function init(opts, url)
     url = url or "https://github.com/jsawbbo/delua-packages.git"
     local destdir = url:match("/([^/]+)[.]git$")
     destdir = destdir or url:match("/([^/]+)$")
     assert(destdir, "invalid url, cannot extract path")
+
+    if db[destdir] then
+        return
+    end
 
     opts = opts or {}
     opts.depth = opts.depth or 1
     opts.branch = opts.branch or "v" .. config('vdir')
     opts.extra = opts.extra or ""
 
-    print(sformat("git clone --depth=%d --single-branch --branch=%s %s %s %s/%s", opts.depth, opts.branch, opts.extra, url,
-        vprogdir, destdir))
+    printf("Downloading %s ...", url)
+    run("git clone -q --depth=%d --single-branch --branch=%s %s %s %s/%s", opts.depth, opts.branch, opts.extra, url, dbdir,
+        destdir)
+    insertdbconfig(destdir)
 end
 pam.init = init
 
-local function update(url, opts)
-    url = url or "https://github.com/jsawbbo/delua-packages.git"
+local function update(opts)
     opts = opts or {}
     opts.depth = opts.depth or 1
-    opts.branch = opts.branch or "v" .. config('vdir')
 
-    local cwd = workdir(vprogdir)
-    -- run("git pull --porcelain --depth=%d --rebase=true", opts.depth)
-    workdir(cwd)
+    for _, path in ipairs(db) do
+        local cwd = workdir(vprogdir .. dirsep .. path)
+        printf("Updating %s ...", url)
+        run("git pull -q --depth=%d --rebase=true", opts.depth)
+        workdir(cwd)
+    end
 end
 pam.update = update
 
