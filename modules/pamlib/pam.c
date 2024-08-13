@@ -73,13 +73,15 @@ struct Directory {
   const char *path;
 };
 
-struct Directory pampaths[] = {
-    {"version", LUA_VERSION_MAJOR "." LUA_VERSION_MINOR}, //
-    {"progdir", LUA_PROGDIR},                             //
-    {"root", LUA_ROOT},                                   //
-    {"ldir", LUA_LDIR},                                   //
-    {"cdir", LUA_CDIR},                                   //
-    {NULL, NULL}};
+struct Directory pampaths[] = {{"vdir", LUA_VDIR},          //
+                               {"progdir", LUA_PROGDIR},    //
+                               {"root", LUA_ROOT},          //
+                               {"ldir", LUA_LDIR},          //
+                               {"cdir", LUA_CDIR},          //
+                               {"home", LUA_HOME},          //
+                               {"homeldir", LUA_HOME_LDIR}, //
+                               {"homecdir", LUA_HOME_CDIR}, //
+                               {NULL, NULL}};
 
 int buildref = LUA_NOREF;
 
@@ -105,43 +107,11 @@ LUAMOD_API int luaopen_pamlib(lua_State *L) {
     pushexpanded(L, pampaths[i].path);
     lua_settable(L, -3);
   }
-  if (runasadmin()) {
-    // lua_pushliteral(L, "ldir");
-    // lua_pushliteral(L, LUA_LDIR);
-    // lua_settable(L, -3);
-    // lua_pushliteral(L, "cdir");
-    // lua_pushliteral(L, LUA_CDIR);
-    // lua_settable(L, -3);
-  }
+
   buildref = luaL_ref(L, LUA_REGISTRYINDEX);
 
   /* install functions */
   luaL_setfuncs(L, pamfn, 0);
-
-  /* load modules */
-  lua_getglobal(L, "require");
-
-  /* - utilities */
-  lua_pushvalue(L, -1); /* require "pam.util" */
-  lua_pushliteral(L, "pam.util");
-  lua_call(L, 1, 0);
-
-  /* - package database (quietly initialize) */
-  lua_pushvalue(L, -1); /* require "pam.db" */
-  lua_pushliteral(L, "pam.db");
-  lua_call(L, 1, 1); /* -> db */
-
-  // lua_getfield(L, -1, "clone");  /* db.clone(nil, { extra = "--quiet" }) */
-  // lua_pushnil(L);
-  // lua_createtable(L, 0, 1);
-  // lua_pushliteral(L, "extra");
-  // lua_pushliteral(L, "--quiet");
-  // lua_rawset(L, -3);
-  // lua_call(L, 2, 0);
-
-  lua_pop(L, 1); /* remove "db" table */
-
-  lua_pop(L, 1); /* remove "require" */
 
   return 1;
 }

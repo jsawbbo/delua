@@ -13,7 +13,7 @@ if(LUA_BUILD_STATIC)
     set_target_properties(DeLuaCXXLibStatic
         PROPERTIES
             LINKER_LANGUAGE CXX
-            OUTPUT_NAME ${LUA_NAME}++-${DeLua_RELEASE})
+            OUTPUT_NAME ${LUA_PROGNAME}++-${DeLua_RELEASE})
     target_include_directories(DeLuaCXXLibStatic PUBLIC
         $<BUILD_INTERFACE:${luaconf_include_dir}>
         $<BUILD_INTERFACE:${DeLua_SOURCE_DIR}/lua/src>
@@ -29,7 +29,7 @@ if(LUA_BUILD_SHARED)
     set_target_properties(DeLuaCXXLib
         PROPERTIES
             LINKER_LANGUAGE CXX
-            OUTPUT_NAME ${LUA_NAME}++-${DeLua_RELEASE}
+            OUTPUT_NAME ${LUA_PROGNAME}++-${DeLua_RELEASE}
             VERSION ${DeLua_VERSION}
             SOVERSION ${DeLua_VERSION_MAJOR})
     target_link_libraries(DeLuaCXXLib ${CMAKE_DL_LIBS})

@@ -34,10 +34,11 @@ form of tab-completion for table elements is supported.
 
 #### Local home directory
 
-The default search path includes the `$HOME/.local/` file-system structure on  
-Unixoid systems, `%AppData%/Roaming/${LUA_NAME}` on Microsoft Windows®, and,  
-`$HOME/Library` on MacOS. In addition, a leading '~' (`LUA_HOME_MARK`) expands 
-to the `HOME` (environment variable) directory.
+The default search path includes the `~/.local/` file-system structure on  
+Unixoid systems, `~\AppData\Local\${LUA_PROGNAME}` on Microsoft Windows®, and,  
+`~/Library/${LUA_PROGNAME}` on MacOS. Here, '~' (`LUA_HOME_MARK`) now expands
+to the environment variables `USERPROFILE` on Microsoft Windows® or `HOME`
+otherwise.
 
 *Note*: At the time of writing, Windows and MacOSX builds are not tested.
 
@@ -77,7 +78,7 @@ TODO
 
 ### General options
 
-*    `LUA_NAME`, output name of binaries and libraries (default: "delua").
+*    `LUA_PROGNAME`, output name of binaries and libraries (default: "delua").
 *    `LUA_BUILD_STATIC` Build a static library (default: YES).
 *    `LUA_BUILD_SHARED` Build a shared library (default: YES).
 *    `LUA_BUILD_INTERPRETER` Build the standard ``lua`` interpreter (default: YES).

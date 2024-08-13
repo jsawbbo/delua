@@ -170,6 +170,7 @@
 ** template.
 ** LUA_EXEC_DIR in a Windows path is replaced by the executable's
 ** directory.
+** LUA_HOME_MARK is expanded to the users home directory.
 */
 #define LUA_PATH_SEP            "@LUA_PATH_SEP@"
 #define LUA_PATH_MARK           "@LUA_PATH_MARK@"
@@ -185,6 +186,25 @@
 #define LUA_IGMARK             "-"
 
 /*
+** Root installation path.
+*/
+#define LUA_PROGNAME   "@LUA_PROGNAME@"
+#define LUA_VDIR       "@LUA_VDIR@"
+
+#define LUA_ROOT       "@LUA_ROOT@"
+
+#define LUA_LDIR       @LUA_LDIR@
+#define LUA_CDIR       @LUA_CDIR@
+
+/*
+** User installation path.
+*/
+#define LUA_HOME       "@LUA_HOME@"
+
+#define LUA_HOME_LDIR  @LUA_HOME_LDIR@
+#define LUA_HOME_CDIR  @LUA_HOME_CDIR@
+
+/*
 @@ LUA_PATH_DEFAULT is the default path that Lua uses to look for
 ** Lua libraries.
 @@ LUA_CPATH_DEFAULT is the default path that Lua uses to look for
@@ -193,85 +213,17 @@
 ** hierarchy or if you want to install your libraries in
 ** non-conventional directories.
 */
+#define LUA_PATH_DEFAULT \
+        @LUA_PATH_DEFAULT@
 
-#define LUA_NAME       "@LUA_NAME@"
-#define LUA_VDIR       "@LUA_VDIR@"
-
-/*
-** Root installation path.
-*/
-#define LUA_ROOT "@LUA_ROOT@"
-
-#define LUA_LDIR @LUA_LDIR@
-#define LUA_CDIR @LUA_CDIR@
-
-#if defined(_WIN32)	/* { */
-/*
-** In Windows, any exclamation mark ('!') in the path is replaced by the
-** path of the directory of the executable file of the current process.
-*/
-#define LUA_SHRDIR  LUA_EXEC_DIR "/../share/@LUA_NAME@/" LUA_VDIR "/"
-#define LUA_APPDATA_DIR LUA_HOME_MARK "/AppData/Local"
-#define LUA_HOME_LDIR LUA_APPDATA_DIR "/@LUA_NAME@/" LUA_VDIR "/"
-#define LUA_HOME_CDIR LUA_APPDATA_DIR "/@LUA_NAME@/" LUA_VDIR "/"
-
-#if !defined(LUA_PATH_DEFAULT)
-#define LUA_PATH_DEFAULT  \
-        @LUA_PATH_EXTRA@ \
-        LUA_HOME_LDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP  LUA_HOME_LDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
-        LUA_HOME_CDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP  LUA_HOME_CDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
-        LUA_LDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP  LUA_LDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
-        LUA_CDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP  LUA_CDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
-        LUA_SHRDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP LUA_SHRDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
-        "./" LUA_PATH_MARK ".lua" LUA_PATH_SEP "./" LUA_PATH_MARK "/init.lua"
-#endif
-
-#if !defined(LUA_CPATH_DEFAULT)
 #define LUA_CPATH_DEFAULT \
-        @LUA_CPATH_EXTRA@ \
-        LUA_HOME_CDIR LUA_PATH_MARK ".dll" LUA_PATH_SEP  LUA_HOME_CDIR LUA_PATH_MARK "/loadall.dll" LUA_PATH_SEP \
-        LUA_CDIR LUA_PATH_MARK ".dll" LUA_PATH_SEP \
-        LUA_CDIR "../lib/lua/" LUA_VDIR "/" LUA_PATH_MARK ".dll" LUA_PATH_SEP \
-        LUA_CDIR "loadall.dll" LUA_PATH_SEP \
-        "./" LUA_PATH_MARK ".dll"
-#endif
-
-#else			/* }{ */
-
-#if defined(__APPLE__)
-#define LUA_HOME_LDIR LUA_HOME_MARK "/Library/@LUA_NAME@/share/" LUA_VDIR "/"
-#define LUA_HOME_CDIR LUA_HOME_MARK "/Library/@LUA_NAME@/lib/" LUA_VDIR "/"
-#else
-#define LUA_HOME_LDIR LUA_HOME_MARK "/.local/share/@LUA_NAME@/" LUA_VDIR "/"
-#define LUA_HOME_CDIR LUA_HOME_MARK "/.local/lib/@LUA_NAME@/" LUA_VDIR "/"
-#endif
-
-#if !defined(LUA_PATH_DEFAULT)
-#define LUA_PATH_DEFAULT  \
-        @LUA_PATH_EXTRA@ \
-        LUA_HOME_LDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP  LUA_HOME_LDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
-        LUA_HOME_CDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP  LUA_HOME_CDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
-        LUA_LDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP  LUA_LDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
-        LUA_CDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP  LUA_CDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
-        "./" LUA_PATH_MARK ".lua" LUA_PATH_SEP "./" LUA_PATH_MARK "/init.lua"
-#endif
-
-#if !defined(LUA_CPATH_DEFAULT)
-#define LUA_CPATH_DEFAULT \
-        @LUA_CPATH_EXTRA@ \
-        LUA_HOME_CDIR LUA_PATH_MARK ".so" LUA_PATH_SEP LUA_HOME_CDIR "loadall.so" LUA_PATH_SEP \
-        LUA_CDIR LUA_PATH_MARK ".so" LUA_PATH_SEP LUA_CDIR "loadall.so" LUA_PATH_SEP \
-        "./" LUA_PATH_MARK ".so"
-#endif
-
-#endif			/* } */
-
+        @LUA_CPATH_DEFAULT@
 
 /*
 @@ LUA_DIRSEP is the directory separator (for submodules).
 ** CHANGE it if your machine does not use "/" as the directory separator.
 */
-#define LUA_DIRSEP      "@LUA_DIRSEP@"
+#define LUA_DIRSEP     "@LUA_DIRSEP@"
 
 /*
 @@LUA_PROGDIR is the program directory in the users home folder.

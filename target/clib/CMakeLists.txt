@@ -6,7 +6,7 @@ if(LUA_BUILD_STATIC)
     set_target_properties(DeLuaCLibStatic
         PROPERTIES
             LINKER_LANGUAGE C
-            OUTPUT_NAME ${LUA_NAME}-${DeLua_RELEASE})
+            OUTPUT_NAME ${LUA_PROGNAME}-${DeLua_RELEASE})
     target_include_directories(DeLuaCLibStatic PUBLIC
         $<BUILD_INTERFACE:${luaconf_include_dir}>
         $<BUILD_INTERFACE:${DeLua_SOURCE_DIR}/lua/src>
@@ -23,7 +23,7 @@ if(LUA_BUILD_SHARED)
     set_target_properties(DeLuaCLib
         PROPERTIES
             LINKER_LANGUAGE C
-            OUTPUT_NAME ${LUA_NAME}-${DeLua_RELEASE}
+            OUTPUT_NAME ${LUA_PROGNAME}-${DeLua_RELEASE}
             VERSION ${DeLua_VERSION}
             SOVERSION ${DeLua_VERSION_MAJOR})
     target_include_directories(DeLuaCLib PUBLIC
@@ -53,7 +53,7 @@ if(LUA_BUILD_INTERPRETER)
     set_target_properties(LuaInterpreter
         PROPERTIES
             LINKER_LANGUAGE C
-            OUTPUT_NAME ${LUA_NAME}-${DeLua_RELEASE})
+            OUTPUT_NAME ${LUA_PROGNAME}-${DeLua_RELEASE})
     target_link_libraries(LuaInterpreter DeLuaCLib ${LUA_READLINE_LIBRARY})
 endif()
 
@@ -62,7 +62,7 @@ if(LUA_BUILD_COMPILER)
     set_target_properties(LuaCompiler
         PROPERTIES
             LINKER_LANGUAGE C
-            OUTPUT_NAME ${LUA_NAME}c-${DeLua_RELEASE})
+            OUTPUT_NAME ${LUA_PROGNAME}c-${DeLua_RELEASE})
     target_link_libraries(LuaCompiler DeLuaCLib)
 endif()
 
