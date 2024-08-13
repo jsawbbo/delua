@@ -1,8 +1,8 @@
 diff --git a/lua/src/lua.c b/lua/src/lua.c
-index 43aa4c9..936abd0 100644
+index b9d098d..f015c72 100644
 --- a/lua/src/lua.c
 +++ b/lua/src/lua.c
-@@ -442,7 +442,106 @@ static int handle_luainit (lua_State *L) {
+@@ -451,7 +451,106 @@ static int handle_luainit (lua_State *L) {
  
  #include <readline/readline.h>
  #include <readline/history.h>
