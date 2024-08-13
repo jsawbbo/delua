@@ -7,6 +7,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(LUA_USE_WINDOWS)
+#include <direct.h>
+#define l_mkdir(L, dirname) ((void)L, _mkdir(dirname))
+#else
+#include <sys/stat.h>
+#define l_mkdir(L, dirname) ((void)L, mkdir(dirname, 0700))
+#endif
+
 LUA_API int lua_expandhome(lua_State *L, const char *filename);
 
 static void pushexpanded(lua_State *L, const char *filename) {
@@ -90,6 +98,22 @@ LUAMOD_API int luaopen_pamlib(lua_State *L) {
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "pam");
+
+  /* init directories */
+  if (!lua_expandhome(L, LUA_PROGDIR))
+    lua_pushliteral(L, LUA_PROGDIR);
+  if ((l_mkdir(L, lua_tostring(L, -1)) == 0) || (errno = EEXIST)) {
+    if (!lua_expandhome(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR))
+      lua_pushliteral(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR);
+    if ((l_mkdir(L, lua_tostring(L, -1)) == 0) || (errno = EEXIST)) {
+      if (!lua_expandhome(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR LUA_DIRSEP "db"))
+        lua_pushliteral(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR "db");
+      l_mkdir(L, lua_tostring(L, -1));
+      lua_pop(L, 1);
+    }
+    lua_pop(L, 1);
+  }
+  lua_pop(L, 1);
 
   /* set version information */
   lua_pushliteral(L, "_VERSION");

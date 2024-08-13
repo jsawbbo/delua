@@ -34,18 +34,21 @@ local dirsep = config("dirsep")
 local vdir = config("vdir")
 local progdir = config("progdir")
 local vprogdir = progdir .. dirsep .. vdir
+local dbdir = vprogdir .. dirsep .. 'db'
 
 local function init(url, opts)
     url = url or "https://github.com/jsawbbo/delua-packages.git"
-    local destdir = url:match(".*/([^/]+)([.]git)?")
+    local destdir = url:match("/([^/]+)[.]git$")
+    destdir = destdir or url:match("/([^/]+)$")
+    assert(destdir, "invalid url, cannot extract path")
 
     opts = opts or {}
     opts.depth = opts.depth or 1
     opts.branch = opts.branch or "v" .. config('vdir')
     opts.extra = opts.extra or ""
 
-    print("git clone --depth=%d --single-branch --branch=%s %s %s %s/%s", opts.depth, opts.branch, opts.extra, url,
-        vprogdir, destdir)
+    print(sformat("git clone --depth=%d --single-branch --branch=%s %s %s %s/%s", opts.depth, opts.branch, opts.extra, url,
+        vprogdir, destdir))
 end
 pam.init = init
 
