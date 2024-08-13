@@ -37,11 +37,15 @@ local vprogdir = progdir .. dirsep .. vdir
 
 local function init(url, opts)
     url = url or "https://github.com/jsawbbo/delua-packages.git"
+    local destdir = url:match(".*/([^/]+)([.]git)?")
+
     opts = opts or {}
     opts.depth = opts.depth or 1
     opts.branch = opts.branch or "v" .. config('vdir')
     opts.extra = opts.extra or ""
-    run("git clone --depth=%d --single-branch --branch=%s %s %s %s/", opts.depth, opts.branch, opts.extra, url, vprogdir)
+
+    print("git clone --depth=%d --single-branch --branch=%s %s %s %s/%s", opts.depth, opts.branch, opts.extra, url,
+        vprogdir, destdir)
 end
 pam.init = init
 
