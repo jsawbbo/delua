@@ -20,7 +20,7 @@
 -- TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
-local pam = require 'pamlib'
+local pam = require 'pam.command'
 
 local sformat = string.format
 local osexec = os.execute
@@ -33,6 +33,7 @@ local printf = function(fmt, ...)
     print(sformat(fmt, ...))
 end
 
+local register = pam.register
 local workdir = pam.workdir
 local config = pam.config
 local dirsep = config("dirsep")
@@ -42,72 +43,94 @@ local vprogdir = progdir .. dirsep .. vdir
 local dbdir = vprogdir .. dirsep .. 'db'
 local dbconfig = dbdir .. dirsep .. 'config'
 
-local db = {}
+-- local db = {}
 
-local function readdbconfig()
-    local f = io.open(dbconfig, "r")
-    if f then
-        for path in f:lines() do
-            tinsert(db, path)
-            db[path] = true
-        end
-        f:close()
-    end
-end
+-- local function readdbconfig()
+--     local f = io.open(dbconfig, "r")
+--     if f then
+--         for path in f:lines() do
+--             tinsert(db, path)
+--             db[path] = true
+--         end
+--         f:close()
+--     end
+-- end
 
-local function updatedbconfig()
-    local f = io.open(dbconfig, "w+")
-    tsort(db)
-    for _, path in ipairs(db) do
-        f:write(path, "\n")
-    end
-    f:close()
-end
+-- local function updatedbconfig()
+--     local f = io.open(dbconfig, "w+")
+--     tsort(db)
+--     for _, path in ipairs(db) do
+--         f:write(path, "\n")
+--     end
+--     f:close()
+-- end
 
-local function insertdbconfig(path)
-    if not db[path] then
-        tinsert(db, path)
-        db[path] = true
+-- local function insertdbconfig(path)
+--     if not db[path] then
+--         tinsert(db, path)
+--         db[path] = true
 
-        updatedbconfig()
-    end
-end
+--         updatedbconfig()
+--     end
+-- end
 
-readdbconfig()
+-- readdbconfig()
 
-local function init(opts, url)
-    url = url or "https://github.com/jsawbbo/delua-packages.git"
-    local destdir = url:match("/([^/]+)[.]git$")
-    destdir = destdir or url:match("/([^/]+)$")
-    assert(destdir, "invalid url, cannot extract path")
+local function init(opts)
+    print("INIT")
+    -- url = url or "https://github.com/jsawbbo/delua-packages.git"
+    -- local destdir = url:match("/([^/]+)[.]git$")
+    -- destdir = destdir or url:match("/([^/]+)$")
+    -- assert(destdir, "invalid url, cannot extract path")
 
-    if db[destdir] then
-        return
-    end
+    -- if db[destdir] then
+    --     return
+    -- end
 
-    opts = opts or {}
-    opts.depth = opts.depth or 1
-    opts.branch = opts.branch or "v" .. config('vdir')
-    opts.extra = opts.extra or ""
+    -- opts = opts or {}
+    -- opts.depth = opts.depth or 1
+    -- opts.branch = opts.branch or "v" .. config('vdir')
+    -- opts.extra = opts.extra or ""
 
-    printf("Downloading %s ...", url)
-    run("git clone -q --depth=%d --single-branch --branch=%s %s %s %s/%s", opts.depth, opts.branch, opts.extra, url, dbdir,
-        destdir)
-    insertdbconfig(destdir)
+    -- printf("Downloading %s ...", url)
+    -- run("git clone -q --depth=%d --single-branch --branch=%s %s %s %s/%s", opts.depth, opts.branch, opts.extra, url, dbdir,
+    --     destdir)
+    -- insertdbconfig(destdir)
 end
 pam.init = init
+register("init", {
+    callback = init,
+    usage = "pam <options> init [<command-options>...] [url]",
+    brief = "initialize a package repository",
+    description = [===[ 
+This command downloads (clones, in git terms) a package repository and 
+initializes it. If omitted, the default is: 
+    https://github.com/jsawbbo/delua-packages.git
+]===],
+    {
+        long = 'depth',
+        brief = "history depth for shallow cloning",
+        default = 1
+    },
+    {
+        long = 'branch',
+        brief = "branch name",
+        default = config('vdir') 
+    },
+})
 
 local function update(opts)
-    opts = opts or {}
-    opts.depth = opts.depth or 1
+    -- opts = opts or {}
+    -- opts.depth = opts.depth or 1
 
-    for _, path in ipairs(db) do
-        local cwd = workdir(vprogdir .. dirsep .. path)
-        printf("Updating %s ...", url)
-        run("git pull -q --depth=%d --rebase=true", opts.depth)
-        workdir(cwd)
-    end
+    -- for _, path in ipairs(db) do
+    --     local cwd = workdir(vprogdir .. dirsep .. path)
+    --     printf("Updating %s ...", url)
+    --     run("git pull -q --depth=%d --rebase=true", opts.depth)
+    --     workdir(cwd)
+    -- end
 end
 pam.update = update
+
 
 return pam

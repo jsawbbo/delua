@@ -10,4 +10,14 @@ set_target_properties(DeLuaPAMLIB
 add_library(DeLua::PAMLIB ALIAS DeLuaPAMLIB)
 
 install(TARGETS DeLuaPAMLIB
-    LIBRARY DESTINATION ${DeLua_PATH_DIR} COMPONENT "runtime")
+    LIBRARY DESTINATION ${DeLua_CPATH_DIR} COMPONENT "pam")
+
+add_executable(DeLuaPAMEXE cli.c)
+set_target_properties(DeLuaPAMEXE
+PROPERTIES
+    LINKER_LANGUAGE C
+    OUTPUT_NAME pam)
+target_link_libraries(DeLuaPAMEXE DeLuaCLib ${LUA_READLINE_LIBRARY})
+
+install(TARGETS DeLuaPAMEXE
+    RUNTIME DESTINATION bin COMPONENT "pam")

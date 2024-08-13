@@ -22,7 +22,16 @@
 --
 local pam = require 'pamlib'
 
-require 'pam.options'
+require 'pam.command'
 require 'pam.db'
+
+local process = pam.process
+
+local mt = {
+    __call = function(self, ...)
+        process(...)
+    end
+}
+setmetatable(pam, mt)
 
 return pam
