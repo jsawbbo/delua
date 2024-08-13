@@ -447,6 +447,40 @@ static int handle_luainit (lua_State *L) {
 #define lua_saveline(L,line)	((void)L, add_history(line))
 #define lua_freeline(L,b)	((void)L, free(b))
 
+#include <sys/stat.h>
+#include <sys/types.h>
+
+LUA_API int lua_expandhome(lua_State *L, const char *filename);
+
+#define LUA_HISTORY_FILE LUA_PROGDIR LUA_DIRSEP LUA_VDIR LUA_DIRSEP "history"
+
+void lua_readhistory(lua_State *L) {
+  if (!lua_expandhome(L, LUA_PROGDIR))
+    lua_pushliteral(L, LUA_PROGDIR);
+  if (mkdir(lua_tostring(L, -1), 0700) == 0) {
+    if (!lua_expandhome(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR))
+      lua_pushliteral(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR);
+    mkdir(lua_tostring(L, -1), 0700);
+    lua_pop(L, 1);
+  }
+  lua_pop(L, 1);
+
+  if (!lua_expandhome(L, LUA_HISTORY_FILE))
+    lua_pushliteral(L, LUA_HISTORY_FILE);
+
+  read_history(lua_tostring(L, -1));
+  lua_pop(L, 1);
+}
+
+void lua_writehistory(lua_State *L) {
+  if (!lua_expandhome(L, LUA_HISTORY_FILE))
+    lua_pushliteral(L, LUA_HISTORY_FILE);
+
+  stifle_history(1024);
+  write_history(lua_tostring(L, -1));
+  lua_pop(L, 1);
+}
+
 #else				/* }{ */
 
 #define lua_initreadline(L)  ((void)L)
@@ -455,6 +489,8 @@ static int handle_luainit (lua_State *L) {
         fgets(b, LUA_MAXINPUT, stdin) != NULL)  /* get line */
 #define lua_saveline(L,line)	{ (void)L; (void)line; }
 #define lua_freeline(L,b)	{ (void)L; (void)b; }
+#define lua_readhistory(L) ((void)L)
+#define lua_writehistory(L) ((void)L)
 
 #endif				/* } */
 
@@ -659,7 +695,9 @@ static int pmain (lua_State *L) {
   else if (script < 1 && !(args & (has_e | has_v))) { /* no active option? */
     if (lua_stdin_is_tty()) {  /* running in interactive mode? */
       print_version();
+      lua_readhistory(L);  /* read history */
       doREPL(L);  /* do read-eval-print loop */
+      lua_writehistory(L); /* write history */
     }
     else dofile(L, NULL);  /* executes stdin as a file */
   }
