@@ -1,4 +1,4 @@
--- DeLua Package Manager
+-- DeLua Package Manager - general utilities
 -- Copyright (C) 2021-2024 Max Planck Institute f. Neurobiol. of Behavior — caesar, Bonn, Germany
 -- 
 -- Permission is hereby granted, free of charge, to any person obtaining

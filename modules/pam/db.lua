@@ -1,5 +1,5 @@
--- DeLua Package Manager
--- Copyright (C) 2021-2024 Max Planck Institute f. Neurobiol. of Behavior — caesar, Bonn, Germany
+-- DeLua Package Manager - package database component
+-- Copyright (C) 2024 Max Planck Institute f. Neurobiol. of Behavior — caesar, Bonn, Germany
 -- 
 -- Permission is hereby granted, free of charge, to any person obtaining
 -- a copy of this software and associated documentation files (the
@@ -20,33 +20,34 @@
 -- TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
-local db = {}
+local pam = require 'pamlib'
 
-local getpath = package.getpath
-local workdir = package.workdir
+local config = pam.config
+local workdir = pam.workdir
 local sformat = string.format
 local osexec = os.execute
 local function run(fmt, ...)
     return osexec(sformat(fmt, ...))
 end
 
-local function clone(url, opts)
+local function init(url, opts)
     url = url or "https://github.com/jsawbbo/delua-packages.git"
     opts = opts or {}
     opts.depth = opts.depth or 1
-    opts.branch = opts.branch or "v" .. package._LUA_VERSION
+    opts.branch = opts.branch or "v" .. config('version')
     opts.extra = opts.extra or ""
-    run("git clone --depth=%d --single-branch --branch=%s %s %s %s", opts.depth, opts.branch, opts.extra, url, getpath("packages"))
+    run("git clone --depth=%d --single-branch --branch=%s %s %s %s", opts.depth, opts.branch, opts.extra, url,
+        config("packages"))
 end
 db.clone = clone
 
-local function fetch(url, opts)
+local function update(url, opts)
     url = url or "https://github.com/jsawbbo/delua-packages.git"
     opts = opts or {}
     opts.depth = opts.depth or 1
-    opts.branch = opts.branch or "v" .. package._LUA_VERSION
+    opts.branch = opts.branch or "v" .. config('version')
 
-    local cwd = workdir(getpath("packages"))
+    local cwd = workdir(config("packages"))
     run("git pull --porcelain --depth=%d --rebase=true", opts.depth)
     workdir(cwd)
 end

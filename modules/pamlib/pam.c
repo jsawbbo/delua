@@ -10,8 +10,9 @@
 LUA_API int lua_expandhome(lua_State *L, const char *filename);
 
 static void pushexpanded(lua_State *L, const char *filename) {
-  if (!lua_expandhome(L, filename))
-    lua_pushstring(L, filename);
+  if (lua_expandhome(L, filename))
+    return;
+  lua_pushstring(L, filename);
 }
 
 static int isadmin(lua_State *L) {
@@ -49,7 +50,7 @@ static int interactive(lua_State *L) {
   return 1;
 }
 
-static int getpath(lua_State *L) {
+static int config(lua_State *L) {
   if (lua_gettop(L) != 1)
     luaL_error(L, "expected a single string argument");
   luaL_checktype(L, 1, LUA_TSTRING);
@@ -63,7 +64,7 @@ static int getpath(lua_State *L) {
 
 luaL_Reg pamfn[] = {{"isadmin", isadmin},         //
                     {"workdir", workdir},         //
-                    {"getpath", getpath},         //
+                    {"config", config},           //
                     {"interactive", interactive}, //
                     {NULL, NULL}};
 
@@ -73,33 +74,29 @@ struct Directory {
 };
 
 struct Directory pampaths[] = {
-    {"prog", LUA_PROGDIR},                                               //
-    {"progvdir", LUA_PROGDIR LUA_DIRSEP LUA_VDIR},                       //
-    {"history", LUA_PROGDIR LUA_DIRSEP LUA_VDIR LUA_DIRSEP "history"},   //
-    {"cache", LUA_PROGDIR LUA_DIRSEP LUA_VDIR LUA_DIRSEP "cache"},       //
-    {"packages", LUA_PROGDIR LUA_DIRSEP LUA_VDIR LUA_DIRSEP "packages"}, //
-    {"ldir", LUA_HOME_LDIR},                                             //
-    {"cdir", LUA_HOME_CDIR},                                             //
+    {"version", LUA_VERSION_MAJOR "." LUA_VERSION_MINOR}, //
+    {"progdir", LUA_PROGDIR},                             //
+    {"root", LUA_ROOT},                                   //
+    {"ldir", LUA_LDIR},                                   //
+    {"cdir", LUA_CDIR},                                   //
     {NULL, NULL}};
 
 int buildref = LUA_NOREF;
 
-LUAMOD_API int luaopen_pam(lua_State *L) {
-  lua_getglobal(L, "package");
+LUAMOD_API int luaopen_pamlib(lua_State *L) {
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "pam");
 
   /* set version information */
-  lua_pushliteral(L, "_LUA_VERSION");
-  lua_pushliteral(L, LUA_VERSION_MAJOR "." LUA_VERSION_MINOR);
-  lua_settable(L, -3);
-
-  lua_pushliteral(L, "_PAM_VERSION");
+  lua_pushliteral(L, "_VERSION");
   lua_pushliteral(L, PAM_VERSION_S);
   lua_settable(L, -3);
 
   /* create pam paths table */
   lua_newtable(L);
 #if defined(DEBUG)
-  lua_pushliteral(L, "pampaths");
+  lua_pushliteral(L, "pamconfig");
   lua_pushvalue(L, -2);
   lua_settable(L, -4);
 #endif
@@ -109,12 +106,12 @@ LUAMOD_API int luaopen_pam(lua_State *L) {
     lua_settable(L, -3);
   }
   if (runasadmin()) {
-    lua_pushliteral(L, "ldir");
-    lua_pushliteral(L, LUA_LDIR);
-    lua_settable(L, -3);
-    lua_pushliteral(L, "cdir");
-    lua_pushliteral(L, LUA_CDIR);
-    lua_settable(L, -3);
+    // lua_pushliteral(L, "ldir");
+    // lua_pushliteral(L, LUA_LDIR);
+    // lua_settable(L, -3);
+    // lua_pushliteral(L, "cdir");
+    // lua_pushliteral(L, LUA_CDIR);
+    // lua_settable(L, -3);
   }
   buildref = luaL_ref(L, LUA_REGISTRYINDEX);
 
@@ -125,14 +122,14 @@ LUAMOD_API int luaopen_pam(lua_State *L) {
   lua_getglobal(L, "require");
 
   /* - utilities */
-  lua_pushvalue(L, -1);  /* require "pam.util" */
+  lua_pushvalue(L, -1); /* require "pam.util" */
   lua_pushliteral(L, "pam.util");
   lua_call(L, 1, 0);
 
   /* - package database (quietly initialize) */
-  lua_pushvalue(L, -1);  /* require "pam.db" */
+  lua_pushvalue(L, -1); /* require "pam.db" */
   lua_pushliteral(L, "pam.db");
-  lua_call(L, 1, 1);  /* -> db */
+  lua_call(L, 1, 1); /* -> db */
 
   // lua_getfield(L, -1, "clone");  /* db.clone(nil, { extra = "--quiet" }) */
   // lua_pushnil(L);
