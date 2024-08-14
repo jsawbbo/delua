@@ -1,6 +1,8 @@
 set(PAM_SCRIPTS 
     init.lua
-    options.lua
+    log.lua
+    settings.lua
+    command.lua
     db.lua)
 
 install(FILES ${PAM_SCRIPTS}

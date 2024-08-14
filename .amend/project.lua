@@ -17,9 +17,15 @@ PROJECT = {
     NAME = "DeLua",
     TWEAK = 1,
     USES = {
+        "C",
+        "CMAKE",
+        "CXX",
         "GIT"
     },
-    VERSION = "5.4.7"
+    VERSION = {
+        "${Lua_VERSION}",
+        "${DeLua_VERSION_TWEAK}"
+    }
 }
 
 --[=[
@@ -27,8 +33,30 @@ PROJECT = {
 
     ]=]
 CONFIG = {
-    EXTENSIONS = {},
-    LANG = {}
+    EXTENSIONS = {
+        C = {
+            ".h",
+            ".c"
+        },
+        CXX = {
+            ".hh",
+            ".hpp",
+            ".hxx",
+            ".cc",
+            ".cpp",
+            ".cxx"
+        }
+    },
+    LANG = {
+        C = {
+            POST = {},
+            PRE = {}
+        },
+        CXX = {
+            POST = {},
+            PRE = {}
+        }
+    }
 }
 
 --[=[

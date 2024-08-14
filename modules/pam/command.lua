@@ -1,26 +1,31 @@
--- DeLua Package Manager - command line argument parsing
--- Copyright (C) 2024 Max Planck Institute f. Neurobiol. of Behavior — caesar, Bonn, Germany
--- 
--- Permission is hereby granted, free of charge, to any person obtaining
--- a copy of this software and associated documentation files (the
--- "Software"), to deal in the Software without restriction, including
--- without limitation the rights to use, copy, modify, merge, publish,
--- distribute, sublicense, and/or sell copies of the Software, and to
--- permit persons to whom the Software is furnished to do so, subject to
--- the following conditions:
--- 
--- The above copyright notice and this permission notice shall be
--- included in all copies or substantial portions of the Software.
--- 
--- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
--- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
--- MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
--- IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
--- CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
--- TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
--- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
---
 local pam = require 'pamlib'
+
+local brief = "DeLua Package Manager"
+local version = pam._VERSION
+local copyright = [[
+Copyright (C) 2024 Max Planck Institute f. Neurobiol. of Behavior — caesar, Bonn, Germany
+]]
+local license_short = "MIT"
+local license = [[
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+]]
 
 local tinsert = table.insert
 local tremove = table.remove
@@ -31,6 +36,7 @@ local stderr = io.stderr
 local function printf(fmt, ...)
     stdout:write(sformat(fmt, ...))
 end
+local log = require 'pam.log'
 
 local def -- option definition table
 
@@ -64,12 +70,9 @@ local function showopts(def)
 end
 
 local function usage(cmd)
-    printf([====[
-DeLua Package Manager %s
-Copyright (C) 2024 Max Planck Institute f. Neurobiol. of Behavior — caesar, Bonn, Germany
-
-Usage:
-]====], pam._VERSION)
+    printf("%s %s\n", brief, version)
+    printf("%s", copyright)
+    printf("License: %s\n", license_short)
     printf("    %s\n", (def[cmd] or def).usage)
 
     if not cmd then
@@ -114,7 +117,39 @@ def = {
         short = 'h',
         brief = 'show usage information',
         callback = usage
-    }
+    },
+    {
+        long = 'version',
+        short = 'V',
+        brief = 'display version information',
+        callback = function()
+            print(pam._VERSION)
+        end
+    },
+    {
+        long = 'verbose',
+        short = 'v',
+        brief = 'increase or set verbosity',
+        value = 'string',
+        optional = 'true',
+        callback = function(value)
+            if value then
+                if value == 'help' then
+                    print("Available verbosity levels:")
+                    for _,k in ipairs(log.severity) do
+                        print("", k)
+                    end
+                    os.exit()
+                end
+                if not log.severity[value] then
+                    log.fatal("Verbosity level %q is not known. Use --verbose=help to get a list.", value)
+                end
+                log.level = log.severity[value]
+            else
+                log.level = log.level + 1
+            end
+        end
+    }    
 }
 
 --- Register a command.
@@ -195,10 +230,12 @@ local function preparedef(optsdef)
         end
 
         if t.long then
+            assert(lnk[t.long] == nil, "long option '" .. t.long .. "' already declared")
             lnk[t.long] = t
         end
 
         if t.short then
+            assert(lnk[t.short] == nil, "short option '" .. t.short .. "' already declared")
             lnk[t.short] = t
         end
 
@@ -214,29 +251,47 @@ local function opterror(fmt, ...)
 end
 
 local function optparse(v, argt, cmd, opts)
-    local key, value = v:match("[-][-]?([^=]+)(.*)")
-    if value:len() == 0 then
-        value = nil
-    else
-        value = value:sub(2, -1) -- remove '='
-    end
-
-    local t = lnk[key]
-    if not t then
-        opterror("Option '%s' is not recognized. Use `--help` for further information.", v)
-    end
-
-    if t.callback then
-        t.callback(value or cmd)
-    else
-        if t.value then
-            value = value or t.default
-            if not value and not t.optional then
-                opterror("Option '%s' requires an options value. Use `--help` for further information.", v)
+    if v:sub(2,2) ~= '-' then
+        -- short
+        for i = 2,v:len() do
+            local key = v:sub(i,i)
+            local t = lnk[key]
+            if not t then
+                opterror("Option '-%s' is not recognized. Use `--help` for further information.", key)
             end
-            opts[key] = to(value, t.value)
+
+            if t.callback then
+                t.callback(cmd)
+            else
+                opts[key] = true
+            end
+        end
+    else
+        -- long 
+        local key, value = v:match("[-][-]?([^=]+)(.*)")
+        if value:len() == 0 then
+            value = nil
         else
-            opts[key] = true
+            value = value:sub(2, -1) -- remove '='
+        end
+
+        local t = lnk[key]
+        if not t then
+            opterror("Option '%s' is not recognized. Use `--help` for further information.", v)
+        end
+
+        if t.callback then
+            t.callback(value or cmd)
+        else
+            if t.value then
+                value = value or t.default
+                if not value and not t.optional then
+                    opterror("Option '%s' requires an options value. Use `--help` for further information.", v)
+                end
+                opts[key] = to(value, t.value)
+            else
+                opts[key] = true
+            end
         end
     end
 

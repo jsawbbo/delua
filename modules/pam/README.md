@@ -12,8 +12,6 @@ This modules provides a package manager for Lua. It was mainly inspired by
 All commands and variables listed in the following are found under the `package` 
 table. For example, to install a package (in the REPL), type: `package.add "pam"`.
 
-### `_PAM_VERSION`
-
 TODO ...
 
 

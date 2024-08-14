@@ -1,4 +1,4 @@
--- DeLua Package Manager
+-- DeLua Package Manager - settings handling
 -- Copyright (C) 2024 Max Planck Institute f. Neurobiol. of Behavior — caesar, Bonn, Germany
 -- 
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -21,19 +21,5 @@
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
 local pam = require 'pamlib'
-
-require 'pam.command'
-require 'pam.log'
-require 'pam.settings'
-require 'pam.db'
-
-local process = pam.process
-
-local mt = {
-    __call = function(self, ...)
-        process(...)
-    end
-}
-setmetatable(pam, mt)
 
 return pam

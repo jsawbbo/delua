@@ -21,6 +21,7 @@
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
 local pam = require 'pam.command'
+local log = require 'pam.log'
 
 local sformat = string.format
 local osexec = os.execute
@@ -77,7 +78,13 @@ local dbconfig = dbdir .. dirsep .. 'config'
 -- readdbconfig()
 
 local function init(opts)
-    print("INIT")
+    if #opts > 2 then
+        log.fatal("Invalid number of arguments passed to 'init'. See `pam init --help` for further information.")
+    end
+    local url = opts[1] or "https://github.com/jsawbbo/delua-packages.git"
+    local dst = opts[2] or url:match("/([^/.]+)[^/]*$")  
+
+    log.debug("Initializing %q (as %s)...", url, dst)
     -- url = url or "https://github.com/jsawbbo/delua-packages.git"
     -- local destdir = url:match("/([^/]+)[.]git$")
     -- destdir = destdir or url:match("/([^/]+)$")
