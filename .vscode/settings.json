@@ -15,6 +15,7 @@
         "lua.h": "c",
         "lauxlib.h": "c",
         "stdlib.h": "c",
-        "types.h": "c"
+        "types.h": "c",
+        "sysinfo.h": "c"
     }
 }

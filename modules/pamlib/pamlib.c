@@ -2,6 +2,7 @@
 #include "lua.h"
 
 #include "pamlib.h"
+#include "sysinfo.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -73,21 +74,22 @@ static int interactive(lua_State *L) {
   return 1;
 }
 
-struct Config {
+struct KVPair {
   const char *key;
   const char *value;
-  const char *brief;
 };
 
-struct Config pamconfig[] = {
-    {"dirsep", LUA_DIRSEP, "directory separator character"},            //
-    {"progdir", LUA_PROGDIR, "program directory in users home folder"}, //
-    {"vdir", LUA_VDIR, "version directory (e.g. '5.4')"},               //
-    {"root", LUA_ROOT, "installation root"},                            //
-    {"home", LUA_LOCAL, "user's local installation path"},              //
-    {"ldir", LUA_LDIR, "module directory (script path)"},               //
-    {"cdir", LUA_CDIR, "module direcotry (compiled modules)"},          //
-    {NULL, NULL, NULL}};
+struct KVPair pamconfig[] = {{"dirsep", LUA_DIRSEP},   //
+                             {"progdir", LUA_PROGDIR}, //
+                             {"vdir", LUA_VDIR},       //
+                             {"root", LUA_ROOT},       //
+                             {"home", LUA_LOCAL},      //
+                             {"ldir", LUA_LDIR},       //
+                             {"cdir", LUA_CDIR},       //
+                             {NULL, NULL }};
+
+struct KVPair pamos[] = DELUA_PAM_OS;
+struct KVPair pamdistro[] = DELUA_PAM_DISTRO;
 
 luaL_Reg pamreg[] = {{"runasadmin", runasadmin},   //
                      {"workdir", workdir},         //
@@ -139,6 +141,24 @@ LUAMOD_API int luaopen_pamlib(lua_State *L) {
     lua_settable(L, -3);
   }
   lua_setfield(L, -2, "config");
+
+  /* create pam os table */
+  lua_newtable(L);
+  for (int i = 0; pamos[i].key; i = i + 1) {
+    lua_pushstring(L, pamos[i].key);
+    pushexpanded(L, pamos[i].value);
+    lua_settable(L, -3);
+  }
+  lua_setfield(L, -2, "os");
+
+  /* create pam distro table */
+  lua_newtable(L);
+  for (int i = 0; pamdistro[i].key; i = i + 1) {
+    lua_pushstring(L, pamdistro[i].key);
+    pushexpanded(L, pamdistro[i].value);
+    lua_settable(L, -3);
+  }
+  lua_setfield(L, -2, "distro");
 
   /* install functions */
   luaL_setfuncs(L, pamreg, 0);
