@@ -80,6 +80,8 @@ local dbconfig = dbdir .. dirsep .. 'config'
 -- readdbconfig()
 
 local function init(opts)
+    opts = opts or {}
+
     if #opts > 2 then
         log.fatal("Invalid number of arguments passed to 'init'. See `pam init --help` for further information.")
     end
@@ -87,23 +89,32 @@ local function init(opts)
     local dst = opts[2] or url:match("/([^/.]+)[^/]*$")
     assert(type(dst) == 'string' and dst:match("^[a-zA-Z0-9-]+$"), "internal error: invalid destination path")
 
+    local quiet = ""
+    local depth = opts.depth or 1
+    local branch = opts.branch or "v" .. config('vdir')
+    local args = opts.args or ""
+
     log.debug("Initializing %q (as %s)...", url, dst)
     local cfg = settings(dbconfig)
     cfg.db = cfg.db or {}
 
-    -- if db[destdir] then
-    --     return
-    -- end
+    if cfg.db[dst] then
+        log.notice("Already initialized.")
+    else
+        log.notice("Downloading %s ...", url)
+        if log.level <= log.severity.notice then
+            quiet = "-q"
+        end
+        local cmd = sformat("git clone %s --depth=%d --single-branch --branch=%s %s %s %s/%s", quiet, depth, branch, args, url, dbdir, dst)
+        log.debug("Executing %q", cmd)
+        -- run(cmd)
 
-    -- opts = opts or {}
-    -- opts.depth = opts.depth or 1
-    -- opts.branch = opts.branch or "v" .. config('vdir')
-    -- opts.extra = opts.extra or ""
-
-    -- printf("Downloading %s ...", url)
-    -- run("git clone -q --depth=%d --single-branch --branch=%s %s %s %s/%s", opts.depth, opts.branch, opts.extra, url, dbdir,
-    --     destdir)
-    -- insertdbconfig(destdir)
+        cfg.db[dst] = {
+            depth = depth,
+            branch = branch,
+            url = url
+        }
+    end
 end
 pam.init = init
 register("init", {
@@ -124,6 +135,11 @@ initializes it. If omitted, the default is:
         long = 'branch',
         brief = "branch name",
         default = config('vdir')
+    },
+    {
+        long = 'args',
+        brief = "extra options for git",
+        value = 'string'
     }
 })
 

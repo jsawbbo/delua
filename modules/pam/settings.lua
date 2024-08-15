@@ -26,40 +26,21 @@ local dump = require 'pam.dump'
 
 local __data = {}
 local __filename = {}
-local __parent = {}
+local __root = {}
+local __noexport = {}
 
 local mt = {}
 
-local function import(self, data)
-    if type(data) == 'table' then
-        local data = {}
-        local cfg = {
-            [__data] = data,
-            [__parent] = self
-        }
-
-        for k,v in pairs(data) do
-            data[k] = import(cfg, v)
-        end
-
-        setmetatable(cfg, mt)
-        return cfg
-    else
-        return data
-    end
-end
-
 local function export(self)
-    local t = self
-    while rawget(t, __parent) do
-        t = rawget(t, __parent)
+    local t = rawget(self, __root) 
+    if not rawget(t, __noexport) then
+        local filename = assert(rawget(t, __filename), "internal error: config does not have a filename")
+        dump(t, {
+            file = filename,
+            prefix = 'return'
+        })
+        log.debug("Saved configuration %q.", filename)
     end
-
-    local filename = assert(rawget(t, __filename), "internal error: config does not have a filename")
-    dump(t, {
-        file = filename,
-        prefix = 'return'
-    })
 end
 
 function mt.__pairs(self, ...)
@@ -76,11 +57,25 @@ function mt.__newindex(self, k, v)
 
     local oldv = data[k]
     if oldv ~= v then
-        if oldv == nil and type(v) == 'table' then
-            v = import(self, v)
+        local noexport = rawget(self, __noexport)
+        if type(v) == 'table' then
+            local root = rawget(self, __root)
+            local cfg = {
+                [__data] = {},
+                [__root] = root,
+            }
+            setmetatable(cfg, mt)
+    
+            rawset(root, __noexport, true)
+            for k, t in pairs(v) do
+                cfg[k] = t
+            end    
+            rawset(root, __noexport, nil)
+            data[k] = cfg
+        else
+            data[k] = v
         end
 
-        data[k] = v
         export(self)
     end
 end
@@ -99,19 +94,21 @@ local function settings(filename, default)
     local cfg = {
         [__filename] = filename,
         [__data] = {},
-        [__parent] = nil
+        [__noexport] = true
     }
+    cfg[__root] = cfg
+    setmetatable(cfg, mt)
 
     local txt = readall(filename)
     if txt then
         local fn = assert(load(txt, filename))
         local t = fn()
-        for k,v in pairs(t) do
+        for k, v in pairs(t) do
             cfg[k] = v
         end
     end
 
-    setmetatable(cfg, mt)
+    rawset(cfg, __noexport, nil)
     return cfg
 end
 pam.settings = settings
