@@ -28,7 +28,9 @@ local settings = require 'pam.settings'
 local sformat = string.format
 local osexec = os.execute
 local function run(fmt, ...)
-    return osexec(sformat(fmt, ...))
+    local cmd = sformat(fmt, ...)
+    log.debug("Executing %q", cmd)
+    return osexec(cmd)
 end
 local tinsert = table.insert
 local tsort = table.sort
@@ -46,38 +48,7 @@ local vprogdir = progdir .. dirsep .. vdir
 local dbdir = vprogdir .. dirsep .. 'db'
 local dbconfig = dbdir .. dirsep .. 'config'
 
--- local db = {}
-
--- local function readdbconfig()
---     local f = io.open(dbconfig, "r")
---     if f then
---         for path in f:lines() do
---             tinsert(db, path)
---             db[path] = true
---         end
---         f:close()
---     end
--- end
-
--- local function updatedbconfig()
---     local f = io.open(dbconfig, "w+")
---     tsort(db)
---     for _, path in ipairs(db) do
---         f:write(path, "\n")
---     end
---     f:close()
--- end
-
--- local function insertdbconfig(path)
---     if not db[path] then
---         tinsert(db, path)
---         db[path] = true
-
---         updatedbconfig()
---     end
--- end
-
--- readdbconfig()
+-- PAM.INIT -------------------------------------------------------------------
 
 local function init(opts)
     opts = opts or {}
@@ -85,11 +56,11 @@ local function init(opts)
     if #opts > 2 then
         log.fatal("Invalid number of arguments passed to 'init'. See `pam init --help` for further information.")
     end
+
     local url = opts[1] or "https://github.com/jsawbbo/delua-packages.git"
     local dst = opts[2] or url:match("/([^/.]+)[^/]*$")
     assert(type(dst) == 'string' and dst:match("^[a-zA-Z0-9-]+$"), "internal error: invalid destination path")
 
-    local quiet = ""
     local depth = opts.depth or 1
     local branch = opts.branch or "v" .. config('vdir')
     local args = opts.args or ""
@@ -102,12 +73,12 @@ local function init(opts)
         log.notice("Already initialized.")
     else
         log.notice("Downloading %s ...", url)
+        local quiet = ""
         if log.level <= log.severity.notice then
             quiet = "-q"
         end
-        local cmd = sformat("git clone %s --depth=%d --single-branch --branch=%s %s %s %s/%s", quiet, depth, branch, args, url, dbdir, dst)
-        log.debug("Executing %q", cmd)
-        -- run(cmd)
+        run("git clone %s --depth=%d --single-branch --branch=%s %s %s %s/%s", quiet, depth, branch, args, url, dbdir,
+            dst)
 
         cfg.db[dst] = {
             depth = depth,
@@ -143,17 +114,98 @@ initializes it. If omitted, the default is:
     }
 })
 
-local function update(opts)
-    -- opts = opts or {}
-    -- opts.depth = opts.depth or 1
+-- PAM.SHOW -------------------------------------------------------------------
 
-    -- for _, path in ipairs(db) do
-    --     local cwd = workdir(vprogdir .. dirsep .. path)
-    --     printf("Updating %s ...", url)
-    --     run("git pull -q --depth=%d --rebase=true", opts.depth)
-    --     workdir(cwd)
-    -- end
+local function show(opts)
+    opts = opts or {}
+    if #opts > 1 then
+        log.fatal("Invalid number of arguments passed to 'show'. See `pam init --help` for further information.")
+    end
+    local name = opts[1]
+
+    local cfg = settings(dbconfig)
+    cfg.db = cfg.db or {}
+
+    if name then
+        print("Not implemented.")
+    else
+        local names = {}
+        for k, _ in pairs(cfg.db) do
+            tinsert(names, k)
+        end
+        tsort(names)
+
+        for _, name in ipairs(names) do
+            print(name)
+        end
+    end
+end
+pam.show = show
+register("show", {
+    callback = show,
+    usage = "pam <options> show [name]",
+    brief = "show package repository",
+    description = [===[ 
+This command displays either a list of initialized package repositories, or
+if a specific name is given, the repositories details.
+]===]
+})
+
+-- PAM.UPDATE -----------------------------------------------------------------
+
+local function update(opts)
+    opts = opts or {}
+    if #opts > 1 then
+        log.fatal("Invalid number of arguments passed to 'show'. See `pam init --help` for further information.")
+    end
+    local name_or_url = opts[1]
+
+    local cfg = settings(dbconfig)
+    cfg.db = cfg.db or {}
+
+    if name_or_url then
+        print("FIXME currently not implemented")
+    else
+        local quiet = ""
+        if log.level <= log.severity.notice then
+            quiet = "-q"
+        end
+
+        local cwd = workdir()
+        for name, _ in pairs(cfg.db) do
+            local depth = cfg.db[name].depth
+
+            workdir(dbdir .. dirsep .. name)
+            run("git pull %s --depth=%d --rebase=true", quiet, depth)
+        end
+        workdir(cwd)
+    end
 end
 pam.update = update
+register("update", {
+    callback = update,
+    usage = "pam <options> update [name <command-options>...]",
+    brief = "show package repository",
+    description = [===[ 
+Update package repositories.
+
+If a specific 'name' is provided, parameters may also be changed. 
+]===],
+    {
+        long = 'depth',
+        brief = "history depth for shallow cloning",
+        default = 1
+    },
+    {
+        long = 'branch',
+        brief = "branch name",
+        default = config('vdir')
+    },
+    {
+        long = 'args',
+        brief = "extra options for git",
+        value = 'string'
+    }
+})
 
 return pam

@@ -57,9 +57,9 @@ function mt.__newindex(self, k, v)
 
     local oldv = data[k]
     if oldv ~= v then
-        local noexport = rawget(self, __noexport)
+        local root = rawget(self, __root)
+        local noexport = rawget(root, __noexport)
         if type(v) == 'table' then
-            local root = rawget(self, __root)
             local cfg = {
                 [__data] = {},
                 [__root] = root,
@@ -70,12 +70,12 @@ function mt.__newindex(self, k, v)
             for k, t in pairs(v) do
                 cfg[k] = t
             end    
-            rawset(root, __noexport, nil)
             data[k] = cfg
         else
             data[k] = v
         end
 
+        rawset(root, __noexport, noexport)
         export(self)
     end
 end
