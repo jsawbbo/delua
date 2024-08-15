@@ -46,7 +46,7 @@ local vdir = config("vdir")
 local progdir = config("progdir")
 local vprogdir = progdir .. dirsep .. vdir
 local dbdir = vprogdir .. dirsep .. 'db'
-local dbconfig = vprogdir .. dirsep .. 'config'
+local configfile = vprogdir .. dirsep .. 'config'
 
 -- PAM.INIT -------------------------------------------------------------------
 
@@ -66,7 +66,7 @@ local function init(opts)
     local args = opts.args or ""
 
     log.debug("Initializing %q (as %s)...", url, dst)
-    local cfg = settings(dbconfig)
+    local cfg = settings(configfile)
     cfg.db = cfg.db or {}
 
     if cfg.db[dst] then
@@ -123,7 +123,7 @@ local function show(opts)
     end
     local name = opts[1]
 
-    local cfg = settings(dbconfig)
+    local cfg = settings(configfile)
     cfg.db = cfg.db or {}
 
     if name then
@@ -160,7 +160,7 @@ local function update(opts)
     end
     local name_or_url = opts[1]
 
-    local cfg = settings(dbconfig)
+    local cfg = settings(configfile)
     cfg.db = cfg.db or {}
 
     if name_or_url then
