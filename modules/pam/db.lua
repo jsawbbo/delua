@@ -23,6 +23,7 @@
 local pam = require 'pam.command'
 local log = require 'pam.log'
 local dump = require 'pam.dump'
+local settings = require 'pam.settings'
 
 local sformat = string.format
 local osexec = os.execute
@@ -87,6 +88,8 @@ local function init(opts)
     assert(type(dst) == 'string' and dst:match("^[a-zA-Z0-9-]+$"), "internal error: invalid destination path")
 
     log.debug("Initializing %q (as %s)...", url, dst)
+    local cfg = settings(dbconfig)
+    cfg.db = cfg.db or {}
 
     -- if db[destdir] then
     --     return

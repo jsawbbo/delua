@@ -97,7 +97,7 @@ local function order(t)
 end
 
 function sortkeys(t)
-    tsort(t, function(a,b)
+    tsort(t, function(a, b)
         local Ta = typename(a)
         local Tb = typename(b)
         if Ta ~= Tb then
@@ -105,7 +105,7 @@ function sortkeys(t)
         else
             if Ta == 'integer' or Ta == 'number' or Ta == 'string' then
                 return a < b
-            else 
+            else
                 return tostring(a) < tostring(b)
             end
         end
@@ -113,6 +113,10 @@ function sortkeys(t)
 end
 
 dumper = function(k, v, opts)
+    if opts.ignore(k,v) then
+        return
+    end
+
     -- key
     indent(opts)
     if k then
@@ -132,6 +136,8 @@ dumper = function(k, v, opts)
                 if mt.__dump then
                     mt.__dump(v, opts)
                     return
+                elseif mt.__pairs then
+                    -- we're good
                 else
                     log.warning("unable to handle tables with metatable")
                 end
@@ -192,6 +198,9 @@ end
 --      prefix      Output prefix (e.g. "return").
 --      key         Value key (if applicable).
 --      indent      Indentation string (default: 4 spaces)
+--      level       Initial indentation level.
+--      ignore      Function called with key and value, if value should be ignored.
+--      seen        Table with elements, that were already "seen" (tables only).
 -- 
 local function dump(t, opts)
     local file = opts.file
@@ -216,6 +225,9 @@ local function dump(t, opts)
     opts.indent = opts.indent or "    "
     opts.level = opts.level or 0
     opts.seen = opts.seen or {}
+    opts.ignore = opts.ignore or function(...)
+        return false
+    end
     dumper(opts.key, t, opts)
 
     if file then
