@@ -15,7 +15,7 @@
 PROJECT = {
     DATE = "13 Jun 2024",
     NAME = "DeLua",
-    TWEAK = 1,
+    TWEAK = 3,
     USES = {
         "C",
         "CMAKE",

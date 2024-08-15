@@ -22,6 +22,7 @@
 --
 local pam = require 'pam.command'
 local log = require 'pam.log'
+local dump = require 'pam.dump'
 
 local sformat = string.format
 local osexec = os.execute
@@ -82,13 +83,10 @@ local function init(opts)
         log.fatal("Invalid number of arguments passed to 'init'. See `pam init --help` for further information.")
     end
     local url = opts[1] or "https://github.com/jsawbbo/delua-packages.git"
-    local dst = opts[2] or url:match("/([^/.]+)[^/]*$")  
+    local dst = opts[2] or url:match("/([^/.]+)[^/]*$")
+    assert(type(dst) == 'string' and dst:match("^[a-zA-Z0-9-]+$"), "internal error: invalid destination path")
 
     log.debug("Initializing %q (as %s)...", url, dst)
-    -- url = url or "https://github.com/jsawbbo/delua-packages.git"
-    -- local destdir = url:match("/([^/]+)[.]git$")
-    -- destdir = destdir or url:match("/([^/]+)$")
-    -- assert(destdir, "invalid url, cannot extract path")
 
     -- if db[destdir] then
     --     return
@@ -122,8 +120,8 @@ initializes it. If omitted, the default is:
     {
         long = 'branch',
         brief = "branch name",
-        default = config('vdir') 
-    },
+        default = config('vdir')
+    }
 })
 
 local function update(opts)
@@ -138,6 +136,5 @@ local function update(opts)
     -- end
 end
 pam.update = update
-
 
 return pam
