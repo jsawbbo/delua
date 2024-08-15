@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.22)
 
 # === Project ================================================================
 set(CMAKE_USER_MAKE_RULES_OVERRIDE "DeLuaInitFlags.cmake")
@@ -70,6 +70,17 @@ set(LUA_COMPAT_5_3_INIT OFF)
 set(LUA_32BITS_INIT OFF)
 set(LUA_USE_C89_INIT OFF)
 
+# system features
+if(WINDOWS AND NOT UNIX)
+    if(NOT DEFINED LUA_USE_C89_INIT)
+        set(LUA_USE_C89_INIT OFF)
+    endif(NOT DEFINED LUA_USE_C89_INIT)
+    set(LUA_USE_WINDOWS true CACHE INTERNAL "Visual Studio compat." FORCE)
+    set(LUA_DL_DLL true CACHE INTERNAL "Windows DLL support.")
+elseif(APPLE)
+    set(LUA_USE_MACOSX true CACHE INTERNAL "MacOSX compat." FORCE)
+endif()
+
 # posix features
 set(LUA_USE_POSIX_INIT OFF)
 if(UNIX)
@@ -83,7 +94,7 @@ if(CMAKE_DL_LIBS)
 endif()
 
 # paths
-set(LUA_ROOT_INIT "${CMAKE_INSTALL_PREFIX}/")
+set(LUA_ROOT_INIT "${CMAKE_INSTALL_PREFIX}")
 
 # build options
 set(LUA_PROGNAME "${LUA_PROGNAME_INIT}" CACHE STRING "The name used for libraries and executables (lib\${LUA_PROGNAME} etc.).")
@@ -120,6 +131,8 @@ if(UNIX AND NOT WINDOWS)
     include(GNUInstallDirs)
     
     set(CMAKE_INSTALL_DOCDIR ${CMAKE_INSTALL_DATAROOTDIR}/doc/delua-${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR})
+else()
+    set(CMAKE_INSTALL_DOCDIR doc/delua-${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR})
 endif()
 
 list(APPEND CMAKE_INSTALL_RPATH ${LUA_ROOT}${CMAKE_INSTALL_LIBDIR})
@@ -150,15 +163,15 @@ install(FILES target/lua.png
 # === Documentation ==========================================================
 
 install(FILES README.md
-    DESTINATION  share/doc/delua/${DeLua_RELEASE}
+    DESTINATION  ${CMAKE_INSTALL_DOCDIR}
     COMPONENT "documentation")    
 
 install(FILES lua/README
-    DESTINATION  share/doc/delua/${DeLua_RELEASE}/lua
+    DESTINATION  ${CMAKE_INSTALL_DOCDIR}/lua
     COMPONENT "documentation")    
 
 install(DIRECTORY lua/doc
-    DESTINATION  share/doc/delua/${DeLua_RELEASE}/lua
+    DESTINATION  ${CMAKE_INSTALL_DOCDIR}/lua
     COMPONENT "documentation")
 
 # === Package ================================================================

@@ -32,20 +32,23 @@ set(LUA_VDIR "${DeLua_RELEASE}" CACHE STRING "Version directory.")
 # - system paths
 set(LUA_ROOT "${LUA_ROOT_INIT}" CACHE STRING "Root installation path.")
 
-if(NOT "${LUA_ROOT}" STREQUAL "${CMAKE_INSTALL_PREFIX}/")
-	if("${CMAKE_INSTALL_PREFIX_LAST}/" STREQUAL "${LUA_ROOT}")
-		set(LUA_ROOT "${CMAKE_INSTALL_PREFIX}/" CACHE STRING "Root installation path." FORCE)
+if(NOT "${LUA_ROOT}" STREQUAL "${CMAKE_INSTALL_PREFIX}")
+	if("${CMAKE_INSTALL_PREFIX_LAST}" STREQUAL "${LUA_ROOT}")
+		set(LUA_ROOT "${CMAKE_INSTALL_PREFIX}" CACHE STRING "Root installation path." FORCE)
 	else()
 		message(WARNING "LUA_ROOT is different to the installation prefix (${CMAKE_INSTALL_PREFIX}/).")
 	endif()
 endif()
 
 if(WINDOWS AND NOT UNIX)
-    set(LUA_LDIR "!\\${LUA_PROGNAME}\\" CACHE STRING "Lua module directory.")
-    set(LUA_CDIR "!\\" CACHE STRING "Lua dynamic library (C) directory.")
+    set(LUA_LDIR "${LUA_VDIR}" CACHE STRING "Lua module directory.")
+    set(LUA_CDIR "${LUA_VDIR}" CACHE STRING "Lua dynamic library (C) directory.")
+elseif(APPLE)
+    set(LUA_LDIR "${LUA_VDIR}/share" CACHE STRING "Lua module directory.")
+    set(LUA_CDIR "${LUA_VDIR}/lib" CACHE STRING "Lua dynamic library (C) directory.")
 else()
-    set(LUA_LDIR "LUA_ROOT \"share/${LUA_PROGNAME}/\" LUA_VDIR \"/\"" CACHE STRING "Lua module directory.")
-    set(LUA_CDIR "LUA_ROOT \"lib/${LUA_PROGNAME}/\" LUA_VDIR \"/\"" CACHE STRING "Lua dynamic library (C) directory.")
+    set(LUA_LDIR "share/${LUA_PROGNAME}/${LUA_VDIR}" CACHE STRING "Lua module directory.")
+    set(LUA_CDIR "lib/${LUA_PROGNAME}/${LUA_VDIR}" CACHE STRING "Lua dynamic library (C) directory.")
 endif()
 
 set(LUA_DLL_EXTENSION "${CMAKE_SHARED_LIBRARY_SUFFIX}")
@@ -54,17 +57,13 @@ set(LUA_DLL_EXTENSION "${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 if(WINDOWS AND NOT UNIX)
     set(LUA_PROGDIR      "~/AppData/Local/${LUA_PROGNAME}")
-    set(LUA_HOME         "~/AppData/Local/${LUA_PROGNAME}")
+    set(LUA_LOCAL        "~/AppData/Local/${LUA_PROGNAME}")
 elseif(APPLE)
     set(LUA_PROGDIR      "~/Library/Caches/${LUA_PROGNAME}")
-    set(LUA_HOME         "~/Library/${LUA_PROGNAME}")
-    set(LUA_HOME_LDIR    "LUA_HOME \"/share/${LUA_PROGNAME}/\" LUA_VDIR \"/\"" CACHE STRING "Lua home module directory.")
-    set(LUA_HOME_CDIR    "LUA_HOME \"/lib/${LUA_PROGNAME}/\" LUA_VDIR \"/\"" CACHE STRING "Lua home dynamic library (C) directory.")
+    set(LUA_LOCAL        "~/Library/${LUA_PROGNAME}")
 elseif(UNIX) 
     set(LUA_PROGDIR      "~/.${LUA_PROGNAME}")
-    set(LUA_HOME         "~/.local")
-    set(LUA_HOME_LDIR    "LUA_HOME \"/share/${LUA_PROGNAME}/\" LUA_VDIR \"/\"" CACHE STRING "Lua home module directory.")
-    set(LUA_HOME_CDIR    "LUA_HOME \"/lib/${LUA_PROGNAME}/\" LUA_VDIR \"/\"" CACHE STRING "Lua home dynamic library (C) directory.")
+    set(LUA_LOCAL        "~/.local")
 else()
     message(FATAL_ERROR "unsupported operating system")
 endif()
@@ -72,75 +71,38 @@ endif()
 # - default paths
 if(WINDOWS AND NOT UNIX)
     if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-        set(LUA_PATH_DEBUG "\"${DeLua_SOURCE_DIR}\\modules\\\" LUA_PATH_MARK \".lua\" LUA_PATH_SEP \"${DeLua_SOURCE_DIR}\\modules\\\" LUA_PATH_MARK \"\\init.lua\" LUA_PATH_SEP")
-        set(LUA_CPATH_DEBUG "\"${DeLua_OUTPUT_PATH}\\\" LUA_PATH_MARK \"${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \"${DeLua_OUTPUT_PATH}\\\" LUA_PATH_MARK \"\\loadall.${LUA_DLL_EXTENSION}\" LUA_PATH_SEP")
-    endif()
-
-    # /*
-    # ** In Windows, any exclamation mark ('!') in the path is replaced by the
-    # ** path of the directory of the executable file of the current process.
-    # */
-    # #define LUA_SHRDIR  LUA_EXEC_DIR "/../share/@LUA_PROGNAME@/" LUA_VDIR "/"
-    # #define LUA_APPDATA_DIR LUA_HOME_MARK "/AppData/Local"
-    # #define LUA_HOME_LDIR LUA_APPDATA_DIR "/@LUA_PROGNAME@/" LUA_VDIR "/"
-    # #define LUA_HOME_CDIR LUA_APPDATA_DIR "/@LUA_PROGNAME@/" LUA_VDIR "/"
-    
-    # #if !defined(LUA_PATH_DEFAULT)
-    # #define LUA_PATH_DEFAULT  \
-    #         @LUA_PATH_EXTRA@ \
-    #         LUA_HOME_LDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP  LUA_HOME_LDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
-    #         LUA_HOME_CDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP  LUA_HOME_CDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
-    #         LUA_LDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP  LUA_LDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
-    #         LUA_CDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP  LUA_CDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
-    #         LUA_SHRDIR LUA_PATH_MARK ".lua" LUA_PATH_SEP LUA_SHRDIR LUA_PATH_MARK "/init.lua" LUA_PATH_SEP \
-    #         "./" LUA_PATH_MARK ".lua" LUA_PATH_SEP "./" LUA_PATH_MARK "/init.lua"
-    # #endif
-    
-    # #if !defined(LUA_CPATH_DEFAULT)
-    # #define LUA_CPATH_DEFAULT \
-    #         @LUA_CPATH_EXTRA@ \
-    #         LUA_HOME_CDIR LUA_PATH_MARK ".dll" LUA_PATH_SEP  LUA_HOME_CDIR LUA_PATH_MARK "/loadall.dll" LUA_PATH_SEP \
-    #         LUA_CDIR LUA_PATH_MARK ".dll" LUA_PATH_SEP \
-    #         LUA_CDIR "../lib/lua/" LUA_VDIR "/" LUA_PATH_MARK ".dll" LUA_PATH_SEP \
-    #         LUA_CDIR "loadall.dll" LUA_PATH_SEP \
-    #         "./" LUA_PATH_MARK ".dll"
-    # #endif    
-
-else()
-    if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-        set(LUA_PATH_DEBUG "\"${DeLua_SOURCE_DIR}/modules/\" LUA_PATH_MARK \".lua\" LUA_PATH_SEP \"${DeLua_SOURCE_DIR}/modules/\" LUA_PATH_MARK \"/init.lua\" LUA_PATH_SEP")
-        set(LUA_CPATH_DEBUG "\"${DeLua_OUTPUT_PATH}/\" LUA_PATH_MARK \"${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \"${DeLua_OUTPUT_PATH}/\" LUA_PATH_MARK \"/loadall.${LUA_DLL_EXTENSION}\" LUA_PATH_SEP")
+        set(LUA_PATH_DEBUG "\"${DeLua_SOURCE_DIR}\\modules\\${LUA_PATH_MARK}.lua\" LUA_PATH_SEP \"${DeLua_SOURCE_DIR}\\modules\\${LUA_PATH_MARK}\\init.lua\" LUA_PATH_SEP")
+        set(LUA_CPATH_DEBUG "\"${DeLua_OUTPUT_PATH}\\${LUA_PATH_MARK}${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \"${DeLua_OUTPUT_PATH}\\${LUA_PATH_MARK}\\loadall${LUA_DLL_EXTENSION}\" LUA_PATH_SEP")
     endif()
 
     set(LUA_PATH_DEFAULT "${LUA_PATH_EXTRA} ${LUA_PATH_DEBUG} \\
-        LUA_HOME_LDIR LUA_PATH_MARK \".lua\" LUA_PATH_SEP  LUA_HOME_LDIR LUA_PATH_MARK \"/init.lua\" LUA_PATH_SEP \\
-        LUA_HOME_CDIR LUA_PATH_MARK \".lua\" LUA_PATH_SEP  LUA_HOME_CDIR LUA_PATH_MARK \"/init.lua\" LUA_PATH_SEP \\
-        LUA_LDIR LUA_PATH_MARK \".lua\" LUA_PATH_SEP  LUA_LDIR LUA_PATH_MARK \"/init.lua\" LUA_PATH_SEP \\
-        LUA_CDIR LUA_PATH_MARK \".lua\" LUA_PATH_SEP  LUA_CDIR LUA_PATH_MARK \"/init.lua\" LUA_PATH_SEP \\
-        \"./\" LUA_PATH_MARK \".lua\" LUA_PATH_SEP \"./\" LUA_PATH_MARK \"/init.lua\"")
+        \"${LUA_LOCAL}\\${LUA_LDIR}\\${LUA_PATH_MARK}.lua\" LUA_PATH_SEP \"${LUA_LOCAL}\\${LUA_LDIR}\\${LUA_PATH_MARK}\\init.lua\" LUA_PATH_SEP \\
+        \"!\\${LUA_LDIR}\\${LUA_PATH_MARK}.lua\" LUA_PATH_SEP  \"!\\${LUA_LDIR}\\${LUA_PATH_MARK}\\init.lua\" LUA_PATH_SEP \\
+        \"${LUA_ROOT}\\${LUA_LDIR}\\${LUA_PATH_MARK}.lua\" LUA_PATH_SEP  \"${LUA_ROOT}\\${LUA_LDIR}\\${LUA_PATH_MARK}\\init.lua\" LUA_PATH_SEP \\
+        \".\\${LUA_PATH_MARK}.lua\" LUA_PATH_SEP \".\\${LUA_PATH_MARK}\\init.lua\"")
 
     set(LUA_CPATH_DEFAULT "${LUA_CPATH_EXTRA} ${LUA_CPATH_DEBUG} \\
-        LUA_HOME_CDIR LUA_PATH_MARK \".so\" LUA_PATH_SEP LUA_HOME_CDIR \"loadall.so\" LUA_PATH_SEP \\
-        LUA_CDIR LUA_PATH_MARK \".so\" LUA_PATH_SEP LUA_CDIR \"loadall.so\" LUA_PATH_SEP \\
-        \"./\" LUA_PATH_MARK \".so\"")
-endif()
-
-#####################################################################
-
-
-if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-    set(LUA_PATH_EXTRA_INIT_DEBUG "\"${DeLua_SOURCE_DIR}/modules/\" LUA_PATH_MARK \".lua\" LUA_PATH_SEP \"${DeLua_SOURCE_DIR}/modules/\" LUA_PATH_MARK \"/init.lua\" LUA_PATH_SEP")
-    if(DEFINED LUA_PATH_EXTRA_INIT)
-        set(LUA_PATH_EXTRA_INIT "${LUA_PATH_EXTRA_INIT_DEBUG} LUA_PATH_SEP ${LUA_PATH_EXTRA_INIT}")
-    else()
-        set(LUA_PATH_EXTRA_INIT "${LUA_PATH_EXTRA_INIT_DEBUG}")
+        \"${LUA_LOCAL}\\${LUA_CDIR}\\${LUA_PATH_MARK}${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \"${LUA_LOCAL}\\${LUA_CDIR}\\${LUA_PATH_MARK}\\loadall${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \\
+        \"!\\${LUA_CDIR}\\${LUA_PATH_MARK}${LUA_DLL_EXTENSION}\" \"!\\${LUA_CDIR}\\${LUA_PATH_MARK}\\loadall${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \\
+        \"${LUA_ROOT}\\${LUA_CDIR}\\${LUA_PATH_MARK}${LUA_DLL_EXTENSION}\" \"${LUA_ROOT}\\${LUA_CDIR}\\${LUA_PATH_MARK}\\loadall${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \\
+        \".\\${LUA_PATH_MARK}${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \".\\${LUA_PATH_MARK}\\loadll${LUA_DLL_EXTENSION}\"")
+else()
+    if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+        set(LUA_PATH_DEBUG "\"${DeLua_SOURCE_DIR}/modules/${LUA_PATH_MARK}.lua\" LUA_PATH_SEP \"${DeLua_SOURCE_DIR}/modules/${LUA_PATH_MARK}/init.lua\" LUA_PATH_SEP")
+        set(LUA_CPATH_DEBUG "\"${DeLua_OUTPUT_PATH}/${LUA_PATH_MARK}${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \"${DeLua_OUTPUT_PATH}/${LUA_PATH_MARK}/loadall${LUA_DLL_EXTENSION}\" LUA_PATH_SEP")
     endif()
-    set(LUA_CPATH_EXTRA_INIT_DEBUG "\"${DeLua_OUTPUT_PATH}/\" LUA_PATH_MARK \"${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \"${DeLua_OUTPUT_PATH}/\" LUA_PATH_MARK \"/loadall.${LUA_DLL_EXTENSION}\" LUA_PATH_SEP")
-    if(DEFINED LUA_CPATH_EXTRA_INIT)
-        set(LUA_CPATH_EXTRA_INIT "${LUA_CPATH_EXTRA_INIT_DEBUG} LUA_PATH_SEP ${LUA_CPATH_EXTRA_INIT}")
-    else()
-        set(LUA_CPATH_EXTRA_INIT "${LUA_CPATH_EXTRA_INIT_DEBUG}")
-    endif()
+
+    set(LUA_PATH_DEFAULT "${LUA_PATH_EXTRA} ${LUA_PATH_DEBUG} \\
+        \"${LUA_LOCAL}/${LUA_LDIR}/${LUA_PATH_MARK}.lua\" LUA_PATH_SEP \"${LUA_LOCAL}/${LUA_LDIR}/${LUA_PATH_MARK}/init.lua\" LUA_PATH_SEP \\
+        \"${LUA_LOCAL}/${LUA_CDIR}/${LUA_PATH_MARK}.lua\" LUA_PATH_SEP \"${LUA_LOCAL}/${LUA_CDIR}/${LUA_PATH_MARK}/init.lua\" LUA_PATH_SEP \\
+        \"${LUA_ROOT}/${LUA_LDIR}/${LUA_PATH_MARK}.lua\" LUA_PATH_SEP  \"${LUA_ROOT}/${LUA_LDIR}/${LUA_PATH_MARK}/init.lua\" LUA_PATH_SEP \\
+        \"${LUA_ROOT}/${LUA_CDIR}/${LUA_PATH_MARK}.lua\" LUA_PATH_SEP  \"${LUA_ROOT}/${LUA_CDIR}/${LUA_PATH_MARK}/init.lua\" LUA_PATH_SEP \\
+        \"./${LUA_PATH_MARK}.lua\" LUA_PATH_SEP \"./${LUA_PATH_MARK}/init.lua\"")
+
+    set(LUA_CPATH_DEFAULT "${LUA_CPATH_EXTRA} ${LUA_CPATH_DEBUG} \\
+        \"${LUA_LOCAL}/${LUA_CDIR}/${LUA_PATH_MARK}${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \"${LUA_LOCAL}/${LUA_CDIR}/${LUA_PATH_MARK}/loadall${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \\
+        \"${LUA_ROOT}/${LUA_CDIR}/${LUA_PATH_MARK}${LUA_DLL_EXTENSION}\" \"${LUA_ROOT}/${LUA_CDIR}/${LUA_PATH_MARK}/loadall${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \\
+        \"./${LUA_PATH_MARK}${LUA_DLL_EXTENSION}\" LUA_PATH_SEP \"./${LUA_PATH_MARK}/loadll${LUA_DLL_EXTENSION}\"")
 endif()
 
 set(LUA_PATH_EXTRA "${LUA_PATH_EXTRA_INIT}" CACHE STRING "Additional module search path." FORCE) 

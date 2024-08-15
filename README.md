@@ -14,13 +14,16 @@ systems supported by CMake, or, can be embedded in other projects.
 
 ### General
 
-The Lua sources, except `luaconf.h` - which is now generated using CMake, are  
+The Lua sources, except ''luaconf.h'' - which is now generated using CMake, are  
 _almost_ untouched. Changes made to the pure Lua sources can be found in the  
-`patches` sub-directory.
+''patches'' sub-directory.
+
+Note, however, that `LUA_LDIR` and `LUA_CDIR` where changed in non-backward 
+compatible way. Alos, `LUA_PROGNAME` is now part of ''luaconf.h''.
 
 ### Program directory
 
-A "program directory" has been supplemented (see `LUA_PROGDIR` in `luaconf.h`).
+A "program directory" has been supplemented (see `LUA_PROGDIR` in ''luaconf.h'').
 This directory (see also `LUA_VDIR`) is used to store, for example, the REPL
 history.
 
@@ -52,7 +55,7 @@ Additional default search paths can be provided through `LUA_PATH_EXTRA` and
 C++ libraries can be build using the `LUA_LANGUAGE_CXX` configuration option. 
 The libraries are suffixed with "++" compared to their standard C versions. 
 
-Additionally, `lua_Exception` was added to the generated `luaconf.h` header.
+Additionally, `lua_Exception` was added to the generated ''luaconf.h'' header.
 
 For further details: [**UTSL**](https://www.urbandictionary.com/define.php?term=UTSL).
 
@@ -92,7 +95,7 @@ TODO
 ### System and user configuration
 
 CMake will figure out system specific settings (such as DLL support on Windows�,  
-readline etc. on other systems). Additionally, the following `luaconf.h` flags can  
+readline etc. on other systems). Additionally, the following ''luaconf.h'' flags can  
 be set using CMake:
 
 * `LUA_32BITS`

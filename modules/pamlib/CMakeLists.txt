@@ -1,6 +1,6 @@
 add_library(DeLuaPAMLIB MODULE 
-    version.h
-    pam.c)
+    pamlib.h
+    pamlib.c)
 target_link_libraries(DeLuaPAMLIB DeLuaCLib)
 set_target_properties(DeLuaPAMLIB
     PROPERTIES
@@ -12,7 +12,7 @@ add_library(DeLua::PAMLIB ALIAS DeLuaPAMLIB)
 install(TARGETS DeLuaPAMLIB
     LIBRARY DESTINATION ${DeLua_CPATH_DIR} COMPONENT "pam")
 
-add_executable(DeLuaPAMEXE cli.c)
+add_executable(DeLuaPAMEXE pam.c)
 set_target_properties(DeLuaPAMEXE
 PROPERTIES
     LINKER_LANGUAGE C

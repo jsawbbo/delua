@@ -1,4 +1,4 @@
--- DeLua Package Manager
+-- DeLua Package Manager - package database component
 -- Copyright (C) 2024 Max Planck Institute f. Neurobiol. of Behavior — caesar, Bonn, Germany
 -- 
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -20,21 +20,16 @@
 -- TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
-local pam = require 'pamlib'
+local pam = require 'pam.command'
+local log = require 'pam.log'
 
-require 'pam.command'
-require 'pam.log'
-require 'pam.settings'
-require 'pam.db'
-require 'pam.pkg'
+local sformat = string.format
+local osexec = os.execute
+local function run(fmt, ...)
+    local cmd = sformat(fmt, ...)
+    log.debug("Executing %q", cmd)
+    return osexec(cmd)
+end
 
-local process = pam.process
-
-local mt = {
-    __call = function(self, ...)
-        process(...)
-    end
-}
-setmetatable(pam, mt)
 
 return pam

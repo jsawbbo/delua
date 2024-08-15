@@ -54,16 +54,6 @@ if(NOT DEFINED LUA_PROGNAME_INIT)
     set(LUA_PROGNAME_INIT "delua")
 endif()
 
-if(WINDOWS AND NOT UNIX)
-    if(NOT DEFINED LUA_USE_C89_INIT)
-        set(LUA_USE_C89_INIT OFF)
-    endif(NOT DEFINED LUA_USE_C89_INIT)
-    set(LUA_USE_WINDOWS true CACHE INTERNAL "Visual Studio compat." FORCE)
-    set(LUA_DL_DLL true CACHE INTERNAL "Windows DLL support.")
-elseif(APPLE)
-    set(LUA_USE_MACOSX true CACHE INTERNAL "MacOSX compat." FORCE)
-endif()
-
 # BUILD SETTINGS
 
 if(NOT DEFINED LUA_BUILD_STATIC_INIT)

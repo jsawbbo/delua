@@ -7,11 +7,80 @@ This modules provides a package manager for Lua. It was mainly inspired by
     [LuaRocks](https://luarocks.org/)
     [hererocks](https://github.com/luarocks/hererocks)
 
-## Commands and variables
+## Command-line interface
 
-All commands and variables listed in the following are found under the `package` 
-table. For example, to install a package (in the REPL), type: `package.add "pam"`.
+The command-line tool ''pam'' provides an interface to the script functionality
+of "pam". For further information, call `pam --help`.
 
-TODO ...
+## Script interface
 
+### Basics
+
+#### `runasadmin()`
+#### `workdir()`
+#### `interactive()`
+
+
+### Repositories
+
+### Packages
+
+### Utilities
+
+#### Logging
+
+::namespace pam.log
+
+##### `severity`
+
+This table contains the "severity" levels for logging:
+
+```
+    fatal
+    error
+    warning
+    notice
+    status
+    info
+    terse
+    debug
+```
+
+##### `level`
+
+The maximum log level, which by default is `severity.notice`.
+
+##### `message()`
+
+```[.lua]
+    message(msglvl, fmt, ...)
+```
+
+This function emits a message if `msglvl` is equal or below the global `level`.
+
+*Note*:<br/>
+This function terminates the program for `severity.fatal`.
+
+Alteratively, the following short-hand version may be used:
+```.lua
+    fatal(fmt, ...)
+    error(fmt, ...)
+    warning(fmt, ...)
+    notice(fmt, ...)
+    status(fmt, ...)
+    info(fmt, ...)
+    terse(fmt, ...)
+    debug(fmt, ...)
+```
+
+Typical usage:
+```.lua
+local log = require 'pam.log'
+
+log.debug("Module xyz loaded.")
+```
+
+#### Sub-processes
+
+FIXME (see exec.lua)
 

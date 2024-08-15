@@ -1,151 +1,42 @@
+/*
+** DeLua Package Manager
+** See Copyright Notice in version.h
+*/
 #include "lauxlib.h"
 #include "lua.h"
+#include "pamlib.h"
 
-#include "pam.h"
+#define EXIT_FAILURE 1 /* Failing exit status.  */
+#define EXIT_SUCCESS 0 /* Successful exit status.  */
 
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
-
-#if defined(LUA_USE_WINDOWS)
-#include <direct.h>
-#define l_mkdir(L, dirname) ((void)L, _mkdir(dirname))
-#else
-#include <sys/stat.h>
-#define l_mkdir(L, dirname) ((void)L, mkdir(dirname, 0700))
-#endif
-
-LUA_API int lua_expandhome(lua_State *L, const char *filename);
-
-static void pushexpanded(lua_State *L, const char *filename) {
-  if (lua_expandhome(L, filename))
-    return;
-  lua_pushstring(L, filename);
+/*
+** Prints an error message, adding the program name in front of it
+** (if present)
+*/
+static void l_message(const char *pname, const char *msg) {
+  if (pname)
+    lua_writestringerror("%s: ", pname);
+  lua_writestringerror("%s\n", msg);
 }
 
-static int isadmin(lua_State *L) {
-  lua_pushboolean(L, runasadmin());
-  return 1;
-}
+LUALIB_API void luaL_openlibs(lua_State *L);
 
-static int workdir(lua_State *L) {
-  int havepath = lua_gettop(L) > 0;
-#if defined(LUA_USE_POSIX)
-  char cwd[PATH_MAX];
-#endif
-
-  if (havepath) {
-    if (lua_gettop(L) != 1)
-      luaL_error(L, "expected a single string argument");
-    luaL_checktype(L, 1, LUA_TSTRING);
+int main(int argc, char **argv) {
+  lua_State *L = luaL_newstate(); /* create state */
+  if (L == NULL) {
+    l_message(argv[0], "cannot create state: not enough memory");
+    return EXIT_FAILURE;
   }
+  luaL_checkversion(L); /* check that interpreter has correct version */
+  luaL_openlibs(L);     /* open standard libraries */
 
-#if defined(LUA_USE_POSIX)
-  lua_pushstring(L, getcwd(cwd, PATH_MAX));
-  if (havepath) {
-    if (chdir(lua_tostring(L, 1)) != 0)
-      luaL_error(L, "Couldn't change working directory: %s", strerror(errno));
-  }
-#else
-#error Not implemented
-#endif
+  lua_getglobal(L, "require");  /* load pam library */
+  lua_pushliteral(L, "pam");
+  lua_call(L, 1, 1);
 
-  return 1;
-}
+  for(int i=1; i<=argc; ++i)    /* run pam(...) command */
+    lua_pushstring(L, argv[i]);
+  lua_call(L, argc, 0);
 
-static int interactive(lua_State *L) {
-  lua_pushboolean(L, lua_stdin_is_tty());
-  return 1;
-}
-
-static int config(lua_State *L) {
-  if (lua_gettop(L) != 1)
-    luaL_error(L, "expected a single string argument");
-  luaL_checktype(L, 1, LUA_TSTRING);
-
-  lua_rawgeti(L, LUA_REGISTRYINDEX, buildref);
-  lua_rotate(L, 1, 1);
-
-  lua_rawget(L, -2);
-  return 1;
-}
-
-luaL_Reg pamfn[] = {{"isadmin", isadmin},         //
-                    {"workdir", workdir},         //
-                    {"config", config},           //
-                    {"interactive", interactive}, //
-                    {NULL, NULL}};
-
-struct Directory {
-  const char *name;
-  const char *path;
-};
-
-struct Directory pampaths[] = {{"vdir", LUA_VDIR},          //
-                               {"dirsep", LUA_DIRSEP},      //
-                               {"progdir", LUA_PROGDIR},    //
-                               {"root", LUA_ROOT},          //
-                               {"ldir", LUA_LDIR},          //
-                               {"cdir", LUA_CDIR},          //
-                               {"home", LUA_HOME},          //
-                               {"homeldir", LUA_HOME_LDIR}, //
-                               {"homecdir", LUA_HOME_CDIR}, //
-                               {NULL, NULL}};
-
-int buildref = LUA_NOREF;
-
-LUAMOD_API int luaopen_pamlib(lua_State *L) {
-  lua_newtable(L);
-  lua_pushvalue(L, -1);
-  lua_setglobal(L, "pam");
-
-  /* init directories */
-  if (!lua_expandhome(L, LUA_PROGDIR))
-    lua_pushliteral(L, LUA_PROGDIR);
-  if ((l_mkdir(L, lua_tostring(L, -1)) == 0) || (errno = EEXIST)) {
-    if (!lua_expandhome(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR))
-      lua_pushliteral(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR);
-    if ((l_mkdir(L, lua_tostring(L, -1)) == 0) || (errno = EEXIST)) {
-      const char *dirs[] = {"db", "cache", "build", NULL};
-      if (!lua_expandhome(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR LUA_DIRSEP))
-        lua_pushliteral(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR);
-
-      for(int i = 0; dirs[i]; i++) {
-        lua_pushvalue(L, -1);
-        lua_pushstring(L, dirs[i]);
-        lua_concat(L, 2);
-        l_mkdir(L, lua_tostring(L, -1));
-        lua_pop(L, 1);
-      }
-
-      lua_pop(L, 1);
-    }
-    lua_pop(L, 1);
-  }
-  lua_pop(L, 1);
-
-  /* set version information */
-  lua_pushliteral(L, "_VERSION");
-  lua_pushliteral(L, PAM_VERSION_S);
-  lua_settable(L, -3);
-
-  /* create pam paths table */
-  lua_newtable(L);
-#if defined(DEBUG)
-  lua_pushliteral(L, "pamconfig");
-  lua_pushvalue(L, -2);
-  lua_settable(L, -4);
-#endif
-  for (int i = 0; pampaths[i].name; i = i + 1) {
-    lua_pushstring(L, pampaths[i].name);
-    pushexpanded(L, pampaths[i].path);
-    lua_settable(L, -3);
-  }
-
-  buildref = luaL_ref(L, LUA_REGISTRYINDEX);
-
-  /* install functions */
-  luaL_setfuncs(L, pamfn, 0);
-
-  return 1;
+  return EXIT_SUCCESS;
 }

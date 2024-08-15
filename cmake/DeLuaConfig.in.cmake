@@ -1,4 +1,4 @@
-# (De-)Lua version 
+# Lua version 
 set(Lua_VERSION_MAJOR @DeLua_VERSION_MAJOR@)
 set(Lua_VERSION_MINOR @DeLua_VERSION_MINOR@)
 set(Lua_VERSION_PATCH @DeLua_VERSION_PATCH@)
