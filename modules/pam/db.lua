@@ -46,7 +46,7 @@ local vdir = config("vdir")
 local progdir = config("progdir")
 local vprogdir = progdir .. dirsep .. vdir
 local dbdir = vprogdir .. dirsep .. 'db'
-local dbconfig = dbdir .. dirsep .. 'config'
+local dbconfig = vprogdir .. dirsep .. 'config'
 
 -- PAM.INIT -------------------------------------------------------------------
 

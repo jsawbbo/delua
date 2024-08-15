@@ -106,9 +106,18 @@ LUAMOD_API int luaopen_pamlib(lua_State *L) {
     if (!lua_expandhome(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR))
       lua_pushliteral(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR);
     if ((l_mkdir(L, lua_tostring(L, -1)) == 0) || (errno = EEXIST)) {
-      if (!lua_expandhome(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR LUA_DIRSEP "db"))
-        lua_pushliteral(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR "db");
-      l_mkdir(L, lua_tostring(L, -1));
+      const char *dirs[] = {"db", "cache", "build", NULL};
+      if (!lua_expandhome(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR LUA_DIRSEP))
+        lua_pushliteral(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR);
+
+      for(int i = 0; dirs[i]; i++) {
+        lua_pushvalue(L, -1);
+        lua_pushstring(L, dirs[i]);
+        lua_concat(L, 2);
+        l_mkdir(L, lua_tostring(L, -1));
+        lua_pop(L, 1);
+      }
+
       lua_pop(L, 1);
     }
     lua_pop(L, 1);

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.16)
 
 # === Project ================================================================
 set(CMAKE_USER_MAKE_RULES_OVERRIDE "DeLuaInitFlags.cmake")
