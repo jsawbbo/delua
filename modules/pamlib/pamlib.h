@@ -8,36 +8,33 @@
 #define PAM_VERSION_S "0.0"
 
 #if defined(LUA_USE_WINDOWS)
-extern inline int runasadmin() { return 0; }
-#elif defined(LUA_USE_POSIX)
-#include <sys/types.h>
-#include <unistd.h>
-extern inline int l_runasadmin(lua_State *L) { return getuid() == 0; }
-#else
-extern inline int l_runasadmin(lua_State *L) { return 0; }
-#endif
-
-/* from lua.c: */
-#if !defined(lua_stdin_is_tty) /* { */
-#if defined(LUA_USE_POSIX) /* { */
-#include <unistd.h>
-#define lua_stdin_is_tty() isatty(0)
-#elif defined(LUA_USE_WINDOWS) /* }{ */
+#include <direct.h>
 #include <io.h>
 #include <windows.h>
-#define lua_stdin_is_tty() _isatty(_fileno(stdin))
-#else                        /* }{ */
-/* ISO C definition */
-#define lua_stdin_is_tty() 1 /* assume stdin is a tty */
-#endif /* } */
-#endif /* } */
-
-#if defined(LUA_USE_WINDOWS)
-#include <direct.h>
-#define l_mkdir(L, dirname) ((void)L, _mkdir(dirname))
+#define pam_mkdir(dirname) _mkdir(dirname)
+#define pam_chdir(dirname) _chdir(dirname)
+#define pam_getcwd(buf, size) _getcwd(buf, size)
+#define pam_stdin_isatty() _isatty(_fileno(stdin))
+extern inline int pam_runasadmin() {
+  BOOL fIsRunAsAdmin = FALSE;
+  PSID pAdminSid = NULL;
+  if (CreateWellKnownSid(WinBuiltinAdministratorsSid, NULL, &pAdminSid)) {
+    if (!CheckTokenMembership(NULL, pAdminSid, &fIsRunAsAdmin)) {
+      fIsRunAsAdmin = FALSE;
+    }
+    FreeSid(pAdminSid);
+  }
+  return fIsRunAsAdmin != FALSE;
+}
 #else
 #include <sys/stat.h>
-#define l_mkdir(L, dirname) ((void)L, mkdir(dirname, 0700))
+#include <sys/types.h>
+#include <unistd.h>
+#define pam_mkdir(dirname) mkdir(dirname, 0700)
+#define pam_chdir(dirname) chdir(dirname)
+#define pam_getcwd(buf, size) getcwd(buf, size)
+#define pam_stdin_isatty() isatty(0)
+extern inline int pam_runasadmin() { return getuid() == 0; }
 #endif
 
 #endif

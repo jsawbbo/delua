@@ -4,3 +4,4 @@
     * luai_userstateopen etc.
 - check paths on Windows and MacOSX
 - in lua.c, make parameter for stifle_history an environment variable
+- pam: pam_runasadmin() untested on Windows

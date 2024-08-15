@@ -31,7 +31,9 @@ set_target_properties(DeLuaPAMLIB
         LINKER_LANGUAGE C
         OUTPUT_NAME pamlib
         PREFIX "")
-add_library(DeLua::PAMLIB ALIAS DeLuaPAMLIB)
+target_compile_definitions(DeLuaPAMLIB
+    PRIVATE -DLUA_LIB
+)
 
 install(TARGETS DeLuaPAMLIB
     LIBRARY DESTINATION ${DeLua_CPATH_DIR} COMPONENT "pam")

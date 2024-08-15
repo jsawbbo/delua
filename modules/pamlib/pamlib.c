@@ -22,7 +22,7 @@ static void pushexpanded(lua_State *L, const char *filename) {
  * otherwise.
  */
 static int runasadmin(lua_State *L) {
-  lua_pushboolean(L, l_runasadmin(L));
+  lua_pushboolean(L, pam_runasadmin());
   return 1;
 }
 
@@ -37,26 +37,14 @@ static int runasadmin(lua_State *L) {
  *
  */
 static int workdir(lua_State *L) {
-  int havepath = lua_gettop(L) > 0;
-#if defined(LUA_USE_POSIX)
+  const char *newdir = luaL_optstring(L, 1, NULL);
   char cwd[PATH_MAX];
-#endif
 
-  if (havepath) {
-    if (lua_gettop(L) != 1)
-      luaL_error(L, "expected a single string argument");
-    luaL_checktype(L, 1, LUA_TSTRING);
-  }
-
-#if defined(LUA_USE_POSIX)
-  lua_pushstring(L, getcwd(cwd, PATH_MAX));
-  if (havepath) {
-    if (chdir(lua_tostring(L, 1)) != 0)
+  lua_pushstring(L, pam_getcwd(cwd, PATH_MAX));
+  if (newdir) {
+    if (pam_chdir(newdir) != 0)
       luaL_error(L, "Couldn't change working directory: %s", strerror(errno));
   }
-#else
-#error Not implemented
-#endif
 
   return 1;
 }
@@ -70,7 +58,7 @@ static int workdir(lua_State *L) {
  * This functions retri
  */
 static int interactive(lua_State *L) {
-  lua_pushboolean(L, lua_stdin_is_tty());
+  lua_pushboolean(L, pam_stdin_isatty());
   return 1;
 }
 
@@ -89,6 +77,7 @@ struct KVPair pamconfig[] = {{"dirsep", LUA_DIRSEP},   //
                              {NULL, NULL }};
 
 struct KVPair pamos[] = DELUA_PAM_OS;
+
 struct KVPair pamdistro[] = DELUA_PAM_DISTRO;
 
 luaL_Reg pamreg[] = {{"runasadmin", runasadmin},   //
@@ -106,10 +95,10 @@ LUAMOD_API int luaopen_pamlib(lua_State *L) {
   /* init directories */
   if (!lua_expandhome(L, LUA_PROGDIR))
     lua_pushliteral(L, LUA_PROGDIR);
-  if ((l_mkdir(L, lua_tostring(L, -1)) == 0) || (errno = EEXIST)) {
+  if ((pam_mkdir(lua_tostring(L, -1)) == 0) || (errno = EEXIST)) {
     if (!lua_expandhome(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR))
       lua_pushliteral(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR);
-    if ((l_mkdir(L, lua_tostring(L, -1)) == 0) || (errno = EEXIST)) {
+    if ((pam_mkdir(lua_tostring(L, -1)) == 0) || (errno = EEXIST)) {
       const char *dirs[] = {"db", "cache", "build", NULL};
       if (!lua_expandhome(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR LUA_DIRSEP))
         lua_pushliteral(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR);
@@ -118,7 +107,7 @@ LUAMOD_API int luaopen_pamlib(lua_State *L) {
         lua_pushvalue(L, -1);
         lua_pushstring(L, dirs[i]);
         lua_concat(L, 2);
-        l_mkdir(L, lua_tostring(L, -1));
+        pam_mkdir(lua_tostring(L, -1));
         lua_pop(L, 1);
       }
 

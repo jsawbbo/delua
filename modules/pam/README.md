@@ -14,18 +14,20 @@ of "pam". For further information, call `pam --help`.
 
 ## Script interface
 
-### Basics
-
-#### `runasadmin()`
-#### `workdir()`
-#### `interactive()`
-
-
 ### Repositories
 
 ### Packages
 
 ### Utilities
+
+#### Basics
+
+##### `runasadmin()`
+##### `workdir()`
+##### `interactive()`
+
+#### System information
+##### `config`, `os`, and, `distro`
 
 #### Logging
 
@@ -80,7 +82,11 @@ local log = require 'pam.log'
 log.debug("Module xyz loaded.")
 ```
 
-#### Sub-processes
+#### Settings
 
-FIXME (see exec.lua)
+FIXME (see settings.lua)
+
+#### Dumper
+
+FIXME (see dump.lua)
 

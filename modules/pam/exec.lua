@@ -25,6 +25,7 @@ local log = require 'pam.log'
 
 local sformat = string.format
 local osexec = os.execute
+
 local function run(fmt, ...)
     local cmd = sformat(fmt, ...)
     log.debug("Executing %q", cmd)

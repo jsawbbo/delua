@@ -1,2 +1,6 @@
-add_subdirectory(pamlib)
-add_subdirectory(pam)
+if (LUA_USE_WINDOWS OR LUA_USE_POSIX OR LUA_USE_MACOSX) 
+    add_subdirectory(pamlib)
+    add_subdirectory(pam)
+else()
+    message(STATUS "DeLua Package Manager disabled.")
+endif()

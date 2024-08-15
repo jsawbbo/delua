@@ -16,6 +16,26 @@
         "lauxlib.h": "c",
         "stdlib.h": "c",
         "types.h": "c",
-        "sysinfo.h": "c"
+        "sysinfo.h": "c",
+        "array": "c",
+        "bitset": "c",
+        "string_view": "c",
+        "initializer_list": "c",
+        "ranges": "c",
+        "span": "c",
+        "utility": "c",
+        "format": "c",
+        "__hash_table": "c",
+        "__split_buffer": "c",
+        "__tree": "c",
+        "deque": "c",
+        "list": "c",
+        "map": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "unistd.h": "c",
+        "stat.h": "c",
+        "cstdlib": "c"
     }
 }
