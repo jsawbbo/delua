@@ -88,7 +88,7 @@ local function readall(filename)
 end
 
 --- Load a configuration file.
-local function settings(filename, default)
+local function settings(filename)
     log.debug("Loading settings from %q...", filename)
 
     local cfg = {

@@ -23,14 +23,23 @@
 local pam = require 'pam.command'
 local log = require 'pam.log'
 
-local sformat = string.format
+local tconcat = table.concat
 local osexec = os.execute
 
-local function run(fmt, ...)
-    local cmd = sformat(fmt, ...)
-    log.debug("Executing %q", cmd)
-    return osexec(cmd)
+local function exec(cmd, ...)
+    local command = tconcat({cmd, ...}, ' ')
+    log.debug("Executing %q", command)
+    local status, what, retval = osexec(command)
+    if not status then
+        if what == 'exit' then
+            log.status("%s exited with %d", cmd, retval)
+        elseif what == 'signal' then
+            log.status("%s was interrupted with signal %d", cmd, retval)
+        else
+            log.status("%s return status %d (%s)", cmd, retval, what)
+        end
+    end
+    return status
 end
 
-
-return pam
+return exec

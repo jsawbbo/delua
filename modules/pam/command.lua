@@ -131,6 +131,7 @@ def = {
         short = 'v',
         brief = 'increase or set verbosity',
         value = 'string',
+        default = 'notice',
         optional = 'true',
         callback = function(value)
             if value then
@@ -281,7 +282,7 @@ local function optparse(v, argt, cmd, opts)
         end
 
         if t.callback then
-            t.callback(value or cmd)
+            t.callback(value or t.default or cmd)
         else
             if t.value then
                 value = value or t.default

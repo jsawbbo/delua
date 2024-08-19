@@ -22,12 +22,31 @@ of "pam". For further information, call `pam --help`.
 
 #### Basics
 
+In the absence of additional modules (such as [LuaFileSystem](https://github.com/lunarmodules/luafilesystem)), 
+`pamlib` provides a minimal set of functions required before bootstrapping.
+
 ##### `runasadmin()`
+
+Check if running with administrator rights. 
+
 ##### `workdir()`
+
+Get or change current working directory.
+
 ##### `interactive()`
 
+Check, if ''stdin'' is a TTY, i.e. interactive.
+
 #### System information
-##### `config`, `os`, and, `distro`
+
+##### `config`
+
+This table contains paths and other compile-time settings.
+
+##### `os` and `distro`
+
+These tables contain information about the operating system and distribution
+as detected by CMake.
 
 #### Logging
 
@@ -84,9 +103,20 @@ log.debug("Module xyz loaded.")
 
 #### Settings
 
-FIXME (see settings.lua)
+A simple configuration manager is available in the `pam.settings` module.
+
+Typical usage:
+```.lua
+local settings = require 'pam.settings'
+
+local cfg = settings('/path/to/config-file')
+```
+This loads the ''config-file'' if it exists. Any modifying access to the
+table ''cfg'' will be automatically saved. Otherwise it behaves like a
+normal Lua table.
 
 #### Dumper
 
-FIXME (see dump.lua)
+The module `pam.dump` provides a simple table dumper, which is used by 
+`pam.settings`.
 
