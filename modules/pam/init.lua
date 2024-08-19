@@ -25,9 +25,8 @@ local pam = require 'pamlib'
 require 'pam.command'
 require 'pam.log'
 require 'pam.settings'
-
--- require 'pam.db'
--- require 'pam.pkg'
+require 'pam.repository'
+require 'pam.package'
 
 local process = pam.process
 

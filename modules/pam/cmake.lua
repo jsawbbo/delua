@@ -20,26 +20,9 @@
 -- TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
-local pam = require 'pam.command'
-local log = require 'pam.log'
-local settings = require 'pam.settings'
-
-local tconcat = table.concat
-
-local register = pam.register
-local workdir = pam.workdir
-local config = pam.config
-local dirsep = config("dirsep")
-local vdir = config("vdir")
-local progdir = config("progdir")
-local vprogdir = progdir .. dirsep .. vdir
-local configfile = vprogdir .. dirsep .. 'config'
-
-local dbdir = vprogdir .. dirsep .. 'db'
-local cachedir = vprogdir .. dirsep .. 'cache'
-local builddir = vprogdir .. dirsep .. 'build'
-
-local lfsstatus, lfs = xpcall(require, function(...) end, 'xlfs')
+local pam = require 'pamlib'
+local cmake = {}
+pam.cmake = cmake
 
 local function cmake_configure()
     -- cmake -S <dir> -B <dir> _D...
@@ -53,44 +36,4 @@ local function cmake_install()
     -- cmake --install <dir>
 end
 
-local function readable(fname)
-    local f = io.open(fname, "r")
-    if f then
-        f:close()
-        return true
-    end
-end
-
-local function bootstrap() 
-    log.notice("LuaFileSystem required but not found, bootstrapping...")
-    local srcdir = dbdir .. dirsep .. tconcat()
-
-    assert(readable(), "FIXME")
-
-end
-pam.bootstrap = bootstrap
-
-local function install(opts)
-    opts = opts or {}
-
-    local cfg = settings(configfile)
-    cfg.installed = cfg.installed or {}
-
-    if not lfsstatus then
-        bootstrap()
-        lfs = require 'lfs'
-    end
-end
-pam.install = install
-register("install", {
-    callback = install,
-    usage = "pam <options> install [<command-options>...] <package>...",
-    brief = "install packages",
-    description = [===[ 
-Install a package. 
-
-FIXME
-]===],
-})
-
-return pam
+return cmake

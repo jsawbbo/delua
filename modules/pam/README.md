@@ -50,8 +50,6 @@ as detected by CMake.
 
 #### Logging
 
-::namespace pam.log
-
 ##### `severity`
 
 This table contains the "severity" levels for logging:

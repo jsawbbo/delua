@@ -76,16 +76,7 @@ local function usage(cmd)
     printf("    %s\n", (def[cmd] or def).usage)
 
     if not cmd then
-        local cmds = {}
-        for k, v in pairs(def) do
-            if type(k) == 'string' then
-                if type(v) == 'table' and v.brief then
-                    tinsert(cmds, k)
-                end
-            end
-        end
-        tsort(cmds)
-
+        local cmds = def.cmds
         if #cmds > 0 then
             printf("\nCommands:\n")
             for _, k in ipairs(cmds) do
@@ -111,6 +102,7 @@ local function usage(cmd)
 end
 
 def = {
+    cmds = {},
     usage = "pam <options> [<command> [<command-options>...]]",
     {
         long = 'help',
@@ -176,6 +168,7 @@ function pam.register(cmd, optsdef)
     assert(def[cmd] == nil, "Command '" .. tostring(cmd) .. "' already declared.")
 
     def[cmd] = optsdef;
+    tinsert(def.cmds, cmd)
 end
 
 local function tointeger(v)
