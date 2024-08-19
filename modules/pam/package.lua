@@ -24,6 +24,7 @@ local pam = require 'pam.command'
 local log = require 'pam.log'
 local settings = require 'pam.settings'
 local exec = require 'pam.exec'
+local cmake = require 'pam.cmake'
 
 local tconcat = table.concat
 
@@ -41,7 +42,8 @@ local builddir = vprogdir .. dirsep .. 'build'
 
 local configfile = vprogdir .. dirsep .. 'config'
 
-local lfsstatus, lfs = xpcall(require, function(...) end, 'xlfs')
+local lfsstatus, lfs = xpcall(require, function(...)
+end, 'lfs')
 
 local function readable(fname)
     local f = io.open(fname, "r")
@@ -51,16 +53,42 @@ local function readable(fname)
     end
 end
 
-local function bootstrap() 
-    log.notice("LuaFileSystem required but not found, bootstrapping...")
-    local srcdir = dbdir .. dirsep .. tconcat()
+local function bootstrap()
+    if lfs ~= nil then
+        return
+    end
 
-    assert(readable(), "FIXME")
+    log.notice("Bootstrapping...")
 
+    local cfg = settings(configfile)
+    if not cfg.repo then
+        pam.repo({
+            "https://github.com/jsawbbo/delua-packages.git",
+            "delua",
+            branch = 'v' .. vdir,
+            depth = 1
+        })
+    end
+
+    local sdir = tconcat({repodir, 'delua', 'packages', 'lua', 'filesystem'}, dirsep)
+    local bdir = builddir .. dirsep .. "luafilesystem"
+
+    cmake.configure(sdir, bdir)
+    cmake.build(bdir)
+    cmake.install(bdir)
+
+    lfs = require 'lfs'
+
+    cfg.pkgs = cfg.pkgs or {}
+    cfg.pkgs.luafilesystem = {
+        repo = 'delua',
+        type = 'lua'
+    }
 end
 pam.bootstrap = bootstrap
 
 local function add(opts)
+    bootstrap()
     -- opts = opts or {}
 
     -- local cfg = settings(configfile)
@@ -80,7 +108,7 @@ register("add", {
 Install a or several packages. 
 
 FIXME
-]===],
+]===]
 })
 
 local function remove(opts)
@@ -103,7 +131,7 @@ register("remove", {
 Remove a or several packages. 
 
 FIXME
-]===],
+]===]
 })
 
 local function show(opts)
@@ -126,7 +154,7 @@ register("show", {
 Remove a or several packages. 
 
 FIXME
-]===],
+]===]
 })
 
 local function search(opts)
@@ -147,7 +175,7 @@ register("search", {
     brief = "search packages",
     description = [===[ 
 Search repositories for packages matching one or many search terms. 
-]===],
+]===]
 })
 
 return pam

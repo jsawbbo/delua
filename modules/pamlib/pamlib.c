@@ -99,7 +99,7 @@ LUAMOD_API int luaopen_pamlib(lua_State *L) {
     if (!lua_expandhome(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR))
       lua_pushliteral(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR);
     if ((pam_mkdir(lua_tostring(L, -1)) == 0) || (errno = EEXIST)) {
-      const char *dirs[] = {"db", "cache", "build", NULL};
+      const char *dirs[] = {"repo", "cache", "build", NULL};
       if (!lua_expandhome(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR LUA_DIRSEP))
         lua_pushliteral(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR);
 

@@ -3,7 +3,10 @@ set(PAM_SCRIPTS
     log.lua
     settings.lua
     command.lua
-    db.lua)
+    exec.lua
+    cmake.lua
+    repository.lua
+    package.lua)
 
 install(FILES ${PAM_SCRIPTS}
     DESTINATION ${DeLua_PATH_DIR}/pam COMPONENT "pam")

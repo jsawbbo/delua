@@ -23,10 +23,12 @@
 local pam = require 'pam.command'
 local log = require 'pam.log'
 local settings = require 'pam.settings'
+local exec = require 'pam.exec'
 
 local sformat = string.format
 local tinsert = table.insert
 local tsort = table.sort
+local tconcat = table.concat
 local printf = function(fmt, ...)
     print(sformat(fmt, ...))
 end
@@ -45,41 +47,43 @@ local configfile = vprogdir .. dirsep .. 'config'
 -- PAM.REPO -------------------------------------------------------------------
 
 local function repo(opts)
-    -- opts = opts or {}
+    opts = opts or {}
 
-    -- if #opts > 2 then
-    --     log.fatal("Invalid number of arguments passed to 'init'. See `pam init --help` for further information.")
-    -- end
+    if #opts > 2 then
+        log.fatal("Invalid number of arguments passed to 'init'. See `pam init --help` for further information.")
+    end
 
-    -- local url = opts[1] or "https://github.com/jsawbbo/delua-packages.git"
-    -- local dst = opts[2] or url:match("/([^/.]+)[^/]*$")
-    -- assert(type(dst) == 'string' and dst:match("^[a-zA-Z0-9-]+$"), "internal error: invalid destination path")
+    local url = opts[1] or "https://github.com/jsawbbo/delua-packages.git"
+    local dst = opts[2] or url:match("/([^/.]+)[^/]*$")
+    assert(type(dst) == 'string' and dst:match("^[a-zA-Z0-9-]+$"), "internal error: invalid destination path")
 
-    -- local depth = opts.depth or 1
-    -- local branch = opts.branch or "v" .. config('vdir')
-    -- local args = opts.args or ""
+    local depth = opts.depth or 1
+    local branch = opts.branch or "v" .. config.vdir
+    local args = opts.args or ""
 
-    -- log.debug("Initializing %q (as %s)...", url, dst)
-    -- local cfg = settings(configfile)
-    -- cfg.db = cfg.db or {}
+    log.debug("Initializing %q (as %s)...", url, dst)
+    local cfg = settings(configfile)
 
-    -- if cfg.db[dst] then
-    --     log.notice("Already initialized.")
-    -- else
-    --     log.notice("Downloading %s ...", url)
-    --     local quiet = ""
-    --     if log.level <= log.severity.notice then
-    --         quiet = "-q"
-    --     end
-    --     run("git clone %s --depth=%d --single-branch --branch=%s %s %s %s/%s", quiet, depth, branch, args, url, dbdir,
-    --         dst)
+    if cfg.repo and cfg.repo[dst] then
+        log.notice("Already initialized.")
+    else
+        log.notice("Downloading %s ...", url)
+        local quiet = ""
+        if log.level <= log.severity.notice then
+            quiet = "-q"
+        end
+        if not exec("git", "clone", quiet, sformat("--depth=%d", depth), "--single-branch",
+            sformat("--branch=%s", branch), args, url, tconcat({repodir, dst}, dirsep)) then
+            return
+        end
 
-    --     cfg.db[dst] = {
-    --         depth = depth,
-    --         branch = branch,
-    --         url = url
-    --     }
-    -- end
+        cfg.repo = cfg.repo or {}
+        cfg.repo[dst] = {
+            depth = depth,
+            branch = branch,
+            url = url
+        }
+    end
 end
 pam.repo = repo
 register("repo", {
@@ -100,7 +104,7 @@ With option '--remove', the previously cloned repository will be removed.
     {
         long = 'branch',
         brief = "branch name",
-        default = vdir
+        default = "v" .. config.vdir
     },
     {
         long = 'args',
@@ -116,28 +120,28 @@ With option '--remove', the previously cloned repository will be removed.
 -- PAM.LIST -------------------------------------------------------------------
 
 local function list(opts)
-    -- opts = opts or {}
-    -- if #opts > 1 then
-    --     log.fatal("Invalid number of arguments passed to 'show'. See `pam init --help` for further information.")
-    -- end
-    -- local name = opts[1]
+    opts = opts or {}
+    if #opts > 1 then
+        log.fatal("Invalid number of arguments passed to 'show'. See `pam init --help` for further information.")
+    end
+    local name = opts[1]
 
-    -- local cfg = settings(configfile)
-    -- cfg.db = cfg.db or {}
+    local cfg = settings(configfile)
+    cfg.repo = cfg.repo or {}
 
-    -- if name then
-    --     print("Not implemented.")
-    -- else
-    --     local names = {}
-    --     for k, _ in pairs(cfg.db) do
-    --         tinsert(names, k)
-    --     end
-    --     tsort(names)
+    if name then
+        print("Not implemented.")
+    else
+        local names = {}
+        for k, _ in pairs(cfg.repo) do
+            tinsert(names, k)
+        end
+        tsort(names)
 
-    --     for _, name in ipairs(names) do
-    --         print(name)
-    --     end
-    -- end
+        for _, name in ipairs(names) do
+            print(name)
+        end
+    end
 end
 pam.list = list
 register("list", {
@@ -154,31 +158,31 @@ if a specific name is given, the repository details.
 
 local function refresh(opts)
     -- opts = opts or {}
-    -- if #opts > 1 then
-    --     log.fatal("Invalid number of arguments passed to 'show'. See `pam init --help` for further information.")
-    -- end
-    -- local name_or_url = opts[1]
+    if #opts > 1 then
+        log.fatal("Invalid number of arguments passed to 'show'. See `pam init --help` for further information.")
+    end
+    local name_or_url = opts[1]
 
-    -- local cfg = settings(configfile)
-    -- cfg.db = cfg.db or {}
+    local cfg = settings(configfile)
+    cfg.repo = cfg.repo or {}
 
-    -- if name_or_url then
-    --     print("FIXME currently not implemented")
-    -- else
-    --     local quiet = ""
-    --     if log.level <= log.severity.notice then
-    --         quiet = "-q"
-    --     end
+    if name_or_url then
+        print("FIXME currently not implemented")
+    else
+        local quiet = ""
+        if log.level <= log.severity.notice then
+            quiet = "-q"
+        end
 
-    --     local cwd = workdir()
-    --     for name, _ in pairs(cfg.db) do
-    --         local depth = cfg.db[name].depth
+        local cwd = workdir()
+        for name, _ in pairs(cfg.repo) do
+            local depth = cfg.repo[name].depth
 
-    --         workdir(dbdir .. dirsep .. name)
-    --         run("git pull %s --depth=%d --rebase=true", quiet, depth)
-    --     end
-    --     workdir(cwd)
-    -- end
+            workdir(repodir .. dirsep .. name)
+            exec("git", "pull", quiet, sformat("--depth=%d", depth), "--rebase=true", "--allow-unrelated-histories")
+        end
+        workdir(cwd)
+    end
 end
 pam.refresh = refresh
 register("refresh", {
@@ -192,12 +196,12 @@ specified by name is given, it's settings may be changed.
     {
         long = 'depth',
         brief = "history depth for shallow cloning",
-        default = 1
+        value = 'integer'
     },
     {
         long = 'branch',
         brief = "branch name",
-        default = vdir
+        value = 'string'
     },
     {
         long = 'args',
