@@ -21,8 +21,8 @@
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
 local pam = require 'pamlib'
-local log = require 'pam.log'
-local dump = require 'pam.dump'
+local log = require 'pam.util.log'
+local dump = require 'pam.util.dump'
 
 local __data = {}
 local __filename = {}

@@ -54,7 +54,7 @@ local function fprintf(stream, fmt, ...) -- C's fprintf equivalent
     return stream:write(sformat(fmt, ...))
 end
 
-local log = require 'pam.log'
+local log = require 'pam.util.log'
 
 -- Recursive dumper function.
 local dumper

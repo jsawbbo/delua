@@ -1,12 +1,17 @@
-set(PAM_SCRIPTS 
-    init.lua
-    log.lua
-    settings.lua
-    command.lua
-    exec.lua
-    cmake.lua
-    repository.lua
-    package.lua)
+file(GLOB PAM_SCRIPTS
+    "*.lua"
+    "*/*.lua"
+)
 
-install(FILES ${PAM_SCRIPTS}
-    DESTINATION ${LUA_LDIR}/pam COMPONENT "pam")
+foreach(PAMSCRIPT IN LISTS PAM_SCRIPTS)
+    string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" SCRIPT ${PAMSCRIPT})
+    string(REGEX REPLACE "/.*" "" SCRIPTDIR ${SCRIPT})
+    if(${SCRIPT} STREQUAL ${SCRIPTDIR})
+        install(FILES ${SCRIPT}
+            DESTINATION ${LUA_LDIR}/pam COMPONENT "pam")
+    else()
+        install(FILES ${SCRIPT}
+            DESTINATION ${LUA_LDIR}/pam/${SCRIPTDIR} COMPONENT "pam")
+    endif()
+endforeach()
+

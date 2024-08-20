@@ -20,8 +20,8 @@
 -- TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
-local pam = require 'pam.command'
-local log = require 'pam.log'
+local pam = require 'pamlib'
+local log = require 'pam.util.log'
 
 local tconcat = table.concat
 local osexec = os.execute

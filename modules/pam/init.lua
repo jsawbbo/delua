@@ -23,21 +23,5 @@
 local pam = require 'pamlib'
 
 require 'pam.command'
-require 'pam.bootstrap'
-
-local lfsstatus,lfs = pcall(require, 'lfs')
-if lfsstatus then
-    require 'pam.repository'
-    require 'pam.package'
-end
-
-local process = pam.process
-
-local mt = {
-    __call = function(self, ...)
-        process(...)
-    end
-}
-setmetatable(pam, mt)
 
 return pam

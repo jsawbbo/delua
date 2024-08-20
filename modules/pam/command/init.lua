@@ -1,5 +1,3 @@
-local pam = require 'pamlib'
-
 local brief = "DeLua Package Manager"
 local version = pam._VERSION
 local copyright = [[
@@ -27,16 +25,23 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
+local pam = require 'pamlib'
+local log = require 'pam.util.log'
+
+local table = require 'table'
 local tinsert = table.insert
 local tremove = table.remove
 local tsort = table.sort
+
+local string = require 'string'
 local sformat = string.format
+
+local io = require 'io'
 local stdout = io.stdout
 local stderr = io.stderr
-local function printf(fmt, ...)
-    stdout:write(sformat(fmt, ...))
+local function fprintf(stream, fmt, ...)
+    stream:write(sformat(fmt, ...))
 end
-local log = require 'pam.log'
 
 local def -- option definition table
 
@@ -65,38 +70,39 @@ local function showopts(def)
             end
         end
 
-        printf("    %-25s %s\n", opt, brief)
+        fprintf(stdout, "    %-25s %s\n", opt, brief)
     end
 end
 
 local function usage(cmd)
-    printf("%s %s\n", brief, version)
-    printf("%s", copyright)
-    printf("License: %s\n", license_short)
-    printf("    %s\n", (def[cmd] or def).usage)
+    fprintf(stdout, "%s %s\n", brief, version)
+    fprintf(stdout, "%s", copyright)
+    fprintf(stdout, "License: %s\n", license_short)
+    fprintf(stdout, "\nUsage:\n")
+    fprintf(stdout, "    %s\n", (def[cmd] or def).usage)
 
     if not cmd then
         local cmds = def.cmds
         if #cmds > 0 then
-            printf("\nCommands:\n")
+            fprintf(stdout, "\nCommands:\n")
             for _, k in ipairs(cmds) do
                 local t = def[k]
                 if (#cmds == 1) or not t.hidden then
-                    printf("    %-25s %s\n", k, t.brief)
+                    fprintf(stdout, "    %-25s %s\n", k, t.brief)
                 end
             end
         end
     else
         if def[cmd].description then
-            printf("%s", def[cmd].description)
+            fprintf(stdout, "%s", def[cmd].description)
         end
     end
 
-    printf("\nOptions:\n")
+    fprintf(stdout, "\nOptions:\n")
     showopts(def)
 
     if cmd then
-        printf("\nCommand options:\n")
+        fprintf(stdout, "\nCommand options:\n")
         showopts(def[cmd])
     end
 
@@ -298,7 +304,7 @@ end
 --- Parse and process command-line arguments.
 -- @param 
 --      ...         Command-line arguments.
-function pam.process(...)
+local function process(...)
     local cmd
     local opts = {}
     preparedef(def)
@@ -326,5 +332,21 @@ function pam.process(...)
         def[cmd].callback(opts)
     end
 end
+pam.process = process
+
+require 'pam.command.bootstrap'
+
+local lfsstatus,lfs = pcall(require, 'lfs')
+if lfsstatus then
+    require 'pam.command.repository'
+    require 'pam.command.package'
+end
+
+local mt = {
+    __call = function(self, ...)
+        process(...)
+    end
+}
+setmetatable(pam, mt)
 
 return pam

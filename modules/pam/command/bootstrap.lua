@@ -20,10 +20,10 @@
 -- TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
-local pam = require 'pam.command'
-local log = require 'pam.log'
-local settings = require 'pam.settings'
-local exec = require 'pam.exec'
+local pam = require 'pamlib'
+local log = require 'pam.util.log'
+local settings = require 'pam.util.settings'
+local exec = require 'pam.util.exec'
 
 local register = pam.register
 local workdir = pam.workdir
