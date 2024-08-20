@@ -27,13 +27,13 @@ local dump = require 'pam.dump'
 local __data = {}
 local __filename = {}
 local __root = {}
-local __noexport = {}
+local __autosave = {}
 
 local mt = {}
 
-local function export(self)
+local function save(self)
     local t = rawget(self, __root) 
-    if not rawget(t, __noexport) then
+    if rawget(t, __autosave) then
         local filename = assert(rawget(t, __filename), "internal error: config does not have a filename")
         dump(t, {
             file = filename,
@@ -42,6 +42,7 @@ local function export(self)
         log.debug("Saved configuration %q.", filename)
     end
 end
+mt.save = save
 
 function mt.__pairs(self, ...)
     return next, rawget(self, __data), nil
@@ -58,7 +59,7 @@ function mt.__newindex(self, k, v)
     local oldv = data[k]
     if oldv ~= v then
         local root = rawget(self, __root)
-        local noexport = rawget(root, __noexport)
+        local autosave = rawget(root, __autosave)
         if type(v) == 'table' then
             local cfg = {
                 [__data] = {},
@@ -66,7 +67,7 @@ function mt.__newindex(self, k, v)
             }
             setmetatable(cfg, mt)
     
-            rawset(root, __noexport, true)
+            rawset(root, __autosave, false)
             for k, t in pairs(v) do
                 cfg[k] = t
             end    
@@ -75,8 +76,8 @@ function mt.__newindex(self, k, v)
             data[k] = v
         end
 
-        rawset(root, __noexport, noexport)
-        export(self)
+        rawset(root, __autosave, autosave)
+        save(self)
     end
 end
 
@@ -94,7 +95,7 @@ local function settings(filename)
     local cfg = {
         [__filename] = filename,
         [__data] = {},
-        [__noexport] = true
+        [__autosave] = false
     }
     cfg[__root] = cfg
     setmetatable(cfg, mt)
@@ -108,7 +109,7 @@ local function settings(filename)
         end
     end
 
-    rawset(cfg, __noexport, nil)
+    rawset(cfg, __autosave, true)
     return cfg
 end
 pam.settings = settings

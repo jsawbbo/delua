@@ -25,8 +25,12 @@ local log = {}
 pam.log = log
 
 local sformat = string.format
+
 local stdlog = io.stderr
 
+log.usecolor = pam.isatty(stdlog)
+
+--- Log severity.
 local severity = {
     fatal = -3,
     error = -2,
@@ -45,46 +49,46 @@ local severity = {
     "debug"
 }
 log.severity = severity
-
 log.level = severity.notice
+
+local color = {
+    reset = '\x1B[0m',
+    [severity.fatal] = '\x1B[1;91m',
+    [severity.error] = '\x1B[31m',
+    [severity.warning] = '\x1B[93m',
+    [severity.notice] = '\x1B[1;97m',
+    [severity.status] = '\x1B[32m',
+    [severity.info] = '\x1B[34m',
+    [severity.terse] = '\x1B[37m',
+    [severity.debug] = '\x1B[90m'
+}
 
 local function message(lvl, fmt, ...)
     if log.level >= lvl then
         local msg = sformat(fmt, ...)
-        stdlog:write(msg)
-        if msg:sub(-1, -1) ~= '\n' then
-            stdlog:write('\n')
+        local prefix, suffix
+
+        if log.usecolor then
+            prefix = color[lvl]
+            suffix = color.reset
         end
+
+        if prefix then stdlog:write(prefix) end
+        stdlog:write(msg)
+        if msg:sub(-1, -1) ~= '\n' then stdlog:write('\n') end
+        if suffix then stdlog:write(suffix) end
     end
-    if lvl == severity.fatal then
-        os.exit(1)
-    end
+    if lvl == severity.fatal then os.exit(1) end
 end
 log.message = message
 
-log.fatal = function(fmt, ...)
-    message(severity.fatal, fmt, ...)
-end
-log.error = function(fmt, ...)
-    message(severity.error, fmt, ...)
-end
-log.warning = function(fmt, ...)
-    message(severity.warning, fmt, ...)
-end
-log.notice = function(fmt, ...)
-    message(severity.notice, fmt, ...)
-end
-log.status = function(fmt, ...)
-    message(severity.status, fmt, ...)
-end
-log.info = function(fmt, ...)
-    message(severity.info, fmt, ...)
-end
-log.terse = function(fmt, ...)
-    message(severity.terse, fmt, ...)
-end
-log.debug = function(fmt, ...)
-    message(severity.debug, fmt, ...)
-end
+log.fatal = function(fmt, ...) message(severity.fatal, fmt, ...) end
+log.error = function(fmt, ...) message(severity.error, fmt, ...) end
+log.warning = function(fmt, ...) message(severity.warning, fmt, ...) end
+log.notice = function(fmt, ...) message(severity.notice, fmt, ...) end
+log.status = function(fmt, ...) message(severity.status, fmt, ...) end
+log.info = function(fmt, ...) message(severity.info, fmt, ...) end
+log.terse = function(fmt, ...) message(severity.terse, fmt, ...) end
+log.debug = function(fmt, ...) message(severity.debug, fmt, ...) end
 
 return log
