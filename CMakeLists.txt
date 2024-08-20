@@ -97,7 +97,7 @@ endif()
 set(LUA_ROOT_INIT "${CMAKE_INSTALL_PREFIX}")
 
 # build options
-set(LUA_PROGNAME "${LUA_PROGNAME_INIT}" CACHE STRING "The name used for libraries and executables (lib\${LUA_PROGNAME} etc.).")
+set(LUA_PROGNAME "${LUA_PROGNAME_INIT}" CACHE STRING "The name used for libraries and executables (lib/\${LUA_PROGNAME} etc.).")
 
 set(LUA_LANGUAGE_C "${LUA_LANGUAGE_C_INIT}" CACHE STRING "Compile C library.")
 set(LUA_LANGUAGE_CXX "${LUA_LANGUAGE_CXX_INIT}" CACHE STRING "Compile C++ libraries.")
@@ -133,8 +133,7 @@ else()
 endif()
 set(CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_DATAROOTDIR})
 
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-list(APPEND CMAKE_INSTALL_RPATH ${LUA_ROOT}${CMAKE_INSTALL_LIBDIR}/)
+list(APPEND CMAKE_INSTALL_RPATH ${LUA_ROOT}/${CMAKE_INSTALL_LIBDIR})
 
 # === Build ==================================================================
 # include directory
