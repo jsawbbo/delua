@@ -24,7 +24,7 @@ math(EXPR DeLua_VERSION_NUM "${DeLua_VERSION_MAJOR}*100 + ${DeLua_VERSION_MINOR}
 message(STATUS "Lua version ${Lua_VERSION} [${DeLua_VERSION_TWEAK}]")
 
 # === CMake Paths ============================================================
-list(APPEND CMAKE_MODULE_PATH "${DeLua_SOURCE_DIR}/cmake")
+list(INSERT CMAKE_MODULE_PATH 0 "${DeLua_SOURCE_DIR}/cmake")
 
 set(DeLua_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
@@ -120,11 +120,10 @@ endif()
 include(target/luaconf.cmake)
 
 # === Installation ===========================================================
-include(DeLuaPaths)
 
 # script and library path
-delua_path_to_dir(DeLua_PATH_DIR "${LUA_LDIR}")
-delua_path_to_dir(DeLua_CPATH_DIR "${LUA_CDIR}")
+set(DeLua_PATH_DIR "${LUA_LDIR}")
+set(DeLua_CPATH_DIR "${LUA_CDIR}")
 
 # installation paths
 if(UNIX AND NOT WINDOWS)
@@ -135,7 +134,8 @@ else()
     set(CMAKE_INSTALL_DOCDIR doc/delua-${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR})
 endif()
 
-list(APPEND CMAKE_INSTALL_RPATH ${LUA_ROOT}${CMAKE_INSTALL_LIBDIR})
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+list(APPEND CMAKE_INSTALL_RPATH ${LUA_ROOT}${CMAKE_INSTALL_LIBDIR}/)
 
 # === Build ==================================================================
 # include directory
