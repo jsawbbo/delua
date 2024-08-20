@@ -36,7 +36,7 @@ target_compile_definitions(DeLuaPAMLIB
 )
 
 install(TARGETS DeLuaPAMLIB
-    LIBRARY DESTINATION ${DeLua_CDIR} COMPONENT "pam")
+    LIBRARY DESTINATION ${LUA_CDIR} COMPONENT "pam")
 
 # pam executable
 add_executable(DeLuaPAMEXE pam.c)
@@ -47,4 +47,4 @@ PROPERTIES
 target_link_libraries(DeLuaPAMEXE DeLuaCLib ${LUA_READLINE_LIBRARY})
 
 install(TARGETS DeLuaPAMEXE
-    RUNTIME DESTINATION bin COMPONENT "pam")
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT "pam")

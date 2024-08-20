@@ -5,3 +5,4 @@
 - check paths on Windows and MacOSX
 - in lua.c, make parameter for stifle_history an environment variable
 - pam: pam_runasadmin() untested on Windows
+- cmake/CMakeLists.txt: installation path on Windows/MacOSX?

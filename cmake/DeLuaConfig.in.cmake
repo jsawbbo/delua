@@ -4,23 +4,14 @@ set(Lua_VERSION_MINOR @DeLua_VERSION_MINOR@)
 set(Lua_VERSION_PATCH @DeLua_VERSION_PATCH@)
 
 # (De-)Lua config
-set(DeLua_PREFIX    "@LUA_ROOT@")
-set(DeLua_CDIR      "@DeLua_CDIR@")
-set(DeLua_LDIR      "@DeLua_LDIR@")
-
 set(DeLua_PROGNAME    "@LUA_PROGNAME@")
-function(DeLua_PROGDIR OUTVAR)
-	if(WIN32 AND NOT UNIX) 
-        set(HOME $ENV{USERPROFILE})
-    else()
-        set(HOME $ENV{HOME})
-    endif()
-    set(progdir "${HOME}/.${DeLua_PROGNAME}/${Lua_VERSION_MAJOR}.${Lua_VERSION_MINOR}" ${ARGN})
-    string(REPLACE ";" "/" progdir "${progdir}")
-    set(${OUTVAR} "${progdir}" PARENT_SCOPE)
-endfunction()
-
-set(DeLua_DOCDIR @CMAKE_INSTALL_DOCDIR@)
+set(DeLua_PREFIX      "@LUA_ROOT@")
+set(DeLua_CDIR        "@LUA_CDIR@")
+set(DeLua_LDIR        "@LUA_LDIR@")
+set(DeLua_DOCDIR      "@CMAKE_INSTALL_DOCDIR@")
+set(DeLua_BINDIR      "@CMAKE_INSTALL_DOCDIR@")
+set(DeLua_LIBDIR      "@CMAKE_INSTALL_LIBDIR@")
+set(DeLua_DATADIR     "@CMAKE_INSTALL_DATADIR@")
 
 # Targets
 list(APPEND CMAKE_MODULE_PATH "@CMAKE_INSTALL_PREFIX@/share/cmake/delua-@DeLua_RELEASE@")

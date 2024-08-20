@@ -9,4 +9,4 @@ set(PAM_SCRIPTS
     package.lua)
 
 install(FILES ${PAM_SCRIPTS}
-    DESTINATION ${DeLua_LDIR}/pam COMPONENT "pam")
+    DESTINATION ${LUA_LDIR}/pam COMPONENT "pam")

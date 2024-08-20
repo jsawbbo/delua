@@ -121,18 +121,17 @@ include(target/luaconf.cmake)
 
 # === Installation ===========================================================
 
-# script and library path
-set(DeLua_LDIR "${LUA_LDIR}")
-set(DeLua_CDIR "${LUA_CDIR}")
-
 # installation paths
 if(UNIX AND NOT WINDOWS)
     include(GNUInstallDirs)
-    
     set(CMAKE_INSTALL_DOCDIR ${CMAKE_INSTALL_DATAROOTDIR}/doc/delua-${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR})
 else()
     set(CMAKE_INSTALL_DOCDIR doc/delua-${DeLua_VERSION_MAJOR}.${DeLua_VERSION_MINOR})
+    set(CMAKE_INSTALL_BINDIR bin)
+    set(CMAKE_INSTALL_LIBDIR lib)
+    set(CMAKE_INSTALL_DATAROOTDIR share)
 endif()
+set(CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_DATAROOTDIR})
 
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 list(APPEND CMAKE_INSTALL_RPATH ${LUA_ROOT}${CMAKE_INSTALL_LIBDIR}/)
@@ -156,7 +155,7 @@ endif(DeLua_PARENT_DIR)
 # === Resources ==============================================================
 
 install(FILES target/lua.png
-    DESTINATION  share/icons
+    DESTINATION  ${CMAKE_INSTALL_DATADIR}/icons
     RENAME lua${DeLua_RELEASE_SUFFIX}.png
     COMPONENT "runtime")
 

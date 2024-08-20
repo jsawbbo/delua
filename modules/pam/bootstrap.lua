@@ -52,42 +52,36 @@ end
 
 local function execargs(...)
     local t = {...}
-    for i,v in ipairs(t) do
-        if type(v) == 'table' then
-            t[i] = sformat(tunpack(v))
-        end
+    for i, v in ipairs(t) do
+        if type(v) == 'table' then t[i] = sformat(tunpack(v)) end
     end
     return tconcat(t, ' ')
 end
 
 local function exec(...)
-    local p = io.popen(execargs(...), "r")
-    if not p then
-        return 
-    end
+    local cmd = execargs(...)
+    log.debug("executing %q...", cmd)
+    local p = io.popen(cmd, "r")
+    if not p then return end
     local res = p:read("a")
     p:close()
     return res
 end
 
 local function run(...)
-    local p = io.popen(execargs(...), "r")
-    if not p then
-        return 
-    end
+    local cmd = execargs(...)
+    log.debug("running %q...", cmd)
+    local p = io.popen(cmd, "r")
+    if not p then return end
 
-    for l in p:lines() do
-        log.terse("%s", l)
-    end
+    for l in p:lines() do log.terse("%s", l) end
 
     return p:close()
 end
 
 local function which(cmd)
-    local path = exec("which " .. cmd) 
-    if path then
-        return path:match("[^\n\r]+")
-    end
+    local path = exec("which " .. cmd)
+    if path then return path:match("[^\n\r]+") end
     return cmd
 end
 
@@ -105,97 +99,75 @@ local function bootstrap(opts)
 
     -- ========================================================================
     log.notice("1. Checking commands")
-    
+
     -- git
     local gitcmd = which("git")
     local gitver = exec(gitcmd, "--version"):match("[0-9.]+")
-    if not gitver then
-        log.fatal("Git could not be found.")
-    end
+    if not gitver then log.fatal("Git could not be found.") end
     -- FIXME check version
     log.status("git: %s", gitver)
-    cfg.git = {
-        version = gitver,
-        command = gitcmd
-    }
-    
+    cfg.git = {version = gitver, command = gitcmd}
+
     -- cmake
     local cmakecmd = which("cmake")
     local cmakever = exec(cmakecmd, "--version"):match("[0-9.]+")
-    if not cmakever then
-        log.fatal("CMake could not be found.")
-    end
+    if not cmakever then log.fatal("CMake could not be found.") end
     -- FIXME check version
     local command = exec("which cmake") or "cmake"
     log.status("cmake: %s", cmakever)
-    cfg.cmake = {
-        version = cmakever,
-        command = cmakecmd
-    }
-    
+    cfg.cmake = {version = cmakever, command = cmakecmd}
+
     -- ========================================================================
     log.notice("2. Delua package repository")
 
-    local repopath = repodir .. dirsep .. "delua"
-    local cwdstatus,cwd = pcall(pam.chdir, repopath)
     local depth = 1
     local branch = 'v' .. vdir
     local url = "https://github.com/jsawbbo/delua-packages.git"
+    local repopath = repodir .. dirsep .. "delua"
+
+    local cwdstatus, cwd = pcall(pam.chdir, repopath)
     if cwdstatus then
-        run(gitcmd, "pull", 
-            '--progress', 
-            {'--depth=%d', depth}, 
-            '--rebase=true', 
-            '--allow-unrelated-histories')
+        run(gitcmd, "pull", '--progress', {'--depth=%d', depth},
+            '--rebase=true', '--allow-unrelated-histories')
     else
-        run(gitcmd, "clone", 
-            '--progress',
-            {'--depth=%d', depth}, 
-            '--single-branch',
-            {'--branch=%s', branch},
-            url, 
-            repopath)
+        run(gitcmd, "clone", '--progress', {'--depth=%d', depth},
+            '--single-branch', {'--branch=%s', branch}, url, repopath)
     end
-    cfg.repositories = {
-        delua = {
-            depth = depth,
-            branch = branch,
-            url = url
-        }
-    }
+    cfg.repositories = {delua = {depth = depth, branch = branch, url = url}}
 
     -- ========================================================================
     log.notice("3. Checking dependencies")
 
-    local prefix = config.root
-    if not pam.runasadmin() then
-        prefix = config.home
-    end
+    local root = config.root
+    if not pam.runasadmin() then root = config.home end
 
-    local lfsstatus,lfs = pcall(require, 'lfs')
+    local lfsstatus, lfs = pcall(require, 'lfs')
     local lfsbuilddir
     if lfsstatus then
         log.status("luafilesystem found")
     else
         log.status("building luafilesystem")
 
-        local srcdir = tconcat({repodir, 'delua', 'packages', 'lua', 'filesystem'}, dirsep)
+        local srcdir = tconcat({
+            repodir, 'delua', 'packages', 'lua', 'filesystem'
+        }, dirsep)
         lfsbuilddir = tconcat({builddir, 'luafilesystem'}, dirsep)
-        run(cmakecmd, 
-            '-S', srcdir, 
-            '-B', lfsbuilddir, 
-            {'-DCMAKE_INSTALL_PREFIX=%s', prefix},
-            {'-DPAM_CACHEDIR=%s', cachedir})
+        run(cmakecmd, '-S', srcdir, '-B', lfsbuilddir,
+            {'-DCMAKE_INSTALL_PREFIX:PATH=%s', root},
+            {'-DPAM_CACHEDIR:PATH=%s', cachedir})
         run(cmakecmd, '--build', lfsbuilddir)
         run(cmakecmd, '--install', lfsbuilddir)
     end
 
     cfg.packages = {
-        ['luafilesystem'] = {
-            repository = 'delua',
-            version = 'scm-1', -- FIXME
-            package = 'lua/filesystem',
-            dependencies = {}
+        bin = {['lua'] = {version = config.lua_version}},
+        lua = {
+            ['luafilesystem'] = {
+                repository = 'delua',
+                version = 'scm',
+                package = 'lua/filesystem',
+                dependencies = {}
+            }
         }
     }
 
@@ -204,7 +176,7 @@ local function bootstrap(opts)
     -- FIXME
 
     lfs = require 'lfs'
-    
+
     -- ========================================================================
     log.notice("5. Cleaning up")
 
@@ -212,12 +184,11 @@ local function bootstrap(opts)
         for dir in lfs.dir(path) do
             if dir ~= '.' and dir ~= '..' then
                 local fulldir = path .. dirsep .. dir
-                local attr = lfs.attributes(fulldir) 
-                if attr.mode == 'directory' then
-                    rmdir_r(fulldir)
-                end
+                local attr = lfs.attributes(fulldir)
+                if attr.mode == 'directory' then rmdir_r(fulldir) end
 
                 log.debug('removing %s', fulldir)
+                assert(fulldir:match("^" .. builddir))
                 os.remove(fulldir)
             end
         end
@@ -234,8 +205,5 @@ register("bootstrap", {
     description = [===[ 
 FIXME
 ]===],
-    {
-        long = 'force',
-        brief = "force bootstrapping (redoing all steps)",
-    }
+    {long = 'force', brief = "force bootstrapping (redoing all steps)"}
 })

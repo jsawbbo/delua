@@ -70,17 +70,17 @@ endif()
 # FIXME multilib support
 install(TARGETS ${__lua_targets}
     EXPORT DeLuaTargets-${DeLua_RELEASE}
-    LIBRARY DESTINATION lib COMPONENT "runtime"
-    ARCHIVE DESTINATION lib COMPONENT "development"
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT "runtime"
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT "development"
 )
 
 if(LUA_BUILD_INTERPRETER)
     install(TARGETS LuaInterpreter
-        RUNTIME DESTINATION bin COMPONENT "runtime")
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT "runtime")
 endif()
 
 if(LUA_BUILD_COMPILER)
     install(TARGETS LuaCompiler
-        RUNTIME DESTINATION bin COMPONENT "runtime")
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT "runtime")
 endif()
 

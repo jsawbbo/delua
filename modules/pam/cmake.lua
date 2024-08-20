@@ -1,6 +1,6 @@
 -- DeLua Package Manager - package database component
 -- Copyright (C) 2024 Max Planck Institute f. Neurobiol. of Behavior — caesar, Bonn, Germany
--- 
+
 -- Permission is hereby granted, free of charge, to any person obtaining
 -- a copy of this software and associated documentation files (the
 -- "Software"), to deal in the Software without restriction, including
@@ -8,10 +8,10 @@
 -- distribute, sublicense, and/or sell copies of the Software, and to
 -- permit persons to whom the Software is furnished to do so, subject to
 -- the following conditions:
--- 
+
 -- The above copyright notice and this permission notice shall be
 -- included in all copies or substantial portions of the Software.
--- 
+
 -- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 -- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 -- MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -39,22 +39,17 @@ local builddir = vprogdir .. dirsep .. 'build'
 
 local function configure(srcdir, builddir, ...)
     local prefix = config.root
-    if not pam.runasadmin() then
-        prefix = config.home
-    end
+    if not pam.runasadmin() then prefix = config.home end
 
-    exec('cmake', '-S', srcdir, '-B', builddir, '-DCMAKE_INSTALL_PREFIX=' .. prefix, ...)
+    exec('cmake', '-S', srcdir, '-B', builddir,
+         '-DCMAKE_INSTALL_PREFIX=' .. prefix, ...)
 end
 cmake.configure = configure
 
-local function build(builddir, ...)
-    exec('cmake', '--build', builddir, ...)
-end
+local function build(builddir, ...) exec('cmake', '--build', builddir, ...) end
 cmake.build = build
 
-local function install(builddir, ...)
-    exec('cmake', '--install', builddir, ...)
-end
+local function install(builddir, ...) exec('cmake', '--install', builddir, ...) end
 cmake.install = install
 
 return cmake
