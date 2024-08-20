@@ -41,5 +41,6 @@ local function exec(cmd, ...)
     end
     return status
 end
+pam.exec = exec
 
 return exec

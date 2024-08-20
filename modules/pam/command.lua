@@ -81,7 +81,9 @@ local function usage(cmd)
             printf("\nCommands:\n")
             for _, k in ipairs(cmds) do
                 local t = def[k]
-                printf("    %-25s %s\n", k, t.brief)
+                if (#cmds == 1) or not t.hidden then
+                    printf("    %-25s %s\n", k, t.brief)
+                end
             end
         end
     else
@@ -154,7 +156,8 @@ def = {
 --    callback = <command-function>,
 --    usage = "<usage pattern>",
 --    brief = "<brief description>",
---    description = [===[ long description ]===]
+--    description = [===[ long description ]===],
+--    hidden = <boolean>,
 --    { 
 --        long = "<long-option>",
 --        short = "<short-option>",

@@ -5,8 +5,8 @@ set(Lua_VERSION_PATCH @DeLua_VERSION_PATCH@)
 
 # (De-)Lua config
 set(DeLua_PREFIX    "@LUA_ROOT@")
-set(DeLua_CPATH_DIR "@DeLua_CPATH_DIR@")
-set(DeLua_PATH_DIR  "@DeLua_PATH_DIR@")
+set(DeLua_CDIR      "@DeLua_CDIR@")
+set(DeLua_LDIR      "@DeLua_LDIR@")
 
 set(DeLua_PROGNAME    "@LUA_PROGNAME@")
 function(DeLua_PROGDIR OUTVAR)

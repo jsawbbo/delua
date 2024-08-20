@@ -127,7 +127,7 @@ LUAMOD_API int luaopen_pamlib(lua_State *L) {
     if ((pam_mkdir(lua_tostring(L, -1)) == 0) || (errno = EEXIST)) {
       const char *dirs[] = {"repo", "cache", "build", NULL};
 
-      pushexpanded(L, LUA_PROGDIR LUA_DIRSEP);
+      pushexpanded(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR LUA_DIRSEP);
       for (int i = 0; dirs[i]; i++) {
         lua_pushvalue(L, -1);
         lua_pushstring(L, dirs[i]);

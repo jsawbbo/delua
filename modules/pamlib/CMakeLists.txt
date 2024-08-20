@@ -36,7 +36,7 @@ target_compile_definitions(DeLuaPAMLIB
 )
 
 install(TARGETS DeLuaPAMLIB
-    LIBRARY DESTINATION ${DeLua_CPATH_DIR} COMPONENT "pam")
+    LIBRARY DESTINATION ${DeLua_CDIR} COMPONENT "pam")
 
 # pam executable
 add_executable(DeLuaPAMEXE pam.c)

@@ -122,8 +122,8 @@ include(target/luaconf.cmake)
 # === Installation ===========================================================
 
 # script and library path
-set(DeLua_PATH_DIR "${LUA_LDIR}")
-set(DeLua_CPATH_DIR "${LUA_CDIR}")
+set(DeLua_LDIR "${LUA_LDIR}")
+set(DeLua_CDIR "${LUA_CDIR}")
 
 # installation paths
 if(UNIX AND NOT WINDOWS)

@@ -23,11 +23,13 @@
 local pam = require 'pamlib'
 
 require 'pam.command'
-require 'pam.log'
-require 'pam.settings'
+require 'pam.bootstrap'
 
--- require 'pam.repository'
--- require 'pam.package'
+local lfsstatus,lfs = pcall(require, 'lfs')
+if lfsstatus then
+    require 'pam.repository'
+    require 'pam.package'
+end
 
 local process = pam.process
 
