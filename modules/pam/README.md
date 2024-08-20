@@ -24,18 +24,26 @@ of "pam". For further information, call `pam --help`.
 
 In the absence of additional modules (such as [LuaFileSystem](https://github.com/lunarmodules/luafilesystem)), 
 `pamlib` provides a minimal set of functions required before bootstrapping.
+Note, however, that `pam` relies on further features (such as the command-line
+tools ''git'' and ''cmake'').
 
 ##### `runasadmin()`
 
 Check if running with administrator rights. 
 
-##### `workdir()`
+##### `getcwd()`
 
 Get or change current working directory.
 
-##### `interactive()`
+##### `chdir(path)`
 
-Check, if ''stdin'' is a TTY, i.e. interactive.
+Change current working directory.
+
+This function returns the previous working directory.
+
+##### `isatty(stream)`
+
+Check, if ''stream'' is a TTY.
 
 #### System information
 
@@ -71,7 +79,7 @@ The maximum log level, which by default is `severity.notice`.
 
 ##### `message()`
 
-```[.lua]
+```lua
     message(msglvl, fmt, ...)
 ```
 
@@ -81,7 +89,7 @@ This function emits a message if `msglvl` is equal or below the global `level`.
 This function terminates the program for `severity.fatal`.
 
 Alteratively, the following short-hand version may be used:
-```.lua
+```lua
     fatal(fmt, ...)
     error(fmt, ...)
     warning(fmt, ...)
@@ -93,7 +101,7 @@ Alteratively, the following short-hand version may be used:
 ```
 
 Typical usage:
-```.lua
+```lua
 local log = require 'pam.log'
 
 log.debug("Module xyz loaded.")
@@ -104,7 +112,7 @@ log.debug("Module xyz loaded.")
 A simple configuration manager is available in the `pam.settings` module.
 
 Typical usage:
-```.lua
+```lua
 local settings = require 'pam.settings'
 
 local cfg = settings('/path/to/config-file')

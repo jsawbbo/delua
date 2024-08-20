@@ -43,7 +43,7 @@ local builddir = vprogdir .. dirsep .. 'build'
 local configfile = vprogdir .. dirsep .. 'config'
 
 local lfsstatus, lfs = xpcall(require, function(...)
-end, 'lfs')
+end, 'xlfs')
 
 local function readable(fname)
     local f = io.open(fname, "r")

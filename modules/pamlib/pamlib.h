@@ -14,7 +14,7 @@
 #define pam_mkdir(dirname) _mkdir(dirname)
 #define pam_chdir(dirname) _chdir(dirname)
 #define pam_getcwd(buf, size) _getcwd(buf, size)
-#define pam_stdin_isatty() _isatty(_fileno(stdin))
+#define pam_isatty(stream) _isatty(_fileno(stream))
 extern inline int pam_runasadmin() {
   BOOL fIsRunAsAdmin = FALSE;
   PSID pAdminSid = NULL;
@@ -33,7 +33,7 @@ extern inline int pam_runasadmin() {
 #define pam_mkdir(dirname) mkdir(dirname, 0700)
 #define pam_chdir(dirname) chdir(dirname)
 #define pam_getcwd(buf, size) getcwd(buf, size)
-#define pam_stdin_isatty() isatty(0)
+#define pam_isatty(stream) isatty(fileno(stream))
 extern inline int pam_runasadmin() { return getuid() == 0; }
 #endif
 

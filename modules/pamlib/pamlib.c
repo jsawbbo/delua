@@ -26,7 +26,21 @@ static int runasadmin(lua_State *L) {
   return 1;
 }
 
-/** Get or change current working directory.
+/** Get current working directory.
+ * ::as.lua
+ *    pam.getcwd()
+ * ::returns
+ *    This function returns the current working directory.
+ */
+static int current_directory(lua_State *L) {
+  char cwd[PATH_MAX];
+
+  lua_pushstring(L, pam_getcwd(cwd, PATH_MAX));
+
+  return 1;
+}
+
+/** Change current working directory.
  * ::as.lua
  *    pam.workdir()
  *    pam.workdir(directory)
@@ -36,14 +50,13 @@ static int runasadmin(lua_State *L) {
  * This function is required until `pam` is bootstrapped.
  *
  */
-static int workdir(lua_State *L) {
-  const char *newdir = luaL_optstring(L, 1, NULL);
-  char cwd[PATH_MAX];
+static int change_directory(lua_State *L) {
+  const char *path = luaL_optstring(L, 1, ".");
 
-  lua_pushstring(L, pam_getcwd(cwd, PATH_MAX));
-  if (newdir) {
-    if (pam_chdir(newdir) != 0)
-      luaL_error(L, "Couldn't change working directory: %s", strerror(errno));
+  current_directory(L);
+
+  if (pam_chdir(path) != 0) {
+    luaL_error(L, "Couldn't change working directory: %s", strerror(errno));
   }
 
   return 1;
@@ -51,14 +64,16 @@ static int workdir(lua_State *L) {
 
 /** Check if we have an interactive standard input.
  * ::as.lua
- *      pam.interactive()
+ *      pam.isatty(stream)
  * ::returns
- *      `true` if ''stdin'' is a terminal (i.e. interactive), `false` otherwise.
- *
- * This functions retri
+ *      `true` if ''stream'' is a TTY, `false` otherwise.
  */
-static int interactive(lua_State *L) {
-  lua_pushboolean(L, pam_stdin_isatty());
+static int is_a_tty(lua_State *L) {
+  luaL_Stream *stream = (luaL_Stream *)luaL_checkudata(L, 1, LUA_FILEHANDLE);
+  if (stream->closef == NULL)
+    lua_pushboolean(L, 0);
+  else
+    lua_pushboolean(L, pam_isatty(stream->f));
   return 1;
 }
 
@@ -67,25 +82,38 @@ struct KVPair {
   const char *value;
 };
 
-struct KVPair pamconfig[] = {{"dirsep", LUA_DIRSEP},   //
-                             {"progdir", LUA_PROGDIR}, //
-                             {"vdir", LUA_VDIR},       //
-                             {"root", LUA_ROOT},       //
-                             {"home", LUA_LOCAL},      //
-                             {"ldir", LUA_LDIR},       //
-                             {"cdir", LUA_CDIR},       //
-                             {NULL, NULL }};
+struct KVPair pamconfig[] = {
+    {"dirsep", LUA_DIRSEP}, /* alternative to 'package.config:sub(1,1)' */
+    {"progdir",
+     LUA_PROGDIR}, /* program directory in the user's home (e.g. "~/.local") */
+    {"vdir", LUA_VDIR},  /* the versioned sub-directory part (release) */
+    {"root", LUA_ROOT},  /* installation prefix */
+    {"home", LUA_LOCAL}, /* user specific installation prefix */
+    {"ldir", LUA_LDIR},  /* Lua module sub-directory */
+    {"cdir", LUA_CDIR},  /* compiled module sub-directory */
+    {NULL, NULL}};
 
-struct KVPair pamos[] = DELUA_PAM_OS;
+struct KVPair pamos[] = DELUA_PAM_OS; /* this contains the entries:  */
+/* name: operating system name (e.g. "Linux") */
+/* release: operating system release (e.g. "6.5.0-1027-oem") */
+/* version: detailed version info (e.g. "#28-Ubuntu SMP PREEMPT_DYNAMIC Thu Jul
+ * 25 13:32:46 UTC 2024") */
+/* platform: operating system platform (e.g. "x86_64") */
 
-struct KVPair pamdistro[] = DELUA_PAM_DISTRO;
+struct KVPair pamdistro[] =
+    DELUA_PAM_DISTRO; /* this contains the entries (if applicable): */
+/* id: operating system ID (e.g. "ubuntu") */
+/* like: operating system similarity (e.g. "debian") */
+/* name: operating system name (e.g. "Ubuntu") */
+/* codename: the operating system's codename (e.g. "jammy") */
+/* pretty: "pretty-formatted" operating system designation (e.g "Ubuntu 22.04.4
+ * LTS") */
 
-luaL_Reg pamreg[] = {{"runasadmin", runasadmin},   //
-                     {"workdir", workdir},         //
-                     {"interactive", interactive}, //
+luaL_Reg pamreg[] = {{"runasadmin", runasadmin},    //
+                     {"getcwd", current_directory}, //
+                     {"chdir", change_directory},   //
+                     {"isatty", is_a_tty},          //
                      {NULL, NULL}};
-
-int configref = LUA_NOREF;
 
 LUAMOD_API int luaopen_pamlib(lua_State *L) {
   lua_newtable(L);
@@ -93,16 +121,13 @@ LUAMOD_API int luaopen_pamlib(lua_State *L) {
   lua_setglobal(L, "pam");
 
   /* init directories */
-  if (!lua_expandhome(L, LUA_PROGDIR))
-    lua_pushliteral(L, LUA_PROGDIR);
+  pushexpanded(L, LUA_PROGDIR);
   if ((pam_mkdir(lua_tostring(L, -1)) == 0) || (errno = EEXIST)) {
-    if (!lua_expandhome(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR))
-      lua_pushliteral(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR);
+    pushexpanded(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR);
     if ((pam_mkdir(lua_tostring(L, -1)) == 0) || (errno = EEXIST)) {
       const char *dirs[] = {"repo", "cache", "build", NULL};
-      if (!lua_expandhome(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR LUA_DIRSEP))
-        lua_pushliteral(L, LUA_PROGDIR LUA_DIRSEP LUA_VDIR);
 
+      pushexpanded(L, LUA_PROGDIR LUA_DIRSEP);
       for (int i = 0; dirs[i]; i++) {
         lua_pushvalue(L, -1);
         lua_pushstring(L, dirs[i]);
@@ -110,7 +135,6 @@ LUAMOD_API int luaopen_pamlib(lua_State *L) {
         pam_mkdir(lua_tostring(L, -1));
         lua_pop(L, 1);
       }
-
       lua_pop(L, 1);
     }
     lua_pop(L, 1);

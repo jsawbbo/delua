@@ -49,11 +49,11 @@ local configfile = vprogdir .. dirsep .. 'config'
 local function repo(opts)
     opts = opts or {}
 
-    if #opts > 2 then
+    if #opts > 2 or #opts < 1 then
         log.fatal("Invalid number of arguments passed to 'init'. See `pam init --help` for further information.")
     end
 
-    local url = opts[1] or "https://github.com/jsawbbo/delua-packages.git"
+    local url = opts[1] 
     local dst = opts[2] or url:match("/([^/.]+)[^/]*$")
     assert(type(dst) == 'string' and dst:match("^[a-zA-Z0-9-]+$"), "internal error: invalid destination path")
 
@@ -74,6 +74,7 @@ local function repo(opts)
         end
         if not exec("git", "clone", quiet, sformat("--depth=%d", depth), "--single-branch",
             sformat("--branch=%s", branch), args, url, tconcat({repodir, dst}, dirsep)) then
+            log.error("Failed to download %q.", url)
             return
         end
 
