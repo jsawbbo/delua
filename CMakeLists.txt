@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.17)
 
 # === Project ================================================================
 set(CMAKE_USER_MAKE_RULES_OVERRIDE "DeLuaInitFlags.cmake")
@@ -135,6 +135,11 @@ set(CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_DATAROOTDIR})
 
 list(APPEND CMAKE_INSTALL_RPATH ${LUA_ROOT}/${CMAKE_INSTALL_LIBDIR})
 
+# version-less symbolic link?
+if(NOT DeLua_PARENT_DIR)
+    option(DeLua_SYMBOLIC_LINK "Create version-less symbolic links for compiler and interpreter." ${LUA_SYMBOLIC_LINK_INIT})
+endif()
+
 # === Build ==================================================================
 # include directory
 set(DeLua_HEADER_DIR include/${LUA_PROGNAME})
@@ -174,7 +179,7 @@ install(DIRECTORY lua/doc
 
 # === Package ================================================================
 if(NOT DeLua_PARENT_DIR AND Myake_FOUND)
-	include(DeLuaPackaging.cmake)
+    include(DeLuaPackaging.cmake)
 endif()
 
 include(My/Lists OPTIONAL)

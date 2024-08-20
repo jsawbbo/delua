@@ -50,19 +50,35 @@ endif()
 
 if(LUA_BUILD_INTERPRETER)
     add_executable(LuaInterpreter ${executable_options} ${LUA_SRCS})
-    set_target_properties(LuaInterpreter
-        PROPERTIES
-            LINKER_LANGUAGE C
-            OUTPUT_NAME ${LUA_PROGNAME}-${DeLua_RELEASE})
+    if (DeLua_SYMBOLIC_LINK)
+        set_target_properties(LuaInterpreter
+            PROPERTIES
+                LINKER_LANGUAGE C
+                VERSION ${DeLua_RELEASE}
+                OUTPUT_NAME ${LUA_PROGNAME})
+    else()
+        set_target_properties(LuaInterpreter
+            PROPERTIES
+                LINKER_LANGUAGE C
+                OUTPUT_NAME ${LUA_PROGNAME}-${DeLua_RELEASE})
+    endif()
     target_link_libraries(LuaInterpreter DeLuaCLib ${LUA_READLINE_LIBRARY})
 endif()
 
 if(LUA_BUILD_COMPILER)
     add_executable(LuaCompiler ${executable_options} ${LUAC_SRCS})
-    set_target_properties(LuaCompiler
-        PROPERTIES
-            LINKER_LANGUAGE C
-            OUTPUT_NAME ${LUA_PROGNAME}c-${DeLua_RELEASE})
+    if (DeLua_SYMBOLIC_LINK)
+        set_target_properties(LuaCompiler
+            PROPERTIES
+                LINKER_LANGUAGE C
+                VERSION ${DeLua_RELEASE}
+                OUTPUT_NAME ${LUA_PROGNAME}c)
+    else()
+        set_target_properties(LuaCompiler
+            PROPERTIES
+                LINKER_LANGUAGE C
+                OUTPUT_NAME ${LUA_PROGNAME}c-${DeLua_RELEASE})
+    endif()
     target_link_libraries(LuaCompiler DeLuaCLib)
 endif()
 

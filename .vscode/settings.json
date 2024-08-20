@@ -1,7 +1,9 @@
 {
     "cmake.configureSettings": { 
         "MY_INSTALL_STYLE" : "User",
-        "CMAKE_INSTALL_PREFIX" : "/home/sawinski/.local"
+        "CMAKE_INSTALL_PREFIX" : "/home/sawinski/.local",
+        "LUA_PROGNAME_INIT" : "lua",
+        "LUA_SYMBOLIC_LINK_INIT" : "TRUE"
     },
     "files.associations": {
         "*.mdx": "markdown",

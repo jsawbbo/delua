@@ -40,10 +40,18 @@ install(TARGETS DeLuaPAMLIB
 
 # pam executable
 add_executable(DeLuaPAMEXE pam.c)
-set_target_properties(DeLuaPAMEXE
-PROPERTIES
-    LINKER_LANGUAGE C
-    OUTPUT_NAME pam)
+if (DeLua_SYMBOLIC_LINK)
+    set_target_properties(DeLuaPAMEXE
+        PROPERTIES
+            LINKER_LANGUAGE C
+            VERSION ${DeLua_RELEASE}
+            OUTPUT_NAME pam)
+else()
+    set_target_properties(DeLuaPAMEXE
+        PROPERTIES
+            LINKER_LANGUAGE C
+            OUTPUT_NAME pam-${DeLua_RELEASE})
+endif()
 target_link_libraries(DeLuaPAMEXE DeLuaCLib ${LUA_READLINE_LIBRARY})
 
 install(TARGETS DeLuaPAMEXE
