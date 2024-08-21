@@ -38,5 +38,6 @@ global.typeinfo = typeinfo
 require 'pam.ext.table'
 require 'pam.ext.io'
 require 'pam.ext.os'
+require 'pam.ext.string'
 
 return global

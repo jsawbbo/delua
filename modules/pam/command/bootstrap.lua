@@ -26,6 +26,7 @@ require 'pam.system.exec'
 
 local log = require 'pam.util.log'
 local settings = require 'pam.util.settings'
+local version = require 'pam.util.version'
 
 local register = pam.register
 local workdir = pam.workdir
@@ -63,6 +64,7 @@ local function bootstrap(opts)
 
     -- ========================================================================
     log.notice("1. Checking commands")
+    cfg.tool = cfg.tool or {}
 
     -- git
     local gitcmd = which("git")
@@ -71,9 +73,11 @@ local function bootstrap(opts)
     end
     local _, gitver = exec(gitcmd, "--version")
     gitver = gitver:match("[0-9.]+")
-    -- FIXME check version
+    if not version.check(gitver, ">= 2.20") then
+        log.fatal("Git version requirement " .. gitver .. " >= 2.20 not satisfied.")
+    end
     log.status("git: %s", gitver)
-    cfg.git = {version = gitver, command = gitcmd}
+    cfg.tool.git = {version = gitver, command = gitcmd}
 
     -- cmake
     local cmakecmd = which("cmake")
@@ -82,27 +86,29 @@ local function bootstrap(opts)
     end
     local _,cmakever = exec(cmakecmd, "--version")
     cmakever = cmakever[1]:match("[0-9.]+")
-    -- FIXME check version
+    if not version.check(cmakever, ">= 3.17") then
+        log.fatal("CMake version requirement " .. cmakever .. " >= 3.17 not satisfied.")
+    end
     log.status("cmake: %s", cmakever)
-    cfg.cmake = {version = cmakever, command = cmakecmd}
+    cfg.tool.cmake = {version = cmakever, command = cmakecmd}
 
-    -- -- ========================================================================
-    -- log.notice("2. Delua package repository")
+    -- ========================================================================
+    log.notice("2. Delua package repository")
 
-    -- local depth = 1
-    -- local branch = 'v' .. vdir
-    -- local url = "https://github.com/jsawbbo/delua-packages.git"
-    -- local repopath = repodir .. dirsep .. "delua"
+    local depth = 1
+    local branch = 'v' .. vdir
+    local url = "https://github.com/jsawbbo/delua-packages.git"
+    local repopath = repodir .. dirsep .. "delua"
 
-    -- local cwdstatus, cwd = pcall(pam.chdir, repopath)
-    -- if cwdstatus then
-    --     run(gitcmd, "pull", '--progress', {'--depth=%d', depth},
-    --         '--rebase=true', '--allow-unrelated-histories')
-    -- else
-    --     run(gitcmd, "clone", '--progress', {'--depth=%d', depth},
-    --         '--single-branch', {'--branch=%s', branch}, url, repopath)
-    -- end
-    -- cfg.repositories = {delua = {depth = depth, branch = branch, url = url}}
+    local cwdstatus, cwd = pcall(pam.chdir, repopath)
+    if cwdstatus then
+        exec(gitcmd, "pull", '--progress', {'--depth=%d', depth},
+            '--rebase=true', '--allow-unrelated-histories')
+    else
+        exec(gitcmd, "clone", '--progress', {'--depth=%d', depth},
+            '--single-branch', {'--branch=%s', branch}, url, repopath)
+    end
+    cfg.repositories = {delua = {depth = depth, branch = branch, url = url}}
 
     -- -- ========================================================================
     -- log.notice("3. Checking dependencies")
