@@ -21,9 +21,11 @@
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
 local pam = require 'pamlib'
+
+require 'pam.system.exec'
+
 local log = require 'pam.util.log'
 local settings = require 'pam.util.settings'
-local exec = require 'pam.util.exec'
 
 local register = pam.register
 local workdir = pam.workdir
@@ -42,48 +44,9 @@ local tconcat = table.concat
 local tunpack = table.unpack
 local sformat = string.format
 
-local function readable(filename)
-    local f = io.open(filename, "r")
-    if f then
-        f:close()
-        return true
-    end
-end
-
-local function execargs(...)
-    local t = {...}
-    for i, v in ipairs(t) do
-        if type(v) == 'table' then t[i] = sformat(tunpack(v)) end
-    end
-    return tconcat(t, ' ')
-end
-
-local function exec(...)
-    local cmd = execargs(...)
-    log.debug("executing %q...", cmd)
-    local p = io.popen(cmd, "r")
-    if not p then return end
-    local res = p:read("a")
-    p:close()
-    return res
-end
-
-local function run(...)
-    local cmd = execargs(...)
-    log.debug("running %q...", cmd)
-    local p = io.popen(cmd, "r")
-    if not p then return end
-
-    for l in p:lines() do log.terse("%s", l) end
-
-    return p:close()
-end
-
-local function which(cmd)
-    local path = exec("which " .. cmd)
-    if path then return path:match("[^\n\r]+") end
-    return cmd
-end
+local readable = io.readable
+local which = pam.which
+local exec = pam.exec
 
 local function bootstrap(opts)
     opts = opts or {}
@@ -91,6 +54,7 @@ local function bootstrap(opts)
     if readable(configfile) then
         if not opts.force then
             log.notice("Nothing to be done.")
+            return
         else
             os.remove(configfile)
         end
@@ -102,99 +66,104 @@ local function bootstrap(opts)
 
     -- git
     local gitcmd = which("git")
-    local gitver = exec(gitcmd, "--version"):match("[0-9.]+")
-    if not gitver then log.fatal("Git could not be found.") end
+    if not gitcmd then
+        log.fatal("Git could not be found.")
+    end
+    local _, gitver = exec(gitcmd, "--version")
+    gitver = gitver:match("[0-9.]+")
     -- FIXME check version
     log.status("git: %s", gitver)
     cfg.git = {version = gitver, command = gitcmd}
 
     -- cmake
     local cmakecmd = which("cmake")
-    local cmakever = exec(cmakecmd, "--version"):match("[0-9.]+")
-    if not cmakever then log.fatal("CMake could not be found.") end
+    if not cmakecmd then
+        log.fatal("CMake could not be found.")
+    end
+    local _,cmakever = exec(cmakecmd, "--version")
+    cmakever = cmakever[1]:match("[0-9.]+")
     -- FIXME check version
-    local command = exec("which cmake") or "cmake"
     log.status("cmake: %s", cmakever)
     cfg.cmake = {version = cmakever, command = cmakecmd}
 
-    -- ========================================================================
-    log.notice("2. Delua package repository")
+    -- -- ========================================================================
+    -- log.notice("2. Delua package repository")
 
-    local depth = 1
-    local branch = 'v' .. vdir
-    local url = "https://github.com/jsawbbo/delua-packages.git"
-    local repopath = repodir .. dirsep .. "delua"
+    -- local depth = 1
+    -- local branch = 'v' .. vdir
+    -- local url = "https://github.com/jsawbbo/delua-packages.git"
+    -- local repopath = repodir .. dirsep .. "delua"
 
-    local cwdstatus, cwd = pcall(pam.chdir, repopath)
-    if cwdstatus then
-        run(gitcmd, "pull", '--progress', {'--depth=%d', depth},
-            '--rebase=true', '--allow-unrelated-histories')
-    else
-        run(gitcmd, "clone", '--progress', {'--depth=%d', depth},
-            '--single-branch', {'--branch=%s', branch}, url, repopath)
-    end
-    cfg.repositories = {delua = {depth = depth, branch = branch, url = url}}
+    -- local cwdstatus, cwd = pcall(pam.chdir, repopath)
+    -- if cwdstatus then
+    --     run(gitcmd, "pull", '--progress', {'--depth=%d', depth},
+    --         '--rebase=true', '--allow-unrelated-histories')
+    -- else
+    --     run(gitcmd, "clone", '--progress', {'--depth=%d', depth},
+    --         '--single-branch', {'--branch=%s', branch}, url, repopath)
+    -- end
+    -- cfg.repositories = {delua = {depth = depth, branch = branch, url = url}}
 
-    -- ========================================================================
-    log.notice("3. Checking dependencies")
+    -- -- ========================================================================
+    -- log.notice("3. Checking dependencies")
 
-    local root = config.root
-    if not pam.runasadmin() then root = config.home end
+    -- local root = config.root
+    -- if not pam.runasadmin() then root = config.home end
 
-    local lfsstatus, lfs = pcall(require, 'lfs')
-    local lfsbuilddir
-    if lfsstatus then
-        log.status("luafilesystem found")
-    else
-        log.status("building luafilesystem")
+    -- local lfsstatus, lfs = pcall(require, 'lfs')
+    -- local lfsbuilddir
+    -- if lfsstatus then
+    --     log.status("luafilesystem found")
+    -- else
+    --     log.status("building luafilesystem")
 
-        local srcdir = tconcat({
-            repodir, 'delua', 'packages', 'lua', 'filesystem'
-        }, dirsep)
-        lfsbuilddir = tconcat({builddir, 'luafilesystem'}, dirsep)
-        run(cmakecmd, '-S', srcdir, '-B', lfsbuilddir,
-            {'-DCMAKE_INSTALL_PREFIX:PATH=%s', root},
-            {'-DPAM_CACHEDIR:PATH=%s', cachedir})
-        run(cmakecmd, '--build', lfsbuilddir)
-        run(cmakecmd, '--install', lfsbuilddir)
-    end
+    --     local srcdir = tconcat({
+    --         repodir, 'delua', 'packages', 'lua', 'filesystem'
+    --     }, dirsep)
+    --     lfsbuilddir = tconcat({builddir, 'luafilesystem'}, dirsep)
+    --     run(cmakecmd, '-S', srcdir, '-B', lfsbuilddir,
+    --         {'-DCMAKE_INSTALL_PREFIX:PATH=%s', root},
+    --         {'-DPAM_CACHEDIR:PATH=%s', cachedir})
+    --     run(cmakecmd, '--build', lfsbuilddir)
+    --     run(cmakecmd, '--install', lfsbuilddir)
+    -- end
 
-    cfg.packages = {
-        bin = {['lua'] = {version = config.lua_version}},
-        lua = {
-            ['luafilesystem'] = {
-                repository = 'delua',
-                version = 'scm',
-                package = 'lua/filesystem',
-                dependencies = {}
-            }
-        }
-    }
+    -- cfg.packages = {
+    --     bin = {['lua'] = {version = config.lua_version}},
+    --     lua = {
+    --         ['luafilesystem'] = {
+    --             repository = 'delua',
+    --             version = 'scm',
+    --             package = 'lua/filesystem',
+    --             dependencies = {}
+    --         }
+    --     }
+    -- }
 
-    -- ========================================================================
-    log.notice("4. Creating database")
-    -- FIXME
+    -- -- ========================================================================
+    -- log.notice("4. Creating database")
+    -- -- FIXME
 
-    lfs = require 'lfs'
+    -- lfs = require 'lfs'
 
-    -- ========================================================================
-    log.notice("5. Cleaning up")
+    -- -- ========================================================================
+    -- log.notice("5. Cleaning up")
 
-    local function rmdir_r(path)
-        for dir in lfs.dir(path) do
-            if dir ~= '.' and dir ~= '..' then
-                local fulldir = path .. dirsep .. dir
-                local attr = lfs.attributes(fulldir)
-                if attr.mode == 'directory' then rmdir_r(fulldir) end
+    -- local function rmdir_r(path)
+    --     for dir in lfs.dir(path) do
+    --         if dir ~= '.' and dir ~= '..' then
+    --             local fulldir = path .. dirsep .. dir
+    --             local attr = lfs.attributes(fulldir)
+    --             if attr.mode == 'directory' then rmdir_r(fulldir) end
 
-                log.debug('removing %s', fulldir)
-                assert(fulldir:match("^" .. builddir))
-                os.remove(fulldir)
-            end
-        end
-    end
+    --             log.debug('removing %s', fulldir)
+    --             assert(fulldir:match("^" .. builddir))
+    --             os.remove(fulldir)
+    --         end
+    --     end
+    -- end
 
-    rmdir_r(tconcat({builddir, 'luafilesystem'}, dirsep))
+    -- rmdir_r(tconcat({builddir, 'luafilesystem'}, dirsep))
 end
 pam.bootstrap = bootstrap
 register("bootstrap", {

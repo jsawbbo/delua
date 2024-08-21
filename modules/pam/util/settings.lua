@@ -37,7 +37,7 @@ local function save(self)
         local filename = assert(rawget(t, __filename), "internal error: config does not have a filename")
         dump(t, {
             file = filename,
-            prefix = 'return'
+            level = -1
         })
         log.debug("Saved configuration %q.", filename)
     end
@@ -81,13 +81,6 @@ function mt.__newindex(self, k, v)
     end
 end
 
-local function readall(filename)
-    local f<close> = io.open(filename, "r")
-    if f then
-        return f:read("a")
-    end
-end
-
 --- Load a configuration file.
 local function settings(filename)
     log.debug("Loading settings from %q...", filename)
@@ -100,10 +93,11 @@ local function settings(filename)
     cfg[__root] = cfg
     setmetatable(cfg, mt)
 
-    local txt = readall(filename)
-    if txt then
-        local fn = assert(load(txt, filename))
-        local t = fn()
+    if io.readable(filename) then
+        local t = {}
+        local fn = assert(loadfile(filename, 't', t))
+        fn()
+        pam.dump(t, {key = 'loaded'})
         for k, v in pairs(t) do
             cfg[k] = v
         end

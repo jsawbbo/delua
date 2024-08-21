@@ -1,4 +1,4 @@
--- DeLua Package Manager - package database component
+-- DeLua Package Manager - Lua 'os' extensions
 -- Copyright (C) 2024 Max Planck Institute f. Neurobiol. of Behavior — caesar, Bonn, Germany
 -- 
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -20,27 +20,6 @@
 -- TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
-local pam = require 'pamlib'
-local log = require 'pam.util.log'
+local os = require 'os'
 
-local tconcat = table.concat
-local osexec = os.execute
-
-local function exec(cmd, ...)
-    local command = tconcat({cmd, ...}, ' ')
-    log.debug("Executing %q", command)
-    local status, what, retval = osexec(command)
-    if not status then
-        if what == 'exit' then
-            log.status("%s exited with %d", cmd, retval)
-        elseif what == 'signal' then
-            log.status("%s was interrupted with signal %d", cmd, retval)
-        else
-            log.status("%s return status %d (%s)", cmd, retval, what)
-        end
-    end
-    return status
-end
-pam.exec = exec
-
-return exec
+return os

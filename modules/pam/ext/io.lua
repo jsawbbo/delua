@@ -1,4 +1,4 @@
--- DeLua Package Manager - Lua 'table' extensions
+-- DeLua Package Manager - Lua 'io' extensions
 -- Copyright (C) 2024 Max Planck Institute f. Neurobiol. of Behavior — caesar, Bonn, Germany
 -- 
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -31,5 +31,19 @@ local function fprintf(stream, fmt, ...)
     stream:write(sformat(fmt, ...))
 end
 io.fprintf = fprintf
+
+--- Check if a file is readable.
+-- @param
+--      filename        The file to check.
+-- @returns
+--      `true` if file is readable, `nil` otherwise
+local function readable(filename)
+    local f = io.open(filename, "r")
+    if f then
+        f:close()
+        return true
+    end
+end
+io.readable = readable
 
 return io

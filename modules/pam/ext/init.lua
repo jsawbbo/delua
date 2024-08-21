@@ -1,4 +1,4 @@
--- DeLua Package Manager - Lua 'table' extensions
+-- DeLua Package Manager - Lua extensions
 -- Copyright (C) 2024 Max Planck Institute f. Neurobiol. of Behavior — caesar, Bonn, Germany
 -- 
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -37,5 +37,6 @@ global.typeinfo = typeinfo
 
 require 'pam.ext.table'
 require 'pam.ext.io'
+require 'pam.ext.os'
 
 return global

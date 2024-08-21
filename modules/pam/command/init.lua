@@ -1,3 +1,5 @@
+local pam = require 'pamlib'
+
 local brief = "DeLua Package Manager"
 local version = pam._VERSION
 local copyright = [[
@@ -25,23 +27,16 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
-local pam = require 'pamlib'
 local log = require 'pam.util.log'
 
-local table = require 'table'
+require 'pam.ext'
 local tinsert = table.insert
 local tremove = table.remove
 local tsort = table.sort
-
-local string = require 'string'
 local sformat = string.format
-
-local io = require 'io'
 local stdout = io.stdout
 local stderr = io.stderr
-local function fprintf(stream, fmt, ...)
-    stream:write(sformat(fmt, ...))
-end
+local fprintf = io.fprintf
 
 local def -- option definition table
 

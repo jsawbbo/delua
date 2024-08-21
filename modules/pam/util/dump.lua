@@ -20,6 +20,7 @@
 -- TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
+local pam = require 'pamlib'
 require 'pam.ext'
 
 local sformat = string.format
@@ -217,5 +218,6 @@ local function dump(t, opts)
         opts.stream:close()
     end
 end
+pam.dump = dump
 
 return dump
