@@ -20,22 +20,16 @@
 -- TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
-local global = _G
+local io = require 'io'
+local string = require 'string'
 
-local mtype = math.type
+local sformat = string.format
 
---- Get type information.
--- ::param
---      v       The value to retrieve type information for.
--- ::returns
---      This function returns Lua's numerical type (`math.type`) or the
---      type's string (`type`).
-local function typeinfo(v)
-    return mtype(v) or type(v)
+--- C's fprintf equivalent.
+--
+local function fprintf(stream, fmt, ...)
+    stream:write(sformat(fmt, ...))
 end
-global.typeinfo = typeinfo
+io.fprintf = fprintf
 
-require 'pam.ext.table'
-require 'pam.ext.io'
-
-return global
+return io

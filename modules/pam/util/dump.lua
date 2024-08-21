@@ -20,10 +20,15 @@
 -- TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
-local string = require 'pam.ext'
+require 'pam.ext'
+
 local sformat = string.format
 local srep = string.rep
 local tinsert = table.insert
+local tisempty = table.isempty
+local tmake = table.make
+local tsort = table.sort
+local tmerge = table.merge
 local fprintf = io.fprintf
 
 local log = require 'pam.util.log'
@@ -36,7 +41,7 @@ local function indent(opts)
 end
 
 local function dumpkey(k, opts)
-    local T = typename(k)
+    local T = typeinfo(k)
     if T == 'string' then
         if k:match("^[a-zA-Z_][a-zA-Z0-9_]*$") then
             fprintf(opts.stream, '%s', k)
@@ -70,8 +75,8 @@ end
 
 function sortkeys(t)
     tsort(t, function(a, b)
-        local Ta = typename(a)
-        local Tb = typename(b)
+        local Ta = typeinfo(a)
+        local Tb = typeinfo(b)
         if Ta ~= Tb then
             return order(Ta) < order(Tb)
         else
@@ -118,7 +123,9 @@ dumper = function(k, v, opts)
             if tisempty(v) then
                 opts.stream:write("{}")
             else
-                opts.stream:write("{\n")
+                if opts.level >= 0 then
+                    opts.stream:write("{\n")
+                end
                 local newopts = tmake(opts, {
                     level = opts.level + 1
                 })
@@ -133,7 +140,7 @@ dumper = function(k, v, opts)
                 local N = #keys
                 for i, k in ipairs(keys) do
                     local t = v[k]
-                    if typename(k) == 'integer' and (k >= 1) and (k <= #v) then
+                    if typeinfo(k) == 'integer' and (k >= 1) and (k <= #v) then
                         k = nil
                     end
                     dumper(k, t, tmerge(newopts, {
@@ -142,8 +149,10 @@ dumper = function(k, v, opts)
                     }))
                 end
 
-                indent(opts)
-                opts.stream:write("}")
+                if opts.level >= 0 then
+                    indent(opts)
+                    opts.stream:write("}")
+                end
             end
 
         end
@@ -152,7 +161,8 @@ dumper = function(k, v, opts)
     end
 
     -- end-of-line
-    if opts.last then
+    if opts.level < 0 then
+    elseif opts.last or opts.level == 0 then
         opts.stream:write('\n')
     else
         opts.stream:write(',\n')
@@ -200,6 +210,7 @@ local function dump(t, opts)
     opts.ignore = opts.ignore or function(...)
         return false
     end
+    
     dumper(opts.key, t, opts)
 
     if file then
