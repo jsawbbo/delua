@@ -20,39 +20,11 @@
 -- TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
+local string = require 'pam.ext'
 local sformat = string.format
 local srep = string.rep
 local tinsert = table.insert
-local tsort = table.sort
-local tmerge = function(a, b) -- merge b into a
-    for k, v in pairs(b) do
-        a[k] = v
-    end
-    return a
-end
-local tmake = function(...) -- create new table with all (table) arguments merged
-    local res = {}
-    for _, t in ipairs {...} do
-        tmerge(res, t)
-    end
-    return res
-end
-local tisempty = function(t)
-    if type(t) == 'table' then
-        for _, _ in pairs(t) do
-            return false
-        end
-    end
-    return true
-end
-local mtype = math.type
-local typename = function(v)
-    return mtype(v) or type(v)
-end
-
-local function fprintf(stream, fmt, ...) -- C's fprintf equivalent
-    return stream:write(sformat(fmt, ...))
-end
+local fprintf = io.fprintf
 
 local log = require 'pam.util.log'
 
