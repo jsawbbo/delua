@@ -1,6 +1,6 @@
 # Delua
 
-This is Lua 5.4.7, released on 13 Jun 2024 (see file *lua/README*).
+This is Lua 5.4.8, released on 21 May 2025 (see file *lua/README*).
 
 > Lua is a powerful, efficient, lightweight, embeddable scripting language.  
 > It supports procedural programming, object-oriented programming, functional  
@@ -18,7 +18,7 @@ The Lua sources, except ''luaconf.h'' - which is now generated using CMake, are
 _almost_ untouched. Changes made to the pure Lua sources can be found in the  
 ''patches'' sub-directory.
 
-A number of considerable changes were made to ''luaconf.h'' so. This includes,
+A number of considerable changes were made to ''luaconf.h'' though. This includes,
 for example, that `LUA_LDIR` and `LUA_CDIR` where changed in non-backward 
 compatible way. Also, `LUA_PROGNAME` is now part of ''luaconf.h''.
 
