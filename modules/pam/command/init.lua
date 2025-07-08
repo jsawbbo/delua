@@ -3,7 +3,7 @@ local pam = require 'pamlib'
 local brief = "DeLua Package Manager"
 local version = pam._VERSION
 local copyright = [[
-Copyright (C) 2024 Max Planck Institute f. Neurobiol. of Behavior — caesar, Bonn, Germany
+Copyright (C) 2024-2025 Max Planck Institute f. Neurobiol. of Behavior — caesar, Bonn, Germany
 ]]
 local license_short = "MIT"
 local license = [[
