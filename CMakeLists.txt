@@ -117,6 +117,8 @@ if(NOT LUA_LANGUAGE_C AND LUA_BUILD_COMPILER)
     set(LUA_BUILD_COMPILER OFF CACHE BOOL "Build compiler executable." FORCE)
 endif()
 
+set(LUA_BUILD_PAM ${LUA_BUILD_INTERPRETER} CACHE BOOL "Build package manager executable.")
+
 include(target/luaconf.cmake)
 
 # === Installation ===========================================================

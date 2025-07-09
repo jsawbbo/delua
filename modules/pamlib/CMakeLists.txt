@@ -39,20 +39,22 @@ install(TARGETS DeLuaPAMLIB
     LIBRARY DESTINATION ${LUA_CDIR} COMPONENT "pam")
 
 # pam executable
-add_executable(DeLuaPAMEXE pam.c)
-if (DeLua_SYMBOLIC_LINK)
-    set_target_properties(DeLuaPAMEXE
-        PROPERTIES
-            LINKER_LANGUAGE C
-            VERSION ${DeLua_RELEASE}
-            OUTPUT_NAME pam)
-else()
-    set_target_properties(DeLuaPAMEXE
-        PROPERTIES
-            LINKER_LANGUAGE C
-            OUTPUT_NAME pam-${DeLua_RELEASE})
-endif()
-target_link_libraries(DeLuaPAMEXE DeLuaCLib ${LUA_READLINE_LIBRARY})
+if(LUA_BUILD_PAM)
+    add_executable(DeLuaPAMEXE pam.c)
+    if (DeLua_SYMBOLIC_LINK)
+        set_target_properties(DeLuaPAMEXE
+            PROPERTIES
+                LINKER_LANGUAGE C
+                VERSION ${DeLua_RELEASE}
+                OUTPUT_NAME pam)
+    else()
+        set_target_properties(DeLuaPAMEXE
+            PROPERTIES
+                LINKER_LANGUAGE C
+                OUTPUT_NAME pam-${DeLua_RELEASE})
+    endif()
+    target_link_libraries(DeLuaPAMEXE DeLuaCLib ${LUA_READLINE_LIBRARY})
 
-install(TARGETS DeLuaPAMEXE
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT "pam")
+    install(TARGETS DeLuaPAMEXE
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT "pam")
+endif()
