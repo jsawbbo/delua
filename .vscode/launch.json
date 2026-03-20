@@ -28,5 +28,20 @@
                 }
             ]
         },
+        {
+            "name": "test",
+            "type": "lua",
+            "request": "launch",
+            "stopOnEntry": true,
+            "address": "127.0.0.1:12306",
+            "runtimeExecutable": "lua",
+            "runtimeArgs": ["-e", "pam = require('pam'); pam('bootstrap');"],
+            "sourceMaps": [
+                [
+                    "./*",
+                    "${workspaceFolder}/*"
+                ]
+            ]
+        }
     ]
 }

@@ -111,7 +111,7 @@ local function bootstrap(opts)
     cfg.repositories = {delua = {depth = depth, branch = branch, url = url}}
 
     -- -- ========================================================================
-    -- log.notice("3. Checking dependencies")
+    log.notice("3. Checking dependencies")
 
     -- local root = config.root
     -- if not pam.runasadmin() then root = config.home end
@@ -171,6 +171,7 @@ local function bootstrap(opts)
 
     -- rmdir_r(tconcat({builddir, 'luafilesystem'}, dirsep))
 end
+
 pam.bootstrap = bootstrap
 register("bootstrap", {
     callback = bootstrap,

@@ -39,5 +39,7 @@
         "unistd.h": "c",
         "stat.h": "c",
         "cstdlib": "c"
-    }
+    },
+    "lua.debug.settings.path": "${workspaceFolder}/modules/?.lua;${workspaceFolder}/modules/?/init.lua",
+    "lua.debug.settings.cpath": "${workspaceFolder}/build/bin/?.lua"
 }
