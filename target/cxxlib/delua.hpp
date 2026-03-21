@@ -129,12 +129,6 @@ namespace lua
       using type = struct lua_State *;
     };
 
-    /** Create a new state.
-     * */
-    static state make() {
-      return luaL_newstate();
-    }
-
   public:
     state () = default;
     state (thread::type thr) : L (thr) {}
@@ -149,6 +143,10 @@ namespace lua
     newstate (alloc a, userdata ud = nullptr)
     {
       return lua_newstate (a, ud);
+    }
+
+    static state newstate() {
+      return luaL_newstate();
     }
 
     /** Close all active to-be-closed variables in the main thread.
@@ -1067,6 +1065,26 @@ namespace lua
     toclose (index_type idx)
     {
       return lua_toclose (L, idx);
+    }
+
+    //** Auxillary
+
+    /** FIXME
+     * */
+    void openlibs() {
+      luaL_openlibs(L);
+    }
+
+    /** FIXME
+     * */
+    status loadstring(const char *snippet) {
+      return (status) luaL_loadstring(L, snippet);
+    }
+
+    /** FIXME
+     * */
+    status dostring(const char *snippet) {
+      return (status) luaL_dostring(L, snippet);
     }
   };
 
