@@ -129,6 +129,12 @@ namespace lua
       using type = struct lua_State *;
     };
 
+    /** Create a new state.
+     * */
+    static state make() {
+      return luaL_newstate();
+    }
+
   public:
     state () = default;
     state (thread::type thr) : L (thr) {}
