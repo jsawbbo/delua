@@ -36,6 +36,7 @@ if(LUA_BUILD_SHARED)
     target_include_directories(DeLuaCXXLib PUBLIC
         $<BUILD_INTERFACE:${luaconf_include_dir}>
         $<BUILD_INTERFACE:${DeLua_SOURCE_DIR}/lua/src>
+        $<BUILD_INTERFACE:${DeLua_SOURCE_DIR}/target/cxxlib>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${DeLua_HEADER_DIR}/${DeLua_RELEASE}>)
     target_compile_definitions(DeLuaCXXLib
         PUBLIC DELUA_LANGUAGE_CXX DELUA_VERSION=${DeLua_VERSION_NUM}
