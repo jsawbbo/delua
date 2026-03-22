@@ -30,12 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace lua
 {
-
-  /** Lua error (C++ only).
-   * @note
-   *    The C-library uses long jumps.
-   * */
-  using exception = lua_Exception;
+  class exception;
 
   using number = lua_Number;    ///< Lua number type.
   using integer = lua_Integer;  ///< Lua integral type.
@@ -115,6 +110,9 @@ namespace lua
    * */
   class LUA_API_CLASS state
   {
+  private:
+    friend class exception;
+
   public:
     using size_type = size_t; ///< Size type.
     using index_type = int;   ///< Stack index type.
@@ -147,6 +145,12 @@ namespace lua
 
     static state newstate() {
       return luaL_newstate();
+    }
+
+    /** Return internal Lua state.
+     * */
+    operator thread::type() const noexcept {
+      return L;
     }
 
     /** Close all active to-be-closed variables in the main thread.
@@ -1069,23 +1073,88 @@ namespace lua
 
     //** Auxillary
 
-    /** FIXME
+    // FIXME dofile
+
+    /** Load and run the given string.
      * */
-    void openlibs() {
-      luaL_openlibs(L);
+    status dostring(const char *snippet) {
+      status retval = loadstring(snippet);
+      if (retval == lua::status::ok)
+        retval = pcall(0, lua::multret, 0);
+      return retval;
     }
 
-    /** FIXME
+    // FIXME error
+    // FIXME getmetafield
+    // FIXME getmetatable
+    // FIXME getsubtable
+    // FIXME gsub
+    // FIXME luaL_loadbuffer
+    // FIXME luaL_loadbufferx
+    // FIXME luaL_loadfile
+    // FIXME luaL_loadfilex
+
+    /** Loads a string as a Lua chunk.
      * */
     status loadstring(const char *snippet) {
       return (status) luaL_loadstring(L, snippet);
     }
 
-    /** FIXME
+    // FIXME luaL_newlib
+    // FIXME luaL_newlibtable
+    // FIXME luaL_newmetatable
+    // FIXME luaL_newstate
+
+    /** Open all standard Lua libraries.
      * */
-    status dostring(const char *snippet) {
-      return (status) luaL_dostring(L, snippet);
+    void openlibs() {
+      luaL_openlibs(L);
     }
+
+    // FIXME luaL_opt
+    // FIXME luaL_optinteger
+    // FIXME luaL_optlstring
+    // FIXME luaL_optnumber
+    // FIXME luaL_optstring
+    // FIXME luaL_prepbuffer
+    // FIXME luaL_prepbuffsize
+    // FIXME luaL_pushfail
+    // FIXME luaL_pushresult
+    // FIXME luaL_pushresultsize
+
+    /** Create reference in table @t for object on top of stack.
+     * */
+    index_type ref(index_type t = registry) {
+      return luaL_ref(L, t);
+    }
+
+    // FIXME luaL_requiref
+    // FIXME luaL_setfuncs
+    // FIXME luaL_setmetatable
+    // FIXME luaL_testudata
+    // FIXME luaL_tolstring
+    // FIXME luaL_traceback
+    // FIXME luaL_typeerror
+    // FIXME luaL_typename
+
+    /** Releases the reference @a ref from the table at index @a t.
+     * @see ref()
+     * */
+    void unref(index_type ref, index_type t = registry) {
+      luaL_unref(L, t, ref);
+    }
+
+    // FIXME luaL_where
+
+  };
+
+ /** Lua error (C++ only).
+   * @note
+   *    The C-library uses long jumps.
+   * */
+  class LUA_API_CLASS exception : public lua_Exception {
+  public:
+    exception(state &L, lua::status s) : lua_Exception(L, (int) s) {}
   };
 
 } // namespace lua
