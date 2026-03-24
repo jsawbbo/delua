@@ -1,4 +1,4 @@
-if (LUA_USE_WINDOWS OR LUA_USE_POSIX OR LUA_USE_MACOSX) 
+if (LUA_BUILD_PAM AND (LUA_USE_WINDOWS OR LUA_USE_POSIX OR LUA_USE_MACOSX))
     add_subdirectory(pamlib)
     add_subdirectory(pam)
 else()
