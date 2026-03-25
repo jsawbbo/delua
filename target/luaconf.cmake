@@ -55,7 +55,7 @@ set(LUA_DLL_EXTENSION "${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 # - user paths
 
-if(WINDOWS)
+if(WIN32)
     if(UNIX)
         set(LUA_PROGDIR      "~/.${LUA_PROGNAME}")
         set(LUA_LOCAL        "~/.local")
