@@ -41,7 +41,7 @@ if(LUA_BUILD_SHARED)
     set_target_properties(DeLuaCLib
         PROPERTIES
 	        EXPORT_NAME DeLua::Library::C)
-elseif()
+else()
     add_library(DeLua::Library::C ALIAS DeLuaCLibStatic)
     set_target_properties(DeLuaCLibStatic
         PROPERTIES
