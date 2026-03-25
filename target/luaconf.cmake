@@ -55,9 +55,14 @@ set(LUA_DLL_EXTENSION "${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 # - user paths
 
-if(WINDOWS AND NOT UNIX)
-    set(LUA_PROGDIR      "~/AppData/Local/${LUA_PROGNAME}")
-    set(LUA_LOCAL        "~/AppData/Local/${LUA_PROGNAME}")
+if(WINDOWS)
+    if(UNIX)
+        set(LUA_PROGDIR      "~/.${LUA_PROGNAME}")
+        set(LUA_LOCAL        "~/.local")
+    else()
+        set(LUA_PROGDIR      "~/AppData/Local/${LUA_PROGNAME}")
+        set(LUA_LOCAL        "~/AppData/Local/${LUA_PROGNAME}")
+    endif()
 elseif(APPLE)
     set(LUA_PROGDIR      "~/Library/Caches/${LUA_PROGNAME}")
     set(LUA_LOCAL        "~/Library/${LUA_PROGNAME}")
