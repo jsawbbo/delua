@@ -815,23 +815,18 @@ LUA_API int lua_expandhome(lua_State *L, const char *filename);
  
 #include <stdexcept>
  
-class LUA_API_CLASS lua_Exception : public std::exception {
+class LUA_API_CLASS lua_Exception {
 public:
-       lua_Exception(lua_State *L, int status = -1) : std::exception(), L_(L), status_(status), extra_(NULL) {}
-       lua_Exception(lua_State *L, const char *message, int status = 2 /*LUA_ERRRUN*/) : std::exception(), L_(L), status_(status), extra_(NULL) {}
+       lua_Exception(lua_State *L, int status) : L_(L), status_(status) {}
        virtual ~lua_Exception() {}
-
-       const char *what() const noexcept override;
 
 protected:
        lua_State *L_;
        int status_;
-       const char *extra_;
 
 public:
        virtual lua_State *vm() const noexcept { return L_; }
        virtual int status() const noexcept { return status_; }
-       virtual const char *extra() const noexcept { return extra_; }
 };
 
 #define LUAI_THROW(L,c) \
