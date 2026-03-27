@@ -61,6 +61,12 @@ Additionally, `lua_Exception` was added to the generated ''luaconf.h'' header.
 
 For further details: [**UTSL**](https://www.urbandictionary.com/define.php?term=UTSL).
 
+### API
+
+A new API prefix was introduced: `LUA_API_WEAK`, if supported by the compiler (at
+them moment of writing Clang and GCC). This was used for the luaL_where function,
+allowing a different reporting style.
+
 ## Extensions
 
 A number of Lua extensions are provided out of the box with DeLua. This 

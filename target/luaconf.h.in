@@ -262,6 +262,17 @@
 #define LUALIB_API	LUA_API
 #define LUAMOD_API	LUA_API
 
+/*
+** Weak API symbols, allowing to override functionality.
+** Use with care.
+*/
+#if defined(__GNUC__) || defined(__clang__)
+#define LUA_API_WEAK __attribute__((weak)) LUA_API
+#else
+#define LUA_API_WEAK LUA_API
+#endif
+
+#define LULIB_API_WEAK LUA_API_WEAK
 
 /*
 @@ LUAI_FUNC is a mark for all extern functions that are not to be
