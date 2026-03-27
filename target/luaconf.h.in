@@ -272,7 +272,7 @@
 #define LUA_API_WEAK LUA_API
 #endif
 
-#define LULIB_API_WEAK LUA_API_WEAK
+#define LUALIB_API_WEAK LUA_API_WEAK
 
 /*
 @@ LUAI_FUNC is a mark for all extern functions that are not to be

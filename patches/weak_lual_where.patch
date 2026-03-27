@@ -7,7 +7,7 @@ index 923105e..3ebbf5c 100644
  ** need reserved stack space when called.
  */
 -LUALIB_API void luaL_where (lua_State *L, int level) {
-+LULIB_API_WEAK void luaL_where (lua_State *L, int level) {
++LUALIB_API_WEAK void luaL_where (lua_State *L, int level) {
    lua_Debug ar;
    if (lua_getstack(L, level, &ar)) {  /* check function at level */
      lua_getinfo(L, "Sl", &ar);  /* get info about it */
@@ -20,7 +20,7 @@ index 5b977e2..1bc1d78 100644
  LUALIB_API void *(luaL_checkudata) (lua_State *L, int ud, const char *tname);
  
 -LUALIB_API void (luaL_where) (lua_State *L, int lvl);
-+LULIB_API_WEAK void (luaL_where) (lua_State *L, int lvl);
++LUALIB_API_WEAK void (luaL_where) (lua_State *L, int lvl);
  LUALIB_API int (luaL_error) (lua_State *L, const char *fmt, ...);
  
  LUALIB_API int (luaL_checkoption) (lua_State *L, int arg, const char *def,
