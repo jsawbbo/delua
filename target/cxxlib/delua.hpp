@@ -118,9 +118,12 @@ namespace lua {
     nil = LUA_REFNIL  ///< Reference for a nil value.
   };
 
-  using debug = lua_Debug;
+  /** Function entry.
+   * @see lua::state::setfuncs()
+   * */
+  using function = luaL_Reg;
 
-  using libreg = luaL_Reg;
+  class debug;
 
   /** Lua state.
    *
@@ -356,8 +359,7 @@ namespace lua {
 
     // FIXME
 
-  public: // Debug library.
-          // FIXME
+  public:
     // ==================================================
     // UNSORTED
     /** Set warning handler.
@@ -1198,8 +1200,8 @@ namespace lua {
 
     /** Registers functions.
      *
-     * Registers all functions in the array @a l (see @c libreg) into the table
-     * on the top of the stack (below optional upvalues, see next).
+     * Registers all functions in the array @a l (see @c registry) into the
+     * table on the top of the stack (below optional upvalues, see next).
      *
      * When @a nup is not zero, all functions are created with @a nup upvalues,
      * initialized with copies of the nup values previously pushed on the stack
@@ -1209,9 +1211,10 @@ namespace lua {
      * A function with a NULL value represents a placeholder, which is filled
      * with false.
      *
-     *
+     * @see
+     * [luaL_setfuncs](https://www.lua.org/manual/5.4/manual.html#luaL_setfuncs)
      * */
-    void setfuncs(const libreg *l, count_type nup = 0)
+    void setfuncs(const function *l, count_type nup = 0)
     {
       luaL_setfuncs(L, l, nup);
     }
@@ -1238,9 +1241,7 @@ namespace lua {
 
     /** Returns the name of the type of the value at the given index.
      * */
-    const char *type_name(index_type idx) {
-      return luaL_typename(L, idx);
-    }
+    const char *type_name(index_type idx) { return luaL_typename(L, idx); }
 
     /** Releases the reference @a ref from the table at index @a t.
      * @see ref()
@@ -1248,22 +1249,6 @@ namespace lua {
     void unref(index_type ref, index_type t = registry)
     {
       luaL_unref(L, t, ref);
-    }
-
-  public: ///** Debug.
-    /** Creates and pushes a traceback of the stack.
-     * @param other The state for which to create the traceback.
-     * @param lvl   Stack level (0 is current function).
-     * @param extra Extra message at the beginning of the traceback.
-     *
-     * */
-    void traceback(count_type lvl, const char *extra = nullptr)
-    {
-      luaL_traceback(L, L, extra, lvl);
-    }
-    void traceback(state &other, count_type lvl, const char *extra = nullptr)
-    {
-      luaL_traceback(L, other.L, extra, lvl);
     }
 
     /** Pushes onto the stack a string identifying the current position.
@@ -1280,6 +1265,174 @@ namespace lua {
      *
      * */
     void where(count_type lvl = 0) { luaL_where(L, lvl); }
+
+    /** Creates and pushes a traceback of the stack.
+     * @param other The state for which to create the traceback.
+     * @param lvl   Stack level (0 is current function).
+     * @param extra Extra message at the beginning of the traceback.
+     *
+     * */
+    void traceback(count_type lvl, const char *extra = nullptr)
+    {
+      luaL_traceback(L, L, extra, lvl);
+    }
+    void traceback(state &other, count_type lvl, const char *extra = nullptr)
+    {
+      luaL_traceback(L, other.L, extra, lvl);
+    }
+
+  private:
+    friend class debug;
+  };
+
+  /** Debug inferface.
+   * @see ["Debug inferface"](https://www.lua.org/manual/5.4/manual.html#4.7) in
+   * reference manual.
+   * */
+  class LUA_API_CLASS debug : public state
+  {
+  public:
+    /** Debug information.
+     *
+     * The structure contains the fields:
+     * @code
+     *       int event;
+     *       const char *name;           // (n)
+     *       const char *namewhat;       // (n)
+     *       const char *what;           // (S)
+     *       const char *source;         // (S)
+     *       size_t srclen;              // (S)
+     *       int currentline;            // (l)
+     *       int linedefined;            // (S)
+     *       int lastlinedefined;        // (S)
+     *       unsigned char nups;         // (u) number of upvalues
+     *       unsigned char nparams;      // (u) number of parameters
+     *       char isvararg;              // (u)
+     *       char istailcall;            // (t)
+     *       unsigned short ftransfer;   // (r) index of first value transferred
+     *       unsigned short ntransfer;   // (r) number of transferred values
+     *       char short_src[LUA_IDSIZE]; // (S)
+     * @endcode
+     *
+     * @see [lua_Debug](https://www.lua.org/manual/5.4/manual.html#lua_Debug)
+     */
+    using info_type = lua_Debug;
+
+    struct LUA_API_CLASS hook
+    {
+      /** Execution callback hook.
+       * @code
+       * using callback = void (*lua::hook)(lua::state::thread::type L,
+       * lua::debug *ar)
+       * @endcode
+       * */
+      using callback = lua_Hook;
+
+      /** Count type.
+       * */
+      using count_type = int;
+
+      /** Flags.
+       * */
+      enum mask : int
+      {
+        call = LUA_MASKCALL,  ///< On function call.
+        ret = LUA_MASKRET,    ///< On function return.
+        line = LUA_MASKLINE,  ///< On execution line.
+        count = LUA_MASKCOUNT ///< On count of instructions.
+      };
+    };
+
+  public:
+    debug() = default;
+    debug(thread::type thr) : state(thr) {}
+    debug(state &&s) : state(s.L) {}
+
+  public:
+    /** Set hook.
+     * @param callback  Callback function.
+     * @param mask      Hook mask.
+     * @param count     Instruction count (with @c hook::mask::count ).
+     * */
+    void sethook(hook::callback callback, hook::mask mask = hook::mask::line,
+                 hook::count_type count = 1)
+    {
+      lua_sethook(L, callback, mask, count);
+    }
+
+    /** Get current hook.
+     * */
+    hook::callback gethook() { return lua_gethook(L); }
+
+    /** Get current hook count.
+     * */
+    hook::count_type gethookcount() { return lua_gethookcount(L); }
+
+    /** Get current hook mask.
+     * */
+    hook::mask gethookmask()
+    {
+      return static_cast<hook::mask>(lua_gethookmask(L));
+    }
+
+    /** Get stack information.
+     * @see
+     * [lua_getinfo](https://www.lua.org/manual/5.4/manual.html#lua_getinfo)
+     * */
+    condition getinfo(info_type &info, const char *what = "Snl")
+    {
+      return static_cast<condition>(lua_getinfo(L, what, &info));
+    }
+
+    /** Get local variable information.
+     * */
+    const char *getlocal(info_type &info, int n)
+    {
+      return lua_getlocal(L, &info, n);
+    }
+
+    /** Get local variable information.
+     * */
+    const char *setlocal(info_type &info, int n)
+    {
+      return lua_setlocal(L, &info, n);
+    }
+
+    /** Get upvalue information.
+     * */
+    const char *getupvalue(int funcindex, int n)
+    {
+      return lua_getupvalue(L, funcindex, n);
+    }
+
+    /** Get upvalue ID.
+     * */
+    void *upvalueid(int funcindex, int n)
+    {
+      return lua_upvalueid(L, funcindex, n);
+    }
+
+    /** Get upvalue information.
+     * */
+    const char *setupvalue(int funcindex, int n)
+    {
+      return lua_setupvalue(L, funcindex, n);
+    }
+
+    /** Join upvalues.
+     * */
+    void upvaluejoin(int fidx1, int n1, int fidx2, int n2)
+    {
+      lua_upvaluejoin(L, fidx1, n1, fidx2, n2);
+    }
+
+    /** Get interpreter runtime stack information.
+     * @param level Stack level up (0 is current, 1 is parent function, ...).
+     * */
+    condition getstack(info_type &info, state::count_type level)
+    {
+      return static_cast<condition>(lua_getstack(L, level, &info));
+    }
   };
 
   /** Lua error (C++ only).
