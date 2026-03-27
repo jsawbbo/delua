@@ -37,13 +37,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 namespace lua {
-  class exception;
-
   using number = lua_Number;    ///< Lua number type.
   using integer = lua_Integer;  ///< Lua integral type.
   using natural = lua_Unsigned; ///< Lua unsigned integral type.
 
   using cfunction = lua_CFunction; ///< Function type.
+
+  using exception = lua_Exception; ///< Lua exception.
 
   namespace continuation {
     using context = lua_KContext;   ///< Context for a continuation function.
@@ -132,9 +132,6 @@ namespace lua {
    * */
   class LUA_API_CLASS state
   {
-  private:
-    friend class exception;
-
   public:
     using size_type = size_t; ///< Size type.
     using index_type = int;   ///< Stack index type.
@@ -1433,16 +1430,6 @@ namespace lua {
     {
       return static_cast<condition>(lua_getstack(L, level, &info));
     }
-  };
-
-  /** Lua error (C++ only).
-   * @note
-   *    The C-library uses long jumps.
-   * */
-  class LUA_API_CLASS exception : public lua_Exception
-  {
-  public:
-    exception(state &L, lua::status s) : lua_Exception(L, (int)s) {}
   };
 
 } // namespace lua
