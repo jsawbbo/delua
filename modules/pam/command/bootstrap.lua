@@ -134,6 +134,7 @@ local function bootstrap(opts)
         run(cmakecmd, '-S', srcdir, '-B', lfsbuilddir,
             {'-DCMAKE_INSTALL_PREFIX:PATH=%s', root},
             {'-DPAM_CACHEDIR:PATH=%s', cachedir},
+            {'-DPAM_BUILD:STRING=scm'},
             {'-DLUA_CDIR:PATH=%s', config.cdir},
             {'-DLUA_LDIR:PATH=%s', config.ldir})
         run(cmakecmd, '--build', lfsbuilddir)
@@ -153,13 +154,13 @@ local function bootstrap(opts)
     -- }
 
     -- -- ========================================================================
-    -- log.notice("4. Creating database")
+    log.notice("4. Creating database")
     -- -- FIXME
 
     -- lfs = require 'lfs'
 
     -- -- ========================================================================
-    -- log.notice("5. Cleaning up")
+    log.notice("5. Cleaning up")
 
     -- local function rmdir_r(path)
     --     for dir in lfs.dir(path) do
@@ -185,7 +186,11 @@ register("bootstrap", {
     usage = "pam <options> bootstrap [<command-options>...] [url [name]]",
     brief = "first time initialization of pam",
     description = [===[ 
-FIXME
+
+For PAM to function properly, it needs to be bootstrapped once. This command 
+performs the necessary steps to set up PAM, including checking for required 
+tools, cloning the package repository, and preparing the environment.
+
 ]===],
     {long = 'force', brief = "force bootstrapping (redoing all steps)"}
 })
