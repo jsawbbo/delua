@@ -48,6 +48,7 @@ local sformat = string.format
 local readable = io.readable
 local which = pam.which
 local exec = pam.exec
+local run = pam.system
 
 local function bootstrap(opts)
     opts = opts or {}
@@ -100,6 +101,9 @@ local function bootstrap(opts)
     local url = "https://github.com/jsawbbo/delua-packages.git"
     local repopath = repodir .. dirsep .. "delua"
 
+    log.info("DeLua packages repository: %s (branch: %s, depth: %d)", url, branch, depth)
+    log.info("Cloning in: %s", repopath)
+
     local cwdstatus, cwd = pcall(pam.chdir, repopath)
     if cwdstatus then
         exec(gitcmd, "pull", '--progress', {'--depth=%d', depth},
@@ -113,26 +117,28 @@ local function bootstrap(opts)
     -- -- ========================================================================
     log.notice("3. Checking dependencies")
 
-    -- local root = config.root
-    -- if not pam.runasadmin() then root = config.home end
+    local root = config.root
+    if not pam.runasadmin() then root = config.home end
 
-    -- local lfsstatus, lfs = pcall(require, 'lfs')
-    -- local lfsbuilddir
-    -- if lfsstatus then
-    --     log.status("luafilesystem found")
-    -- else
-    --     log.status("building luafilesystem")
+    local lfsstatus, lfs = pcall(require, 'lfs')
+    local lfsbuilddir
+    if lfsstatus then
+        log.status("LuaFileSystem found")
+    else
+        log.status("Building LuaFileSystem...")
 
-    --     local srcdir = tconcat({
-    --         repodir, 'delua', 'packages', 'lua', 'filesystem'
-    --     }, dirsep)
-    --     lfsbuilddir = tconcat({builddir, 'luafilesystem'}, dirsep)
-    --     run(cmakecmd, '-S', srcdir, '-B', lfsbuilddir,
-    --         {'-DCMAKE_INSTALL_PREFIX:PATH=%s', root},
-    --         {'-DPAM_CACHEDIR:PATH=%s', cachedir})
-    --     run(cmakecmd, '--build', lfsbuilddir)
-    --     run(cmakecmd, '--install', lfsbuilddir)
-    -- end
+        local srcdir = tconcat({
+            repodir, 'delua', 'packages', 'lua', 'std', 'filesystem'
+        }, dirsep)
+        lfsbuilddir = tconcat({builddir, 'luafilesystem'}, dirsep)
+        run(cmakecmd, '-S', srcdir, '-B', lfsbuilddir,
+            {'-DCMAKE_INSTALL_PREFIX:PATH=%s', root},
+            {'-DPAM_CACHEDIR:PATH=%s', cachedir},
+            {'-DLUA_CDIR:PATH=%s', config.cdir},
+            {'-DLUA_LDIR:PATH=%s', config.ldir})
+        run(cmakecmd, '--build', lfsbuilddir)
+        run(cmakecmd, '--install', lfsbuilddir)
+    end
 
     -- cfg.packages = {
     --     bin = {['lua'] = {version = config.lua_version}},
