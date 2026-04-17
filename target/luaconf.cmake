@@ -113,3 +113,4 @@ endif()
 set(LUA_PATH_EXTRA "${LUA_PATH_EXTRA_INIT}" CACHE STRING "Additional module search path." FORCE) 
 set(LUA_CPATH_EXTRA "${LUA_CPATH_EXTRA_INIT}" CACHE STRING "Additional library search path." FORCE) 
 
+set(LUA_IDSIZE "60" CACHE STRING "Maximum size for the description of the source.")
