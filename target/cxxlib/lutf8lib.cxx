@@ -1,1 +1,1 @@
-../../lua/src/lutf8lib.c
+#include "../../lua/src/lutf8lib.c"

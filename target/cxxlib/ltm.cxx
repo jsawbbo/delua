@@ -1,1 +1,1 @@
-../../lua/src/ltm.c
+#include "../../lua/src/ltm.c"

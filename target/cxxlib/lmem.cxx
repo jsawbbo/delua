@@ -1,1 +1,1 @@
-../../lua/src/lmem.c
+#include "../../lua/src/lmem.c"

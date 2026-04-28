@@ -1,1 +1,1 @@
-../../lua/src/ldump.c
+#include "../../lua/src/ldump.c"

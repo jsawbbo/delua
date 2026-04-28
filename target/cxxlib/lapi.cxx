@@ -1,1 +1,1 @@
-../../lua/src/lapi.c
+#include "../../lua/src/lapi.c"

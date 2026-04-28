@@ -1,1 +1,1 @@
-../../lua/src/lfunc.c
+#include "../../lua/src/lfunc.c"

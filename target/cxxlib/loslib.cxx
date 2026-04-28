@@ -1,1 +1,1 @@
-../../lua/src/loslib.c
+#include "../../lua/src/loslib.c"

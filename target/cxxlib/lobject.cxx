@@ -1,1 +1,1 @@
-../../lua/src/lobject.c
+#include "../../lua/src/lobject.c"

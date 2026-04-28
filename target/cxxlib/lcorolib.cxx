@@ -1,1 +1,1 @@
-../../lua/src/lcorolib.c
+#include "../../lua/src/lcorolib.c"

@@ -1,1 +1,1 @@
-../../lua/src/ldebug.c
+#include "../../lua/src/ldebug.c"

@@ -1,1 +1,1 @@
-../../lua/src/lundump.c
+#include "../../lua/src/lundump.c"

@@ -1,1 +1,1 @@
-../../lua/src/linit.c
+#include "../../lua/src/linit.c"

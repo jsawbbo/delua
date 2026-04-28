@@ -1,1 +1,1 @@
-../../lua/src/llex.c
+#include "../../lua/src/llex.c"

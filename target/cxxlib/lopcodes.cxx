@@ -1,1 +1,1 @@
-../../lua/src/lopcodes.c
+#include "../../lua/src/lopcodes.c"

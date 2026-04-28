@@ -1,1 +1,1 @@
-../../lua/src/loadlib.c
+#include "../../lua/src/loadlib.c"

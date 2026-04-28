@@ -1,1 +1,1 @@
-../../lua/src/ltablib.c
+#include "../../lua/src/ltablib.c"

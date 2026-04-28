@@ -1,1 +1,1 @@
-../../lua/src/lstate.c
+#include "../../lua/src/lstate.c"

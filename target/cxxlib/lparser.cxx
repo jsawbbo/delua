@@ -1,1 +1,1 @@
-../../lua/src/lparser.c
+#include "../../lua/src/lparser.c"

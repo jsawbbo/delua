@@ -1,1 +1,1 @@
-../../lua/src/lauxlib.c
+#include "../../lua/src/lauxlib.c"

@@ -1,1 +1,1 @@
-../../lua/src/ldblib.c
+#include "../../lua/src/ldblib.c"
