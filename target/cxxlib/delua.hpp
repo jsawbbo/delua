@@ -31,6 +31,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <lualib.h>
 
 #include <cstdarg>
+#include <string>
 
 /**@todo
  * - auxilliary methods below
