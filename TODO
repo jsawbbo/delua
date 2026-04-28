@@ -7,3 +7,8 @@
 - pam: pam_runasadmin() untested on Windows
 - cmake/CMakeLists.txt: installation path on Windows/MacOSX?
 - for C++, we need to check and properly document, how exceptions are handled...
+- create package (-> Myake)
+- bootstrap:
+  A .cmake file should be created that contains all the information needed
+  to build packages (instead of passing LUA_LDIR etc. on the command line
+  of CMake)...
